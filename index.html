@@ -335,14 +335,12 @@
         document.getElementById('infoModal').style.display = 'flex';
     }
 
-    const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbzK7-letdbsbWNPGSS2DUA69dlKZ6e_th8CNQ99b2prjehQx55was8cd0DJaIxDIf4/exec";
     const ORS_API_KEY = "5b3ce3597851110001cf6248325013ef093748dc957b46453a32f4ef";
 
     const OPOTREBENI_PNEU_KOLO_KM = 0.15;
     const SPOTREBA_NA_TUNU = 0.20; 
     const DPH_SAZBA = 1.21;
     
-    // Kompletní ceník mýta flotily
     const MYTO_STATY = {
         'CZ': { name: 'Česko', rate: 4.5 },
         'SK': { name: 'Slovensko', rate: 5.0 },
@@ -355,7 +353,7 @@
         'ES': { name: 'Španělsko', rate: 4.0 },
         'NL': { name: 'Nizozemí', rate: 1.0 }, 
         'BE': { name: 'Belgie', rate: 4.5 },
-        'UNKNOWN': { name: 'Neznámý stát', rate: 4.5 }
+        'UNKNOWN': { name: 'Jiný stát', rate: 4.5 }
     };
 
     const MYTO_NAPRAVY_KOEF = { '2': 0.7, '3': 0.8, '4': 1.0, '5': 1.0, '6': 1.1 };
@@ -391,7 +389,7 @@
         spocitatTrasu();
     }
 
-    // -- GEOKÓDOVÁNÍ (ZÍSKÁNÍ SOUŘADNIC Z ADRESY) --
+    // --- LOKÁLNÍ VÝPOČTY (BEZ ZÁVISLOSTI NA GOOGLE SCRIPTU) ---
     async function getCoordinates(address, targetCountryCode = null) {
         let gpsMatch = address.match(/^([-+]?\d{1,2}\.\d+)[,\s]+([-+]?\d{1,3}\.\d+)$/);
         if(gpsMatch) return [parseFloat(gpsMatch[2]), parseFloat(gpsMatch[1])];
@@ -399,7 +397,6 @@
         let query = address;
         if(targetCountryCode) query += `, ${targetCountryCode}`;
 
-        // Nominatim jako spolehlivá jednička (odolný proti iPhonu)
         try {
             let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
             if(res.ok) {
@@ -408,7 +405,6 @@
             }
         } catch(e) {}
 
-        // ORS jako záloha
         try {
             let res = await fetch(`https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(query)}`);
             if(res.ok) {
@@ -428,7 +424,6 @@
         return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
     }
 
-    // Zjištění kódu státu ze souřadnic
     async function fetchCountryCode(lat, lon) {
         let cacheKey = `${lat.toFixed(1)}_${lon.toFixed(1)}`;
         if(countryCache[cacheKey]) return countryCache[cacheKey];
@@ -445,58 +440,75 @@
         return "UNKNOWN";
     }
 
-    // -- HLAVNÍ MAPOVÝ MOTOR (BEZPEČNÝ PROTI PÁDU) --
-    async function getRouteData(startCoords, cilCoords) {
-        let isAvoidActive = activeAvoids.length > 0;
+    async function spocitatTrasu() {
+        let startStr = document.getElementById('startAdresa').value.trim();
+        let cilStr = document.getElementById('cilAdresa').value.trim();
+        let cilStat = document.getElementById('cilStat').value;
+        const btn = document.getElementById('btnTrasa');
+
+        if (!startStr || !cilStr) { setStatus("Vyplňte Start i Cíl.", "error"); return; }
         
-        // POKUS 1: ORS (Umožňuje vyhýbání státům)
+        let avoidActive = activeAvoids.length > 0;
+        btn.disabled = true;
+        setStatus("Počítám dálniční úseky a státy (může chvíli trvat)...", "info");
+
         try {
-            let url = `https://api.openrouteservice.org/v2/directions/driving-hgv?api_key=${ORS_API_KEY}&start=${startCoords[0]},${startCoords[1]}&end=${cilCoords[0]},${cilCoords[1]}&extra_info=countryinfo`;
-            if (isAvoidActive) {
-                let opt = { avoid_countries: activeAvoids.map(a => parseInt(a.id)) };
-                url += `&options=${encodeURIComponent(JSON.stringify(opt))}`;
-            }
+            const startCoords = await getCoordinates(startStr);
+            const cilCoords = await getCoordinates(cilStr, cilStat);
             
-            let res = await fetch(url);
-            if (res.ok) {
-                let data = await res.json();
-                let distTotal = (data.features[0].properties.summary.distance / 1000).toFixed(1);
-                let geom = data.features[0].geometry.coordinates; 
-                let extras = data.features[0].properties.extras;
-                
-                let breakdownArr = [];
-                if (extras && extras.countryinfo) {
-                    for(let seg of extras.countryinfo.values) {
-                        let distSegment = 0;
-                        for(let i=seg[0]; i<seg[1]; i++) {
-                            if(i+1 < geom.length) distSegment += getDistanceKm(geom[i][1], geom[i][0], geom[i+1][1], geom[i+1][0]);
-                        }
-                        let mid = Math.floor((seg[0] + seg[1])/2);
-                        let cCode = await fetchCountryCode(geom[mid][1], geom[mid][0]);
-                        breakdownArr.push({ code: cCode, km: distSegment, internalId: seg[2] });
-                    }
+            let distTotal, geom, countryInfoIndices;
+            let usedEngine = "ORS";
+
+            // 1. POKUS: OpenRouteService (Umí objíždět státy)
+            try {
+                if (avoidActive) {
+                    let bodyReq = { coordinates: [startCoords, cilCoords], extra_info: ["countryinfo"] };
+                    bodyReq.options = { avoid_countries: activeAvoids.map(a => a.id) };
+                    
+                    let res = await fetch(`https://api.openrouteservice.org/v2/directions/driving-hgv`, {
+                        method: 'POST', headers: { 'Authorization': ORS_API_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(bodyReq)
+                    });
+                    if(!res.ok) throw new Error("Nelze spočítat.");
+                    let data = await res.json();
+                    distTotal = (data.routes[0].summary.distance / 1000).toFixed(1);
+                    geom = data.routes[0].geometry.coordinates;
+                    countryInfoIndices = data.routes[0].extras && data.routes[0].extras.countryinfo ? data.routes[0].extras.countryinfo.values : null;
                 } else {
-                    breakdownArr.push({ code: 'UNKNOWN', km: parseFloat(distTotal), internalId: null });
+                    let url = `https://api.openrouteservice.org/v2/directions/driving-hgv?api_key=${ORS_API_KEY}&start=${startCoords[0]},${startCoords[1]}&end=${cilCoords[0]},${cilCoords[1]}&extra_info=countryinfo`;
+                    let res = await fetch(url);
+                    if(!res.ok) throw new Error("Nelze spočítat.");
+                    let data = await res.json();
+                    distTotal = (data.features[0].properties.summary.distance / 1000).toFixed(1);
+                    geom = data.features[0].geometry.coordinates;
+                    countryInfoIndices = data.features[0].properties.extras && data.features[0].properties.extras.countryinfo ? data.features[0].properties.extras.countryinfo.values : null;
                 }
-                return { distance: distTotal, breakdown: breakdownArr };
-            }
-        } catch(e) { console.warn("ORS Engine neprošel, zkouším zálohu.", e); }
-
-        if (isAvoidActive) {
-            throw new Error("Funkce vyhýbání se státům je aktuálně vaším telefonem blokována.");
-        }
-
-        // POKUS 2: OSRM (Záložní veřejný motor, který iPhony neblokují)
-        try {
-            let osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startCoords[0]},${startCoords[1]};${cilCoords[0]},${cilCoords[1]}?overview=full&geometries=geojson`;
-            let res = await fetch(osrmUrl);
-            if (res.ok) {
+            } catch(e) {
+                // 2. POKUS: Pokud selže ORS, zkusíme záložní OSRM
+                if (avoidActive) throw new Error("Aplikace blokuje objíždění států na pozadí.");
+                usedEngine = "OSRM";
+                let osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startCoords[0]},${startCoords[1]};${cilCoords[0]},${cilCoords[1]}?overview=full&geometries=geojson`;
+                let res = await fetch(osrmUrl);
+                if(!res.ok) throw new Error("Mapové servery nedostupné.");
                 let data = await res.json();
-                let distTotal = (data.routes[0].distance / 1000).toFixed(1);
-                let geom = data.routes[0].geometry.coordinates;
-                
-                // Ruční rozřezání trasy OSRM
-                let breakdownArr = [];
+                distTotal = (data.routes[0].distance / 1000).toFixed(1);
+                geom = data.routes[0].geometry.coordinates;
+            }
+
+            let breakdownArr = [];
+
+            if(usedEngine === "ORS" && countryInfoIndices) {
+                for(let seg of countryInfoIndices) {
+                    let sIdx = seg[0], eIdx = seg[1], internalId = seg[2];
+                    let distSegment = 0;
+                    for(let i=sIdx; i<eIdx; i++) {
+                        if(i+1 < geom.length) distSegment += getDistanceKm(geom[i][1], geom[i][0], geom[i+1][1], geom[i+1][0]);
+                    }
+                    let mid = Math.floor((sIdx + eIdx)/2);
+                    let cCode = await fetchCountryCode(geom[mid][1], geom[mid][0]);
+                    breakdownArr.push({ code: cCode, km: distSegment, internalId: internalId });
+                }
+            } else {
+                // Manuální rozřezání trasy (když zklamou API extras)
                 let currentSegmentKm = 0;
                 let currentCountry = null;
                 let distSinceCheck = 0;
@@ -512,7 +524,6 @@
                         let code = await fetchCountryCode(geom[midIdx][1], geom[midIdx][0]);
                         
                         if (currentCountry === null) currentCountry = code;
-                        
                         if (currentCountry !== code) {
                             breakdownArr.push({code: currentCountry, km: currentSegmentKm, internalId: null});
                             currentCountry = code;
@@ -523,71 +534,22 @@
                     }
                 }
                 if (currentSegmentKm > 0) breakdownArr.push({code: currentCountry, km: currentSegmentKm, internalId: null});
-                
-                return { distance: distTotal, breakdown: breakdownArr };
             }
-        } catch(e) {}
 
-        throw new Error("Mapové servery jsou zablokovány vaší Wi-Fi nebo AdBlockerem v prohlížeči.");
-    }
-
-    async function spocitatTrasu() {
-        let startStr = document.getElementById('startAdresa').value.trim();
-        let cilStr = document.getElementById('cilAdresa').value.trim();
-        let cilStat = document.getElementById('cilStat').value;
-        const btn = document.getElementById('btnTrasa');
-
-        if (!startStr || !cilStr) { setStatus("Vyplňte Start i Cíl.", "error"); return; }
-        
-        let avoidStr = activeAvoids.map(a => a.id).join(',');
-        let routeNameStr = `${startStr.toLowerCase()} - ${cilStr.toLowerCase()}`;
-        if(avoidStr) routeNameStr += ` [A:${avoidStr}]`;
-
-        btn.disabled = true;
-
-        // 1. ZÁLOŽNÍ PAMĚŤ GOOGLE TABULKY (Nepovinná)
-        setStatus("Spouštím výpočet trasy...", "info");
-        try {
-            let sheetRes = await fetch(`${GOOGLE_SHEET_API}?route=${encodeURIComponent(routeNameStr)}`);
-            if(sheetRes.ok) {
-                let sheetData = await sheetRes.json();
-                if (sheetData.found) {
-                    let parts = sheetData.km.toString().split('|');
-                    document.getElementById('vzdalenost').value = parts[0];
-                    if(parts.length > 1) {
-                        globalBreakdown = JSON.parse(parts[1]);
-                        renderBreakdown(globalBreakdown);
-                    }
-                    setStatus(`Načteno z databáze: ${parts[0]} km.`, "success");
-                    calculate();
-                    btn.disabled = false;
-                    return; 
-                }
-            }
-        } catch(e) {} // Pokud iPhone zablokuje tabulku, ignorujeme a pokračujeme k mapám
-
-        // 2. VÝPOČET MAPY
-        setStatus("Počítám dálniční úseky (může to pár vteřin trvat)...", "info");
-        try {
-            const startCoords = await getCoordinates(startStr);
-            const cilCoords = await getCoordinates(cilStr, cilStat);
-            
-            const routeInfo = await getRouteData(startCoords, cilCoords);
-
-            // Sloučení stejných států do jednoho (čištění dat)
+            // Sloučení a úklid
             let merged = {};
-            for(let br of routeInfo.breakdown) {
+            for(let br of breakdownArr) {
                 if(!merged[br.code]) merged[br.code] = {km: 0, internalId: br.internalId};
                 merged[br.code].km += br.km;
             }
-            let finalBreakdown = [];
-            for(let c in merged) finalBreakdown.push({code: c, km: parseFloat(merged[c].km.toFixed(1)), internalId: merged[c].internalId});
+            let finalArr = [];
+            for(let c in merged) finalArr.push({code: c, km: parseFloat(merged[c].km.toFixed(1)), internalId: merged[c].internalId});
 
             // Ochrana před Rakouskem
-            let detectedCodes = finalBreakdown.map(b => b.code);
+            let detectedCodes = finalArr.map(b => b.code);
             if (detectedCodes.includes("AT") && !avoidAustriaPromptShown && !activeAvoids.find(a => a.code === 'AT')) {
                 avoidAustriaPromptShown = true; 
-                let atSeg = finalBreakdown.find(b => b.code === 'AT');
+                let atSeg = finalArr.find(b => b.code === 'AT');
                 if(atSeg && atSeg.internalId) {
                     btn.disabled = false;
                     if(confirm("POZOR:\nTrasa vede přes Rakousko (extrémně drahé mýto).\n\nChcete přepočítat mapu a Rakousko zcela objet?")) {
@@ -598,18 +560,12 @@
                 }
             }
 
-            document.getElementById('vzdalenost').value = routeInfo.distance;
-            globalBreakdown = finalBreakdown;
+            document.getElementById('vzdalenost').value = distTotal;
+            globalBreakdown = finalArr;
             renderBreakdown(globalBreakdown);
             
-            setStatus(`Hotovo: ${routeInfo.distance} km.`, "success");
+            setStatus(`Hotovo: ${distTotal} km.`, "success");
             calculate();
-
-            // 3. ULOŽENÍ DO GOOGLU NA POZADÍ (Nepovinné)
-            try {
-                let dbValue = `${routeInfo.distance}|${JSON.stringify(globalBreakdown)}`;
-                fetch(`${GOOGLE_SHEET_API}?action=save&route=${encodeURIComponent(routeNameStr)}&km=${encodeURIComponent(dbValue)}`);
-            } catch(e) {}
 
         } catch (error) {
             setStatus("CHYBA: " + error.message, "error");
@@ -618,7 +574,6 @@
         }
     }
 
-    // --- VYKRESLENÍ ROLETKY A MÝTA PRO KAŽDÝ ÚSEK ---
     function renderBreakdown(breakdownArr) {
         const container = document.getElementById('breakdownContainer');
         const list = document.getElementById('breakdownList');
@@ -640,13 +595,11 @@
             let rate = MYTO_STATY[code].rate;
             let estToll = actKm * 0.85 * rate * euroKoef * napravyKoef;
             
-            // Tlačítko Objet u států
             let btnObjet = "";
             if(item.internalId && index > 0 && index < breakdownArr.length - 1) {
-                btnObjet = `<button class="btn-avoid" onclick="promptAvoidCountry(${item.internalId}, '${code}')" title="Vyhnout se státu">⛔<br>OBJET</button>`;
+                btnObjet = `<button class="btn-avoid" onclick="window.promptAvoidCountry(${item.internalId}, '${code}')" title="Vyhnout se státu">⛔<br>OBJET</button>`;
             }
 
-            // Možnosti roletky vč. informace o sazbě státu
             let optionsHtml = '';
             for(let k in MYTO_STATY) { 
                 let sel = (k === code) ? "selected" : "";
@@ -656,7 +609,7 @@
             let rowHtml = `
                 <div class="breakdown-row" id="brRow_${index}">
                     <div class="breakdown-input-group">
-                        <label>Stát úseku</label>
+                        <label>Stát</label>
                         <select class="country-select" data-index="${index}" onchange="updateSegmentToll(${index})" style="min-width: 140px;">
                             ${optionsHtml}
                         </select>
@@ -676,7 +629,6 @@
         });
     }
 
-    // Ruční tlačítko pro objetí státu z rozpadu
     window.promptAvoidCountry = function(internalId, code) {
         let countryName = MYTO_STATY[code] ? MYTO_STATY[code].name : code;
         if(confirm(`Opravdu chcete přegenerovat celou trasu tak, abyste se vyhnuli státu: ${countryName}?`)) {
