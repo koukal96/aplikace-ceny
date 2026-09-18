@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#e3000f">
+    <title>Control Point - Transport & Profit Analytics</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root { --cp-red: #e3000f; --cp-red-hover: #b3000b; --cp-dark: #1a1a1a; --cp-gray: #f4f4f4; --cp-border: #e0e0e0; --cp-white: #ffffff; --cp-success: #2e7d32; --cp-danger: #c62828; --shadow: 0 8px 30px rgba(0,0,0,0.08); --transition: all 0.3s ease; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
+        body { background-color: var(--cp-gray); color: var(--cp-dark); line-height: 1.6; }
+
+        header { background-color: var(--cp-dark); color: var(--cp-white); padding: 15px 0; text-align: center; border-bottom: 5px solid var(--cp-red); position: sticky; top: 0; z-index: 100; }
+        .logo-text { font-size: 24px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .logo-cf { color: var(--cp-red); }
+
+        .container { max-width: 1500px; margin: 20px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 450px; gap: 20px; }
+        @media (max-width: 1100px) { .container { grid-template-columns: 1fr; } }
+
+        .card { background: var(--cp-white); border-radius: 8px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 20px; border-left: 4px solid var(--cp-red); }
+        .card.dashboard { border-left: 4px solid var(--cp-dark); }
+        .card.analysis { border-left: 4px solid var(--cp-primary); background: #1a1a1a; color: white; }
+        
+        h2 { font-size: 16px; font-weight: 800; text-transform: uppercase; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        h2 span { color: var(--cp-red); }
+        .analysis h2 { color: white; }
+
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+        .input-group { display: flex; flex-direction: column; }
+        .input-group label { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 4px; text-transform: uppercase; }
+        .analysis .input-group label { color: #aaa; }
+        
+        input, select { width: 100%; padding: 10px 12px; border: 1px solid var(--cp-border); border-radius: 4px; font-size: 14px; font-family: 'Roboto Mono', monospace; font-weight: 600; color: var(--cp-dark); background: #fafafa; transition: var(--transition); }
+        input:focus, select:focus { border-color: var(--cp-red); outline: none; background: var(--cp-white); }
+        .analysis input { background: #333; border-color: #555; color: #fff; font-size: 18px; }
+        .analysis input:focus { border-color: var(--cp-red); background: #222; }
+
+        .input-hint { font-size: 11px; color: #888; margin-top: 4px; }
+
+        .toggle-container { display: flex; align-items: center; justify-content: space-between; background: var(--cp-dark); color: white; padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; }
+        .toggle-label { font-weight: 600; font-size: 14px; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--cp-red); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        .btn { background-color: var(--cp-red); color: var(--cp-white); border: none; padding: 12px 15px; border-radius: 4px; font-size: 14px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: var(--transition); width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 10px; }
+        .btn:hover { background-color: var(--cp-red-hover); transform: translateY(-2px); }
+        .btn:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        .result-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--cp-border); }
+        .result-row:last-child { border-bottom: none; }
+        .result-label { font-size: 13px; color: #666; font-weight: 600; }
+        .result-val { font-family: 'Roboto Mono', monospace; font-size: 14px; font-weight: 700; color: var(--cp-dark); }
+        
+        .dashboard .result-main { background: var(--cp-gray); padding: 12px; border-radius: 6px; margin-top: 10px; border-left: 4px solid var(--cp-red); }
+        .dashboard .result-main .result-label { color: var(--cp-dark); font-size: 14px; text-transform: uppercase; }
+        .dashboard .result-main .result-val { font-size: 20px; color: var(--cp-red); font-weight: 800; }
+
+        .profit-status { padding: 15px; border-radius: 6px; margin-top: 15px; text-align: center; font-weight: 800; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
+        .status-profit { background: rgba(46, 125, 50, 0.2); color: #4caf50; border: 2px solid #4caf50; }
+        .status-loss { background: rgba(198, 40, 40, 0.2); color: #ef5350; border: 2px solid #ef5350; }
+        .status-neutral { background: #333; color: #aaa; border: 2px solid #555; }
+
+        #apiStatus { margin-top: 10px; font-size: 12px; font-weight: 600; padding: 8px; border-radius: 4px; display: none; }
+        .msg-info { background: #e3f2fd; color: #0d47a1; display: block !important; }
+        .msg-success { background: #d4edda; color: #155724; display: block !important; }
+        .msg-error { background: #f8d7da; color: #721c24; display: block !important; }
+        .pill { display: inline-block; padding: 2px 6px; background: var(--cp-red); color: white; border-radius: 10px; font-size: 10px; font-weight: 800; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-text">
+        <span class="logo-cf">Control</span> Point <span style="font-size:14px; color:#aaa; font-weight:400; margin-left:10px;">Analytics</span>
+    </div>
+</header>
+
+<div class="container">
+    <div class="inputs-section">
+        
+        <!-- TRASA & PAMĚŤ -->
+        <div class="card">
+            <h2><span>01.</span> Lokace & Centrální Databáze</h2>
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>Start</label>
+                    <input type="text" id="startAdresa" value="Věrovany 94">
+                </div>
+                <div class="input-group">
+                    <label>Cíl</label>
+                    <input type="text" id="cilAdresa" placeholder="Město, PSČ...">
+                </div>
+            </div>
+            <button id="btnTrasa" class="btn" onclick="spocitatTrasu()">Spočítat dálniční trasu (API / Databáze)</button>
+            <div id="apiStatus"></div>
+            
+            <div class="form-grid" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+                <div class="input-group">
+                    <label>Základní trasa (km)</label>
+                    <input type="number" id="vzdalenost" value="0" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>Typ trasy</label>
+                    <select id="typTrasy">
+                        <option value="1">Napřímo (1x základní trasa)</option>
+                        <option value="2">Kolečko (2x základní trasa)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Dokládky / Objížďky (km)</label>
+                    <input type="number" id="dokladky" value="0">
+                </div>
+            </div>
+        </div>
+
+        <!-- MÝTO & TECHNIKA -->
+        <div class="card">
+            <h2><span>02.</span> Inteligentní odhad mýta & Technika</h2>
+            
+            <div class="form-grid" style="background: #fff3cd; padding: 15px; border-radius: 6px; border: 1px solid #ffeeba; margin-bottom: 15px;">
+                <div class="input-group" style="grid-column: 1 / -1;">
+                    <label style="color: #856404;">Převažující stát trasy (Základ pro výpočet mýta)</label>
+                    <select id="statMyto" style="border-color: #ffeeba;">
+                        <option value="CZ">Česká republika (cca 4.5 Kč/km)</option>
+                        <option value="DE">Německo - vč. CO2 daně (cca 8.5 Kč/km)</option>
+                        <option value="AT">Rakousko (cca 11.5 Kč/km)</option>
+                        <option value="SK">Slovensko (cca 5.0 Kč/km)</option>
+                        <option value="PL">Polsko (cca 3.5 Kč/km)</option>
+                        <option value="HU">Maďarsko (cca 8.0 Kč/km)</option>
+                        <option value="MIX">Evropský Mix / Průměr (cca 6.5 Kč/km)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Euro Norma</label>
+                    <select id="euroNorma">
+                        <option value="1.0">Euro VI</option>
+                        <option value="1.15">Euro V</option>
+                        <option value="1.3">Euro IV</option>
+                        <option value="1.5">Euro III a horší</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Mýto celkem (Kč)</label>
+                    <input type="number" id="myto" value="0" style="font-weight: 800; color: var(--cp-red);">
+                    <div class="input-hint">Spočítáno dle státu a náprav. Lze ručně přepsat.</div>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>Nápravy tahač</label>
+                    <select id="napravyTahac"><option value="2">2 nápravy</option><option value="3">3 nápravy</option></select>
+                </div>
+                <div class="input-group">
+                    <label>Nápravy návěs</label>
+                    <select id="napravyNaves"><option value="3">3 nápravy</option><option value="2">2 nápravy</option><option value="1">1 náprava</option></select>
+                </div>
+                <div class="input-group">
+                    <label>Zvednuté nápravy návěsu</label>
+                    <select id="zvedleNapravy"><option value="0">0 (Vše dole)</option><option value="1">1 nahoře</option><option value="2">2 nahoře</option></select>
+                    <div class="input-hint">Šetří pneu. Mýto se platí za fyzický součet.</div>
+                </div>
+            </div>
+            
+            <div class="form-grid" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+                <div class="input-group">
+                    <label>Spotřeba (L / 100 km)</label>
+                    <input type="number" id="spotreba" value="32" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>Aktuální cena nafty (Kč / L)</label>
+                    <input type="number" id="cenaNafty" value="36.50" step="0.10">
+                </div>
+            </div>
+        </div>
+
+        <!-- PERSONÁLIE A FIX -->
+        <div class="card">
+            <h2><span>03.</span> Personální & Fixní náklady</h2>
+            <div class="form-grid">
+                <div class="input-group" style="grid-column: 1 / -1;">
+                    <label>Typ odměňování řidiče</label>
+                    <select id="typMzdy">
+                        <option value="denni">Zaměstnanec (Rozpočítaná denní mzda vč. diet)</option>
+                        <option value="fixni">Brigádník (Fixní částka pouze za tuto točku)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Hodnota odměny (Kč)</label>
+                    <input type="number" id="mzdaHodnota" value="3000">
+                </div>
+                <div class="input-group" id="dnyContainer">
+                    <label>Doba trvání trasy (Dny)</label>
+                    <input type="number" id="dny" value="1" step="0.5">
+                </div>
+                <div class="input-group">
+                    <label>Fix na auto / Den</label>
+                    <input type="number" id="nakladyAutoDen" value="2500">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRAVÝ SLOUPEC -->
+    <div class="dashboards-section">
+        
+        <div class="card dashboard">
+            <div class="toggle-container">
+                <span class="toggle-label" id="dphStatusLabel">Zobrazit VČETNĚ DPH (21%)</span>
+                <label class="switch"><input type="checkbox" id="dphToggle"><span class="slider"></span></label>
+            </div>
+
+            <h2 style="font-size: 14px; color: #666;">Ceníková Kalkulace</h2>
+            <div class="result-row"><span class="result-label">Cena za spálenou naftu:</span><span class="result-val" id="resNafta">0 Kč</span></div>
+            <div class="result-row"><span class="result-label">Odměna řidič:</span><span class="result-val" id="resMzda">0 Kč</span></div>
+            <div class="result-row"><span class="result-label">Fixní náklady & Pneu:</span><span class="result-val" id="resFixPneu">0 Kč</span></div>
+            <div class="result-row"><span class="result-label">Odhad Mýta (dle matice):</span><span class="result-val" id="resMyto">0 Kč</span></div>
+
+            <div class="result-main">
+                <div class="result-row" style="border:none; padding:0;">
+                    <span class="result-label">Vlastní náklady celkem:</span>
+                    <span class="result-val" id="resNakladyCelkem">0 Kč</span>
+                </div>
+                <div class="result-row" style="border:none; padding:5px 0 0 0;">
+                    <span class="result-label" style="font-size: 12px; color: #555;">Náklad na 1 km (bez mýta):</span>
+                    <span class="result-val" id="resKmBezMyta" style="font-size: 14px; color: #555;">0 Kč/km</span>
+                </div>
+                <div class="result-row" style="border:none; padding:0;">
+                    <span class="result-label" style="font-size: 12px;">Náklad na 1 km (vč. mýta):</span>
+                    <span class="result-val" id="resKmVcMyta" style="font-size: 14px;">0 Kč/km</span>
+                </div>
+            </div>
+            
+            <div class="input-group" style="margin-top: 15px;">
+                <label>Běžná požadovaná marže (%)</label>
+                <input type="number" id="marze" value="15">
+            </div>
+            <div class="result-row" style="margin-top: 10px;">
+                <span class="result-label" id="prodejLabel" style="color: var(--cp-dark);">Ceníková prodejní cena:</span>
+                <span class="result-val" id="resProdejniCena" style="font-size: 18px;">0 Kč</span>
+            </div>
+        </div>
+
+        <div class="card analysis">
+            <h2><span>04.</span> Analýza reality</h2>
+            <div class="input-group" style="margin-bottom: 15px;">
+                <label style="color:#fff;">Sjednaná cena za přepravu (Kč)</label>
+                <input type="number" id="skutecnaCena" value="0">
+            </div>
+            <div class="result-row" style="border-color:#444;">
+                <span class="result-label" style="color:#ccc;">Reálná tržba na 1 km:</span>
+                <span class="result-val" id="realTrzbaKm" style="color:#fff;">0 Kč/km</span>
+            </div>
+            <div id="ziskStatusBox" class="profit-status status-neutral">Čekám na zadání ceny</div>
+            <div style="text-align: center; font-size: 12px; color: #888; margin-top: 10px;" id="ziskProcento"></div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // ---------------------------------------------------------
+    // AKTIVNÍ NAPOJENÍ NA FIREMNÍ GOOGLE TABULKU (API)
+    const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbxWsYRFEsaePghTkbsDQJVsweH2rbfEZHazGLtuFilWArfv3IgWMxdxLsYDTGxmHPkj/exec";
+    // ---------------------------------------------------------
+
+    const ORS_API_KEY = "EyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjMyNTAxM2VmMDkzNzQ4ZGM5NTdiNDY0NTNhMzJmNGVmIiwiaCI6Im11cm11cjY0In0=";
+    const OPOTREBENI_PNEU_KOLO_KM = 0.15;
+    const DPH_SAZBA = 1.21;
+
+    const MYTO_STATY_ZAKLAD = { 'CZ': 4.5, 'DE': 8.5, 'AT': 11.5, 'SK': 5.0, 'PL': 3.5, 'HU': 8.0, 'MIX': 6.5 };
+    const MYTO_NAPRAVY_KOEF = { '2': 0.7, '3': 0.8, '4': 1.0, '5': 1.0, '6': 1.1 };
+
+    const fmt = new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: 'CZK', minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
+    function setStatus(msg, type) {
+        const box = document.getElementById('apiStatus');
+        box.className = 'msg-' + type;
+        box.innerText = msg;
+    }
+
+    async function getCoordinates(address) {
+        const url = `https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(address)}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data.features && data.features.length > 0) return data.features[0].geometry.coordinates;
+        throw new Error(`Nelze nalézt GPS pro: ${address}`);
+    }
+
+    async function spocitatTrasu() {
+        const startStr = document.getElementById('startAdresa').value.trim();
+        const cilStr = document.getElementById('cilAdresa').value.trim();
+        const btn = document.getElementById('btnTrasa');
+
+        if (!startStr || !cilStr) { setStatus("Vyplňte Start i Cíl.", "error"); return; }
+        const routeName = `${startStr.toLowerCase()} - ${cilStr.toLowerCase()}`;
+        btn.disabled = true;
+
+        // 1. KROK: DOTAZ DO GOOGLE TABULKY
+        if (GOOGLE_SHEET_API.includes("http")) {
+            setStatus("Hledám trasu ve firemní Google Tabulce...", "info");
+            try {
+                const sheetResponse = await fetch(`${GOOGLE_SHEET_API}?route=${encodeURIComponent(routeName)}`);
+                const sheetData = await sheetResponse.json();
+
+                if (sheetData.found) {
+                    document.getElementById('vzdalenost').value = sheetData.km;
+                    setStatus(`Načteno z Google Tabulky: ${sheetData.km} km.`, "success");
+                    spocitejInteligentniMyto();
+                    calculate();
+                    btn.disabled = false;
+                    return; 
+                }
+            } catch(e) {
+                console.error("Chyba DB", e);
+            }
+        }
+
+        // 2. KROK: POKUD NENÍ V TABULCE, POČÍTÁME PŘES MAPY ORS
+        setStatus("Trasa není v DB. Počítám přes dálnice...", "info");
+
+        try {
+            const startCoords = await getCoordinates(startStr);
+            const cilCoords = await getCoordinates(cilStr);
+            const routeUrl = `https://api.openrouteservice.org/v2/directions/driving-hgv?api_key=${ORS_API_KEY}&start=${startCoords[0]},${startCoords[1]}&end=${cilCoords[0]},${cilCoords[1]}`;
+            const routeResponse = await fetch(routeUrl);
+            const routeData = await routeResponse.json();
+
+            if (routeData.features && routeData.features.length > 0) {
+                const distanceKm = (routeData.features[0].properties.segments[0].distance / 1000).toFixed(1);
+                document.getElementById('vzdalenost').value = distanceKm;
+                
+                spocitejInteligentniMyto(); 
+                setStatus(`Nová trasa: ${distanceKm} km. Ukládám do Google Tabulky...`, "success");
+                calculate();
+
+                // 3. KROK: ZÁPIS DO GOOGLE TABULKY
+                if (GOOGLE_SHEET_API.includes("http")) {
+                    await fetch(GOOGLE_SHEET_API, {
+                        method: 'POST',
+                        body: JSON.stringify({ route: routeName, km: distanceKm })
+                    });
+                }
+            } else {
+                throw new Error("Trasu nelze najít.");
+            }
+        } catch (error) {
+            setStatus("Chyba: " + error.message, "error");
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    function spocitejInteligentniMyto() {
+        let vzdalenostBase = parseFloat(document.getElementById('vzdalenost').value) || 0;
+        let typTrasy = parseFloat(document.getElementById('typTrasy').value);
+        let dokladky = parseFloat(document.getElementById('dokladky').value) || 0;
+        let celkoveKm = (vzdalenostBase * typTrasy) + dokladky;
+
+        let placeneKm = celkoveKm * 0.85;
+        let vybranyStat = document.getElementById('statMyto').value;
+        let euroKoeficient = parseFloat(document.getElementById('euroNorma').value);
+        
+        let fyzickeNapravy = parseInt(document.getElementById('napravyTahac').value) + parseInt(document.getElementById('napravyNaves').value);
+        let napravyKoef = MYTO_NAPRAVY_KOEF[fyzickeNapravy > 6 ? '6' : fyzickeNapravy.toString()] || 1.0;
+
+        let zakladniSazbaStatu = MYTO_STATY_ZAKLAD[vybranyStat];
+        let odhadKc = placeneKm * zakladniSazbaStatu * euroKoeficient * napravyKoef;
+        
+        document.getElementById('myto').value = Math.round(odhadKc);
+    }
+
+    function calculate() {
+        const includesDph = document.getElementById('dphToggle').checked;
+        const dphMulti = includesDph ? DPH_SAZBA : 1;
+        document.getElementById('dphStatusLabel').innerText = includesDph ? "Ceny VČETNĚ DPH (21%)" : "Ceny BEZ DPH";
+        document.getElementById('dphStatusLabel').style.color = includesDph ? "var(--cp-red)" : "white";
+
+        let vzdalenostBase = parseFloat(document.getElementById('vzdalenost').value) || 0;
+        let typTrasy = parseFloat(document.getElementById('typTrasy').value);
+        let dokladky = parseFloat(document.getElementById('dokladky').value) || 0;
+        let celkoveKm = (vzdalenostBase * typTrasy) + dokladky;
+
+        let spotreba = parseFloat(document.getElementById('spotreba').value) || 0;
+        let cenaNafty = parseFloat(document.getElementById('cenaNafty').value) || 0;
+        let myto = parseFloat(document.getElementById('myto').value) || 0;
+        
+        let typMzdy = document.getElementById('typMzdy').value;
+        let mzdaHodnota = parseFloat(document.getElementById('mzdaHodnota').value) || 0;
+        let dny = parseFloat(document.getElementById('dny').value) || 0;
+        let nakladyAutoDen = parseFloat(document.getElementById('nakladyAutoDen').value) || 0;
+
+        let nakladMzda = (typMzdy === 'fixni') ? mzdaHodnota : (mzdaHodnota * dny);
+        let nakladFixAuto = nakladyAutoDen * dny;
+
+        let zvedle = parseInt(document.getElementById('zvedleNapravy').value) || 0;
+        let naves = parseInt(document.getElementById('napravyNaves').value) || 3;
+        if(zvedle > naves) { zvedle = naves; document.getElementById('zvedleNapravy').value = naves; }
+        
+        let kolaTahac = parseInt(document.getElementById('napravyTahac').value) === 2 ? 6 : 10;
+        let kolaNaZemi = kolaTahac + ((naves - zvedle) * 2);
+        let nakladPneu = celkoveKm * (kolaNaZemi * OPOTREBENI_PNEU_KOLO_KM);
+
+        let nakladNafta = (celkoveKm / 100) * spotreba * cenaNafty;
+        let nakladyCelkem = nakladNafta + nakladMzda + nakladFixAuto + nakladPneu + myto;
+        
+        let marze = parseFloat(document.getElementById('marze').value) || 0;
+        let prodejniCena = nakladyCelkem * (1 + (marze / 100));
+
+        document.getElementById('resNafta').innerText = fmt.format(nakladNafta * dphMulti);
+        document.getElementById('resMzda').innerText = fmt.format(nakladMzda * dphMulti);
+        document.getElementById('resFixPneu').innerText = fmt.format((nakladFixAuto + nakladPneu) * dphMulti);
+        document.getElementById('resMyto').innerText = fmt.format(myto * dphMulti);
+        document.getElementById('resNakladyCelkem').innerText = fmt.format(nakladyCelkem * dphMulti);
+        
+        let kmBezMyta = celkoveKm > 0 ? ((nakladyCelkem - myto) * dphMulti) / celkoveKm : 0;
+        let kmVcMyta = celkoveKm > 0 ? (nakladyCelkem * dphMulti) / celkoveKm : 0;
+        
+        document.getElementById('resKmBezMyta').innerText = fmt.format(kmBezMyta) + " / km";
+        document.getElementById('resKmVcMyta').innerText = fmt.format(kmVcMyta) + " / km";
+        document.getElementById('resProdejniCena').innerText = fmt.format(prodejniCena * dphMulti);
+
+        let skutecnaCena = parseFloat(document.getElementById('skutecnaCena').value) || 0;
+        let skutecnaCenaNetto = includesDph ? (skutecnaCena / DPH_SAZBA) : skutecnaCena;
+        let realTrzbaKm = celkoveKm > 0 ? skutecnaCena / celkoveKm : 0;
+        
+        document.getElementById('realTrzbaKm').innerText = fmt.format(realTrzbaKm) + " / km";
+        let ziskBox = document.getElementById('ziskStatusBox');
+        let procBox = document.getElementById('ziskProcento');
+
+        if(skutecnaCena > 0 && celkoveKm > 0) {
+            let rozdil = skutecnaCenaNetto - nakladyCelkem;
+            let rozdilSDisplay = rozdil * dphMulti;
+            if(rozdil >= 0) {
+                ziskBox.className = "profit-status status-profit"; ziskBox.innerText = `ZISK: + ${fmt.format(rozdilSDisplay)}`;
+                procBox.innerText = `Marže: ${((rozdil / nakladyCelkem)*100).toFixed(1)}%`;
+            } else {
+                ziskBox.className = "profit-status status-loss"; ziskBox.innerText = `PRODĚLEK: ${fmt.format(rozdilSDisplay)}`;
+                procBox.innerText = `Chybí: ${Math.abs((rozdil / nakladyCelkem)*100).toFixed(1)}%`;
+            }
+        } else {
+            ziskBox.className = "profit-status status-neutral"; ziskBox.innerText = "Čekám na zadání"; procBox.innerText = "";
+        }
+    }
+
+    document.querySelectorAll('input, select').forEach(el => {
+        el.addEventListener('input', () => {
+            if (el.id === 'typMzdy') { document.getElementById('dnyContainer').style.opacity = el.value === 'fixni' ? '0.3' : '1'; }
+            if (['statMyto', 'euroNorma', 'napravyTahac', 'napravyNaves', 'vzdalenost', 'typTrasy', 'dokladky'].includes(el.id)) {
+                spocitejInteligentniMyto();
+            }
+            calculate();
+        });
+    });
+
+    calculate();
+</script>
+</body>
+</html>
