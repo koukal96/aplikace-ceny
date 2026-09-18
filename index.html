@@ -13,7 +13,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
         body { background-color: var(--cp-gray); color: var(--cp-dark); line-height: 1.5; }
 
-        /* LOADING */
+        /* LOADING SCREEN */
         #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000 url('IMG_9552.png') no-repeat right center;
@@ -147,7 +147,7 @@
                     <input type="text" id="cilAdresa" placeholder="Např. Mnichov 80331">
                 </div>
                 <div class="input-group">
-                    <label>Cílový stát <span class="icon-help" onclick="showInfo('Určuje hlavní stát pro výpočet mýta, pokud jedete do zahraničí.')">i</span></label>
+                    <label>Cílový stát <span class="icon-help" onclick="showInfo('Vyberte hlavní stát určení pro správný výpočet sazeb mýta.')">i</span></label>
                     <select id="cilStat">
                         <option value="CZ">Česko</option>
                         <option value="DE" selected>Německo</option>
@@ -174,7 +174,7 @@
                 </div>
                 <div class="input-group">
                     <label>Typ trasy <span class="icon-help" onclick="showInfo('Kolečko automaticky zdvojnásobí dálniční km i mýto.')">i</span></label>
-                    <select id="typTrasy" onchange="calculate()">
+                    <select id="typTrasy" onchange="renderBreakdown(parseFloat(document.getElementById('vzdalenost').value))">
                         <option value="1">Napřímo</option>
                         <option value="2">Kolečko</option>
                     </select>
@@ -199,7 +199,7 @@
             <div class="form-grid">
                 <div class="input-group">
                     <label>Euro Norma <span class="icon-help" onclick="showInfo('Horší norma zvyšuje sazbu mýta.')">i</span></label>
-                    <select id="euroNorma" onchange="calculate()">
+                    <select id="euroNorma" onchange="if(document.getElementById('vzdalenost').value > 0) renderBreakdown(parseFloat(document.getElementById('vzdalenost').value));">
                         <option value="1.0">Euro VI</option>
                         <option value="1.15">Euro V</option>
                         <option value="1.3">Euro IV</option>
@@ -208,7 +208,7 @@
                 </div>
                 <div class="input-group">
                     <label>Nápravy celkem <span class="icon-help" onclick="showInfo('Fyzický součet náprav soupravy.')">i</span></label>
-                    <select id="napravyFyzicke" onchange="calculate()">
+                    <select id="napravyFyzicke" onchange="if(document.getElementById('vzdalenost').value > 0) renderBreakdown(parseFloat(document.getElementById('vzdalenost').value));">
                         <option value="5">5 náprav (2+3)</option>
                         <option value="6">6 a více (3+3)</option>
                         <option value="4">4 nápravy (2+2)</option>
