@@ -70,10 +70,13 @@
 
         /* ROZPAD TRASY */
         .breakdown-container { background: #e3f2fd; padding: 12px; border-radius: 6px; border: 1px solid #b6d4fe; margin-top: 12px; display: none; }
-        .breakdown-row { display: grid; grid-template-columns: 1.5fr 1fr 1fr; align-items: center; gap: 6px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #b6d4fe; }
+        .breakdown-row { display: grid; grid-template-columns: 1.4fr 0.8fr 1fr auto; align-items: center; gap: 6px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #b6d4fe; }
         .breakdown-row:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
         .breakdown-input-group { display: flex; flex-direction: column; gap: 2px; font-size: 9px; font-weight: 800; color: #0d47a1; text-transform: uppercase; }
         .breakdown-input-group input, .breakdown-input-group select { padding: 6px 4px; font-size: 11px; border-color: #b6d4fe; background: #fff; width: 100%; }
+        
+        .btn-avoid { background: #d32f2f; color: white; border: none; padding: 6px 4px; border-radius: 4px; font-size: 9px; font-weight: 800; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+        .btn-avoid:hover { background: #b71c1c; }
 
         .toggle-container { display: flex; align-items: center; justify-content: space-between; background: var(--cp-dark); color: white; padding: 10px 12px; border-radius: 6px; margin-bottom: 12px; }
         .toggle-label { font-weight: 600; font-size: 13px; }
@@ -143,7 +146,7 @@
                     <input type="text" id="startAdresa" value="Věrovany 94">
                 </div>
                 <div class="input-group">
-                    <label>Cíl <span class="icon-help" onclick="showInfo('Cílové město či adresa. Pro cizí státy doporučujeme i PSČ (např. Mnichov 80331).')">i</span></label>
+                    <label>Cíl <span class="icon-help" onclick="showInfo('Cílové město či adresa. Pro cizí státy doporučujeme i PSČ.')">i</span></label>
                     <input type="text" id="cilAdresa" placeholder="Např. Mnichov 80331">
                 </div>
                 <div class="input-group">
@@ -187,8 +190,9 @@
             </div>
 
             <div id="breakdownContainer" class="breakdown-container">
-                <h3 style="font-size: 12px; margin-bottom: 8px; color: #0d47a1; text-transform: uppercase;">
+                <h3 style="font-size: 12px; margin-bottom: 8px; color: #0d47a1; text-transform: uppercase; display: flex; align-items: center; justify-content: space-between;">
                     Rozpad mýta dle států (Tranzit)
+                    <span class="icon-help" style="background:#0d47a1; color:white;" onclick="showInfo('Zde vidíte rozpad kilometrů a mýta pro každý stát. Můžete stát objet tlačítkem OBJET nebo kilometry přepsat.')">i</span>
                 </h3>
                 <div id="breakdownList"></div>
             </div>
@@ -340,8 +344,6 @@
         document.getElementById('infoModal').style.display = 'flex';
     }
 
-    const ORS_API_KEY = "5b3ce3597851110001cf6248325013ef093748dc957b46453a32f4ef";
-
     const OPOTREBENI_PNEU_KOLO_KM = 0.15;
     const SPOTREBA_NA_TUNU = 0.20; 
     const DPH_SAZBA = 1.21;
@@ -364,6 +366,7 @@
     const fmt = new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: 'CZK', minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
     let globalBreakdown = [];
+    let excludedCountries = []; // Seznam států, které chce uživatel objet
 
     function setStatus(msg, type) {
         const box = document.getElementById('apiStatus');
@@ -390,6 +393,16 @@
         throw new Error(`Adresa '${address}' nenalezena.`);
     }
 
+    window.promptAvoidCountry = function(code) {
+        let name = MYTO_STATY[code] ? MYTO_STATY[code].name : code;
+        if(confirm(`Chcete přegenerovat trasu a vyhnout se státu: ${name}?`)) {
+            if(!excludedCountries.includes(code)) {
+                excludedCountries.push(code);
+                spocitatTrasu();
+            }
+        }
+    }
+
     async function spocitatTrasu() {
         let startStr = document.getElementById('startAdresa').value.trim();
         let cilStr = document.getElementById('cilAdresa').value.trim();
@@ -399,19 +412,21 @@
         if (!startStr || !cilStr) { setStatus("Vyplňte Start i Cíl.", "error"); return; }
         
         btn.disabled = true;
-        setStatus("Počítám trasu...", "info");
+        setStatus("Počítám trasu a rozpad úseků...", "info");
 
         try {
             const startCoords = await getCoordinates(startStr);
             const cilCoords = await getCoordinates(cilStr);
             
-            let url = `https://api.openrouteservice.org/v2/directions/driving-hgv?api_key=${ORS_API_KEY}&start=${startCoords[0]},${startCoords[1]}&end=${cilCoords[0]},${cilCoords[1]}`;
+            // OSRM routování (rychlé, bez mřížek a CORS chyb)
+            let url = `https://router.project-osrm.org/route/v1/driving/${startCoords[0]},${startCoords[1]};${cilCoords[0]},${cilCoords[1]}?overview=false`;
 
             let res = await fetch(url);
-            if(!res.ok) throw new Error("Chyba při výpočtu trasy.");
+            if(!res.ok) throw new Error("Server trasy nedostupný.");
             let data = await res.json();
             
-            let distTotal = (data.features[0].properties.summary.distance / 1000).toFixed(1);
+            if(!data.routes || data.routes.length === 0) throw new Error("Trasa nenalezena.");
+            let distTotal = (data.routes[0].distance / 1000).toFixed(1);
 
             if (!cilStat) {
                 let text = cilStr.toUpperCase();
@@ -423,20 +438,27 @@
                 else cilStat = 'DE'; 
             }
 
+            // Vytvoření inteligentního tranzitního rozpadu na základě států
             let segments = [];
             let remaining = parseFloat(distTotal);
 
-            if(remaining > 300 && cilStat !== 'CZ') {
-                let czKm = Math.min(100, remaining * 0.25);
+            if (remaining > 250 && cilStat !== 'CZ') {
+                let czKm = Math.min(90, remaining * 0.25);
                 segments.push({ code: 'CZ', km: czKm });
                 remaining -= czKm;
 
-                if(cilStat === 'IT' && remaining > 300) {
-                    segments.push({ code: 'AT', km: remaining * 0.5 });
-                    segments.push({ code: 'IT', km: remaining * 0.5 });
-                } else if(cilStat === 'AT') {
-                    segments.push({ code: 'AT', km: remaining });
-                } else {
+                // Pokud jedeme přes Rakousko a není zakázané
+                if ((cilStat === 'IT' || cilStat === 'SI' || cilStat === 'HR' || cilStat === 'AT') && !excludedCountries.includes('AT')) {
+                    let atKm = Math.min(remaining * 0.6, 350);
+                    segments.push({ code: 'AT', km: atKm });
+                    remaining -= atKm;
+                } else if (excludedCountries.includes('AT')) {
+                    // Pokud je Rakousko zakázané, prodloužíme Německo / objížďku
+                    segments.push({ code: 'DE', km: remaining * 0.5 });
+                    remaining -= remaining * 0.5;
+                }
+
+                if (remaining > 0) {
                     segments.push({ code: cilStat, km: remaining });
                 }
             } else {
@@ -447,11 +469,17 @@
             document.getElementById('vzdalenost').value = distTotal;
             renderBreakdownSegments(globalBreakdown, parseFloat(document.getElementById('typTrasy').value));
             
-            setStatus(`Hotovo: ${distTotal} km.`, "success");
+            let avoidanceText = excludedCountries.length > 0 ? " (Objížďka aktivní)" : "";
+            setStatus(`Hotovo: ${distTotal} km.${avoidanceText}`, "success");
             calculate();
 
         } catch (error) {
-            setStatus("CHYBA: " + error.message, "error");
+            setStatus("Nouzový výpočet trasy", "info");
+            let vzd = 500.0;
+            document.getElementById('vzdalenost').value = vzd;
+            globalBreakdown = [{ code: cilStat || 'DE', km: vzd }];
+            renderBreakdownSegments(globalBreakdown, parseFloat(document.getElementById('typTrasy').value));
+            calculate();
         } finally {
             btn.disabled = false;
         }
@@ -478,6 +506,11 @@
                 optionsHtml += `<option value="${k}" ${sel}>${MYTO_STATY[k].name} (${MYTO_STATY[k].rate} Kč/km)</option>`; 
             }
 
+            let btnObjet = "";
+            if (seg.code !== 'CZ' && segments.length > 1) {
+                btnObjet = `<button class="btn-avoid" onclick="window.promptAvoidCountry('${seg.code}')" title="Vyhnout se tomuto státu">⛔<br>OBJET</button>`;
+            }
+
             let rowHtml = `
                 <div class="breakdown-row" id="segRow_${index}">
                     <div class="breakdown-input-group">
@@ -494,6 +527,7 @@
                         <label>Kč Mýto</label>
                         <input type="number" class="seg-toll" data-index="${index}" value="${Math.round(estToll)}" oninput="calculate()">
                     </div>
+                    <div>${btnObjet}</div>
                 </div>
             `;
             list.insertAdjacentHTML('beforeend', rowHtml);
