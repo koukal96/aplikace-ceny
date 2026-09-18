@@ -13,7 +13,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
         body { background-color: var(--cp-gray); color: var(--cp-dark); line-height: 1.6; }
 
-        /* --- LOADING SCREEN --- */
+        /* LOADING */
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000 url('IMG_9552.png') no-repeat right center; background-size: cover; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.6s ease-out; }
         #loading-screen::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.75); }
         .loader-content { position: relative; z-index: 10000; text-align: center; color: white; }
@@ -21,7 +21,7 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .loading-text { font-size: 22px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
 
-        /* --- HEADER LOGO --- */
+        /* HEADER */
         header { background-color: var(--cp-dark); padding: 12px 0; text-align: center; border-bottom: 5px solid var(--cp-red); position: sticky; top: 0; z-index: 100; display: flex; justify-content: center; align-items: center; }
         .logo-container { display: flex; align-items: center; gap: 12px; }
         header img { max-height: 45px; display: block; } 
@@ -43,11 +43,9 @@
         .input-group label { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 4px; text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
         .analysis .input-group label { color: #aaa; }
         
-        /* --- IKONY VYSVĚTLIVEK --- */
         .icon-help { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; background-color: #888; color: white; border-radius: 50%; font-size: 11px; font-weight: 800; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
         .icon-help:hover { background-color: var(--cp-red); transform: scale(1.1); }
 
-        /* --- MODAL VYSVĚTLIVKY --- */
         #infoModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(3px); }
         .info-box { background: white; padding: 25px; border-radius: 8px; max-width: 400px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border-top: 5px solid var(--cp-red); }
         .info-box p { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 20px; line-height: 1.5; }
@@ -58,7 +56,6 @@
         .analysis input { background: #333; border-color: #555; color: #fff; font-size: 18px; }
         .analysis input:focus { border-color: var(--cp-red); background: #222; }
 
-        /* --- ROZPAD TRASY --- */
         .breakdown-container { background: #e3f2fd; padding: 15px; border-radius: 6px; border: 1px solid #b6d4fe; margin-top: 15px; display: none; }
         .breakdown-row { display: grid; grid-template-columns: 2fr 1fr 1fr auto; align-items: center; gap: 8px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #b6d4fe; }
         .breakdown-row:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
@@ -119,7 +116,6 @@
 
 <header>
     <div class="logo-container">
-        <!-- Zde je opravený název obrázku s malým 'l' -->
         <img src="loga_CP_page-0001.jpg" alt="Control Point" onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<span style=\'font-size:24px; font-weight:800; color:white;\'>CONTROL POINT</span>');">
         <span class="analysis-text">ANALÝZA</span>
     </div>
@@ -128,7 +124,6 @@
 <div class="container">
     <div class="inputs-section">
         
-        <!-- LOKACE A TRASA -->
         <div class="card">
             <h2><span>01.</span> Lokace & Chytrá trasa</h2>
             
@@ -340,9 +335,8 @@
         document.getElementById('infoModal').style.display = 'flex';
     }
 
-    // NOVÉ API POUZE PŘES GOOGLE SCRIPT (BYPASS IPHONE BLOKÁTORŮ)
-    const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbylBLFArjvQ8iGkn2qhj9v-dAdglhet451jGwewRT8uUClw7fJHvmSvg1-wByPgpF25/exec"
-";
+    const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbzK7-letdbsbWNPGSS2DUA69dlKZ6e_th8CNQ99b2prjehQx55was8cd0DJaIxDIf4/exec";
+    const ORS_API_KEY = "5b3ce3597851110001cf6248325013ef093748dc957b46453a32f4ef";
 
     const OPOTREBENI_PNEU_KOLO_KM = 0.15;
     const SPOTREBA_NA_TUNU = 0.20; 
@@ -361,7 +355,7 @@
         'ES': { name: 'Španělsko', rate: 4.0 },
         'NL': { name: 'Nizozemí', rate: 1.0 }, 
         'BE': { name: 'Belgie', rate: 4.5 },
-        'UNKNOWN': { name: 'Jiný stát', rate: 4.5 }
+        'UNKNOWN': { name: 'Neznámý stát', rate: 4.5 }
     };
 
     const MYTO_NAPRAVY_KOEF = { '2': 0.7, '3': 0.8, '4': 1.0, '5': 1.0, '6': 1.1 };
@@ -370,6 +364,7 @@
     let globalBreakdown = [];
     let activeAvoids = [];
     let avoidAustriaPromptShown = false;
+    let countryCache = {};
 
     function setStatus(msg, type) {
         const box = document.getElementById('apiStatus');
@@ -396,47 +391,144 @@
         spocitatTrasu();
     }
 
-    function processRouteData(dbValue, fromCache, routeNameStr) {
-        let parts = dbValue.split('|');
-        let dist = parts[0];
-        let breakdown = [];
-        if(parts.length > 1) {
-            breakdown = JSON.parse(parts[1]);
-        }
-        
-        // OCHRANA PŘED RAKOUSKEM
-        let detectedCodes = breakdown.map(b => b.code);
-        if (detectedCodes.includes("AT") && !avoidAustriaPromptShown && !activeAvoids.find(a => a.code === 'AT')) {
-            avoidAustriaPromptShown = true; 
-            if(confirm("POZOR:\nTrasa vede přes Rakousko (extrémně drahé mýto).\n\nChcete zkusit přepočítat mapu a Rakousko zcela objet?")) {
-                let atSeg = breakdown.find(b => b.code === 'AT');
-                if(atSeg && atSeg.internalId) {
-                    activeAvoids.push({id: atSeg.internalId, code: 'AT'});
-                    renderAvoidList();
-                    spocitatTrasu(); // Restart
-                    return; // Uknčí tuto větev
-                }
+    // -- GEOKÓDOVÁNÍ (ZÍSKÁNÍ SOUŘADNIC Z ADRESY) --
+    async function getCoordinates(address, targetCountryCode = null) {
+        let gpsMatch = address.match(/^([-+]?\d{1,2}\.\d+)[,\s]+([-+]?\d{1,3}\.\d+)$/);
+        if(gpsMatch) return [parseFloat(gpsMatch[2]), parseFloat(gpsMatch[1])];
+
+        let query = address;
+        if(targetCountryCode) query += `, ${targetCountryCode}`;
+
+        // Nominatim jako spolehlivá jednička (odolný proti iPhonu)
+        try {
+            let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+            if(res.ok) {
+                let data = await res.json();
+                if(data && data.length > 0) return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
             }
-        }
+        } catch(e) {}
 
-        document.getElementById('vzdalenost').value = dist;
-        globalBreakdown = breakdown;
-        renderBreakdown(globalBreakdown);
+        // ORS jako záloha
+        try {
+            let res = await fetch(`https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(query)}`);
+            if(res.ok) {
+                let data = await res.json();
+                if (data.features && data.features.length > 0) return data.features[0].geometry.coordinates;
+            }
+        } catch(e) {}
         
-        setStatus(fromCache ? `Načteno z databáze: ${dist} km.` : `Hotovo: ${dist} km.`, "success");
-        calculate();
+        throw new Error(`Adresa '${address}' nenalezena.`);
+    }
 
-        if (!fromCache) {
-            try {
-                fetch(GOOGLE_SHEET_API, { 
-                    method: 'POST', 
-                    body: JSON.stringify({ route: routeNameStr, km: dbValue }), 
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    redirect: 'follow'
-                });
-            } catch(e) {}
+    function getDistanceKm(lat1, lon1, lat2, lon2) {
+        var R = 6371; 
+        var dLat = (lat2-lat1) * Math.PI / 180;
+        var dLon = (lon2-lon1) * Math.PI / 180;
+        var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+        return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+    }
+
+    // Zjištění kódu státu ze souřadnic
+    async function fetchCountryCode(lat, lon) {
+        let cacheKey = `${lat.toFixed(1)}_${lon.toFixed(1)}`;
+        if(countryCache[cacheKey]) return countryCache[cacheKey];
+
+        try {
+            let res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=3`);
+            if(res.ok) {
+                let data = await res.json();
+                let code = data.address.country_code.toUpperCase();
+                countryCache[cacheKey] = code;
+                return code;
+            }
+        } catch(e) {}
+        return "UNKNOWN";
+    }
+
+    // -- HLAVNÍ MAPOVÝ MOTOR (BEZPEČNÝ PROTI PÁDU) --
+    async function getRouteData(startCoords, cilCoords) {
+        let isAvoidActive = activeAvoids.length > 0;
+        
+        // POKUS 1: ORS (Umožňuje vyhýbání státům)
+        try {
+            let url = `https://api.openrouteservice.org/v2/directions/driving-hgv?api_key=${ORS_API_KEY}&start=${startCoords[0]},${startCoords[1]}&end=${cilCoords[0]},${cilCoords[1]}&extra_info=countryinfo`;
+            if (isAvoidActive) {
+                let opt = { avoid_countries: activeAvoids.map(a => parseInt(a.id)) };
+                url += `&options=${encodeURIComponent(JSON.stringify(opt))}`;
+            }
+            
+            let res = await fetch(url);
+            if (res.ok) {
+                let data = await res.json();
+                let distTotal = (data.features[0].properties.summary.distance / 1000).toFixed(1);
+                let geom = data.features[0].geometry.coordinates; 
+                let extras = data.features[0].properties.extras;
+                
+                let breakdownArr = [];
+                if (extras && extras.countryinfo) {
+                    for(let seg of extras.countryinfo.values) {
+                        let distSegment = 0;
+                        for(let i=seg[0]; i<seg[1]; i++) {
+                            if(i+1 < geom.length) distSegment += getDistanceKm(geom[i][1], geom[i][0], geom[i+1][1], geom[i+1][0]);
+                        }
+                        let mid = Math.floor((seg[0] + seg[1])/2);
+                        let cCode = await fetchCountryCode(geom[mid][1], geom[mid][0]);
+                        breakdownArr.push({ code: cCode, km: distSegment, internalId: seg[2] });
+                    }
+                } else {
+                    breakdownArr.push({ code: 'UNKNOWN', km: parseFloat(distTotal), internalId: null });
+                }
+                return { distance: distTotal, breakdown: breakdownArr };
+            }
+        } catch(e) { console.warn("ORS Engine neprošel, zkouším zálohu.", e); }
+
+        if (isAvoidActive) {
+            throw new Error("Funkce vyhýbání se státům je aktuálně vaším telefonem blokována.");
         }
-        document.getElementById('btnTrasa').disabled = false;
+
+        // POKUS 2: OSRM (Záložní veřejný motor, který iPhony neblokují)
+        try {
+            let osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startCoords[0]},${startCoords[1]};${cilCoords[0]},${cilCoords[1]}?overview=full&geometries=geojson`;
+            let res = await fetch(osrmUrl);
+            if (res.ok) {
+                let data = await res.json();
+                let distTotal = (data.routes[0].distance / 1000).toFixed(1);
+                let geom = data.routes[0].geometry.coordinates;
+                
+                // Ruční rozřezání trasy OSRM
+                let breakdownArr = [];
+                let currentSegmentKm = 0;
+                let currentCountry = null;
+                let distSinceCheck = 0;
+                let lastCheckIdx = 0;
+
+                for(let i=0; i<geom.length-1; i++) {
+                    let d = getDistanceKm(geom[i][1], geom[i][0], geom[i+1][1], geom[i+1][0]);
+                    currentSegmentKm += d;
+                    distSinceCheck += d;
+
+                    if(distSinceCheck >= 40 || i === geom.length-2) {
+                        let midIdx = Math.floor((lastCheckIdx + i) / 2);
+                        let code = await fetchCountryCode(geom[midIdx][1], geom[midIdx][0]);
+                        
+                        if (currentCountry === null) currentCountry = code;
+                        
+                        if (currentCountry !== code) {
+                            breakdownArr.push({code: currentCountry, km: currentSegmentKm, internalId: null});
+                            currentCountry = code;
+                            currentSegmentKm = 0;
+                        }
+                        distSinceCheck = 0;
+                        lastCheckIdx = i;
+                    }
+                }
+                if (currentSegmentKm > 0) breakdownArr.push({code: currentCountry, km: currentSegmentKm, internalId: null});
+                
+                return { distance: distTotal, breakdown: breakdownArr };
+            }
+        } catch(e) {}
+
+        throw new Error("Mapové servery jsou zablokovány vaší Wi-Fi nebo AdBlockerem v prohlížeči.");
     }
 
     async function spocitatTrasu() {
@@ -446,41 +538,82 @@
         const btn = document.getElementById('btnTrasa');
 
         if (!startStr || !cilStr) { setStatus("Vyplňte Start i Cíl.", "error"); return; }
-        if (cilStat) cilStr += `, ${cilStat}`;
-
+        
         let avoidStr = activeAvoids.map(a => a.id).join(',');
         let routeNameStr = `${startStr.toLowerCase()} - ${cilStr.toLowerCase()}`;
         if(avoidStr) routeNameStr += ` [A:${avoidStr}]`;
 
         btn.disabled = true;
 
+        // 1. ZÁLOŽNÍ PAMĚŤ GOOGLE TABULKY (Nepovinná)
+        setStatus("Spouštím výpočet trasy...", "info");
         try {
-            // 1. KONTROLA CHYTRÉ PAMĚTI
-            setStatus("Ověřuji v chytré paměti...", "info");
-            let checkUrl = `${GOOGLE_SHEET_API}?action=checkCache&route=${encodeURIComponent(routeNameStr)}`;
-            let checkRes = await fetch(checkUrl, { redirect: 'follow' });
-            let checkData = await checkRes.json();
+            let sheetRes = await fetch(`${GOOGLE_SHEET_API}?route=${encodeURIComponent(routeNameStr)}`);
+            if(sheetRes.ok) {
+                let sheetData = await sheetRes.json();
+                if (sheetData.found) {
+                    let parts = sheetData.km.toString().split('|');
+                    document.getElementById('vzdalenost').value = parts[0];
+                    if(parts.length > 1) {
+                        globalBreakdown = JSON.parse(parts[1]);
+                        renderBreakdown(globalBreakdown);
+                    }
+                    setStatus(`Načteno z databáze: ${parts[0]} km.`, "success");
+                    calculate();
+                    btn.disabled = false;
+                    return; 
+                }
+            }
+        } catch(e) {} // Pokud iPhone zablokuje tabulku, ignorujeme a pokračujeme k mapám
 
-            if (checkData.found) {
-                processRouteData(checkData.km, true, routeNameStr);
-                return;
+        // 2. VÝPOČET MAPY
+        setStatus("Počítám dálniční úseky (může to pár vteřin trvat)...", "info");
+        try {
+            const startCoords = await getCoordinates(startStr);
+            const cilCoords = await getCoordinates(cilStr, cilStat);
+            
+            const routeInfo = await getRouteData(startCoords, cilCoords);
+
+            // Sloučení stejných států do jednoho (čištění dat)
+            let merged = {};
+            for(let br of routeInfo.breakdown) {
+                if(!merged[br.code]) merged[br.code] = {km: 0, internalId: br.internalId};
+                merged[br.code].km += br.km;
+            }
+            let finalBreakdown = [];
+            for(let c in merged) finalBreakdown.push({code: c, km: parseFloat(merged[c].km.toFixed(1)), internalId: merged[c].internalId});
+
+            // Ochrana před Rakouskem
+            let detectedCodes = finalBreakdown.map(b => b.code);
+            if (detectedCodes.includes("AT") && !avoidAustriaPromptShown && !activeAvoids.find(a => a.code === 'AT')) {
+                avoidAustriaPromptShown = true; 
+                let atSeg = finalBreakdown.find(b => b.code === 'AT');
+                if(atSeg && atSeg.internalId) {
+                    btn.disabled = false;
+                    if(confirm("POZOR:\nTrasa vede přes Rakousko (extrémně drahé mýto).\n\nChcete přepočítat mapu a Rakousko zcela objet?")) {
+                        activeAvoids.push({id: atSeg.internalId, code: 'AT'});
+                        renderAvoidList();
+                        return spocitatTrasu();
+                    }
+                }
             }
 
-            // 2. VÝPOČET PŘES MAGICKÝ SERVER GOOGLU (OBCHÁZÍ IPHONE BLOKÁTORY)
-            setStatus("Počítám dálniční úseky na super-serveru...", "info");
-            let reqUrl = `${GOOGLE_SHEET_API}?action=getRoute&start=${encodeURIComponent(startStr)}&end=${encodeURIComponent(cilStr)}&avoid=${encodeURIComponent(avoidStr)}`;
-            let routeRes = await fetch(reqUrl, { redirect: 'follow' });
-            let routeData = await routeRes.json();
+            document.getElementById('vzdalenost').value = routeInfo.distance;
+            globalBreakdown = finalBreakdown;
+            renderBreakdown(globalBreakdown);
+            
+            setStatus(`Hotovo: ${routeInfo.distance} km.`, "success");
+            calculate();
 
-            if (!routeData.success) {
-                throw new Error(routeData.error || "Trasou nelze projet (Možná se snažíte objet stát nakládky).");
-            }
+            // 3. ULOŽENÍ DO GOOGLU NA POZADÍ (Nepovinné)
+            try {
+                let dbValue = `${routeInfo.distance}|${JSON.stringify(globalBreakdown)}`;
+                fetch(`${GOOGLE_SHEET_API}?action=save&route=${encodeURIComponent(routeNameStr)}&km=${encodeURIComponent(dbValue)}`);
+            } catch(e) {}
 
-            let dbValue = `${routeData.distance}|${JSON.stringify(routeData.breakdown)}`;
-            processRouteData(dbValue, false, routeNameStr);
-
-        } catch(e) {
-            setStatus("CHYBA: " + e.message, "error");
+        } catch (error) {
+            setStatus("CHYBA: " + error.message, "error");
+        } finally {
             btn.disabled = false;
         }
     }
@@ -517,10 +650,9 @@
             let optionsHtml = '';
             for(let k in MYTO_STATY) { 
                 let sel = (k === code) ? "selected" : "";
-                optionsHtml += `<option value="${k}" ${sel}>${MYTO_STATY[k].name} (${MYTO_STATY[k].rate} Kč)</option>`; 
+                optionsHtml += `<option value="${k}" ${sel}>${MYTO_STATY[k].name} (${MYTO_STATY[k].rate} Kč/km)</option>`; 
             }
 
-            // Rozšířené úseky (Stát -> Km -> Mýto -> Objet)
             let rowHtml = `
                 <div class="breakdown-row" id="brRow_${index}">
                     <div class="breakdown-input-group">
@@ -547,7 +679,7 @@
     // Ruční tlačítko pro objetí státu z rozpadu
     window.promptAvoidCountry = function(internalId, code) {
         let countryName = MYTO_STATY[code] ? MYTO_STATY[code].name : code;
-        if(confirm(`Opravdu chcete přegenerovat celou trasu tak, abyste se vyhnuli státu: ${countryName}?\n\n(Může se výrazně změnit doba a kilometry)`)) {
+        if(confirm(`Opravdu chcete přegenerovat celou trasu tak, abyste se vyhnuli státu: ${countryName}?`)) {
             if(!activeAvoids.find(a => a.id === internalId)) {
                 activeAvoids.push({id: internalId, code: code});
                 renderAvoidList();
