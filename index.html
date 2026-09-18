@@ -6,7 +6,11 @@
     <meta name="theme-color" content="#e3000f">
     <title>Control Point - Transport Analytics</title>
     
+    <!-- Písma -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Knihovna Leaflet pro interaktivní mapu (Zdarma, bez API klíče) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
         :root { --cp-red: #e3000f; --cp-red-hover: #b3000b; --cp-dark: #1a1a1a; --cp-gray: #f4f4f4; --cp-border: #e0e0e0; --cp-white: #ffffff; --cp-success: #2e7d32; --cp-danger: #c62828; --shadow: 0 4px 20px rgba(0,0,0,0.06); --transition: all 0.3s ease; }
@@ -14,20 +18,10 @@
         body { background-color: var(--cp-gray); color: var(--cp-dark); line-height: 1.5; font-size: 14px; }
 
         /* LOADING SCREEN */
-        #loading-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000 url('IMG_9552.png') no-repeat right center;
-            background-size: cover; z-index: 99999; display: flex; align-items: center; justify-content: center;
-            transition: opacity 0.6s ease-out;
-        }
-        #loading-screen::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.75);
-        }
+        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000 url('IMG_9552.png') no-repeat right center; background-size: cover; z-index: 99999; display: flex; align-items: center; justify-content: center; transition: opacity 0.6s ease-out; }
+        #loading-screen::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.85); }
         .loader-content { position: relative; z-index: 100000; text-align: center; color: white; }
-        .spinner {
-            width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--cp-red); border-radius: 50%;
-            animation: spin 1s linear infinite; margin: 0 auto 15px auto;
-        }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--cp-red); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .loading-text { font-size: 18px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
 
@@ -47,8 +41,8 @@
         .card.dashboard { border-left: 4px solid var(--cp-dark); }
         .card.analysis { border-left: 4px solid var(--cp-red); background: #1a1a1a; color: white; }
         
-        h2 { font-size: 14px; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--cp-dark); }
-        h2 span { color: var(--cp-red); }
+        h2 { font-size: 14px; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--cp-dark); justify-content: space-between;}
+        h2 span.num { color: var(--cp-red); margin-right: 5px; }
         .analysis h2 { color: white; }
 
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
@@ -59,7 +53,12 @@
         .icon-help { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; background-color: #888; color: white; border-radius: 50%; font-size: 10px; font-weight: 800; cursor: pointer; flex-shrink: 0; }
         .icon-help:hover { background-color: var(--cp-red); }
 
-        /* MODAL */
+        /* OBLÍBENÉ TRASY */
+        .favorites-bar { background: #f0f0f0; padding: 10px; border-radius: 6px; margin-bottom: 15px; display: flex; gap: 10px; align-items: center; border: 1px dashed #ccc; }
+        .favorites-bar select { flex-grow: 1; padding: 6px; font-size: 12px; }
+        .btn-fav { background: #ffca28; color: #333; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; font-weight: 800; cursor: pointer; }
+
+        /* MODAL NÁPOVĚDA */
         #infoModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); }
         .info-box { background: white; padding: 20px; border-radius: 6px; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-top: 4px solid var(--cp-red); }
         .info-box p { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 15px; line-height: 1.4; }
@@ -68,15 +67,19 @@
         input, select { width: 100%; padding: 8px 10px; border: 1px solid var(--cp-border); border-radius: 4px; font-size: 13px; font-family: 'Roboto Mono', monospace; font-weight: 600; color: var(--cp-dark); background: #fafafa; }
         input:focus, select:focus { border-color: var(--cp-red); outline: none; background: var(--cp-white); }
         .analysis input { background: #333; border-color: #555; color: #fff; font-size: 16px; }
+        .readonly-highlight { background: #e3f2fd !important; border-color: #90caf9 !important; color: #0d47a1 !important; font-weight: 800; }
 
         /* WAYPOINTS (ZASTÁVKY) */
-        .waypoints-container { border-left: 2px dashed #ccc; padding-left: 10px; margin: 10px 0 10px 10px; }
-        .waypoint-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: stretch; background: #f9f9f9; padding: 8px; border-radius: 4px; border: 1px solid #eee; }
+        .waypoints-container { border-left: 2px dashed var(--cp-red); padding-left: 10px; margin: 10px 0 10px 5px; }
+        .waypoint-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: stretch; background: #fff; padding: 8px; border-radius: 4px; border: 1px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         .wp-inputs { flex-grow: 1; display: flex; flex-direction: column; gap: 5px; }
-        .wp-inputs select { font-size: 11px; padding: 5px; background: #fff; }
+        .wp-inputs select { font-size: 11px; padding: 5px; background: #f4f4f4; border-color: #ccc; }
         .btn-remove-wp { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; padding: 0 10px; border-radius: 4px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .btn-add-wp { background: #e3f2fd; color: #1565c0; border: 1px dashed #90caf9; padding: 8px; border-radius: 4px; font-size: 11px; font-weight: 800; text-transform: uppercase; cursor: pointer; width: 100%; margin-bottom: 10px; transition: 0.2s; }
-        .btn-add-wp:hover { background: #bbdefb; }
+        .btn-add-wp { background: #fdf2f2; color: var(--cp-red); border: 1px dashed #f5c6c8; padding: 8px; border-radius: 4px; font-size: 11px; font-weight: 800; text-transform: uppercase; cursor: pointer; width: 100%; margin-bottom: 10px; transition: 0.2s; }
+        .btn-add-wp:hover { background: #fce4e4; }
+
+        /* MAPA */
+        #map-container { display: none; height: 250px; border-radius: 6px; overflow: hidden; margin-top: 15px; border: 2px solid #ddd; }
 
         /* ROZPAD TRASY */
         .breakdown-container { background: #e3f2fd; padding: 12px; border-radius: 6px; border: 1px solid #b6d4fe; margin-top: 12px; display: none; }
@@ -100,6 +103,9 @@
         .btn { background-color: var(--cp-red); color: var(--cp-white); border: none; padding: 12px; border-radius: 4px; font-size: 14px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: var(--transition); width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 10px; }
         .btn:hover { background-color: var(--cp-red-hover); }
         .btn:disabled { background-color: #ccc; cursor: not-allowed; opacity: 0.7; }
+        .btn-secondary { background-color: #555; margin-top: 0; font-size: 11px; padding: 8px; }
+        .btn-secondary:hover { background-color: #333; }
+        .btn-whatsapp { background-color: #25D366; } .btn-whatsapp:hover { background-color: #128C7E; }
 
         .result-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--cp-border); }
         .result-row:last-child { border-bottom: none; }
@@ -120,6 +126,8 @@
         .msg-success { background: #d4edda; color: #155724; display: block !important; }
         .msg-error { background: #f8d7da; color: #721c24; display: block !important; }
         .msg-warning { background: #fff3cd; color: #856404; display: block !important; border: 1px solid #ffeeba; }
+        
+        .aetr-info { font-size: 11px; color: #155724; background: #d4edda; padding: 6px; border-radius: 4px; margin-top: 4px; display: none; font-weight: 600; text-align: center; }
     </style>
 </head>
 <body>
@@ -158,28 +166,38 @@
     <div class="inputs-section">
         
         <div class="card">
-            <h2 id="lblSec1"><span>01.</span> Lokace & Trasa</h2>
+            <h2>
+                <div><span class="num">01.</span> <span id="lblSec1">Lokace & Trasa</span></div>
+                <button class="btn-fav" onclick="saveFavorite()" id="btnSaveFav">⭐ Uložit šablonu</button>
+            </h2>
+
+            <div class="favorites-bar">
+                <select id="favSelect" onchange="loadFavorite()">
+                    <option value="" id="lblSelFav">-- Načíst oblíbenou trasu --</option>
+                </select>
+                <button class="btn-remove-wp" onclick="removeFavorite()" style="padding: 6px;" title="Smazat">🗑️</button>
+            </div>
             
             <div id="avoidListContainer"></div>
 
             <div class="input-group">
-                <label id="lblStart">Start (Bod A) <span class="icon-help" onclick="showInfo(T('helpStart'))">i</span></label>
-                <input type="text" id="startAdresa" value="Věrovany 94">
+                <label id="lblStart">Výchozí Start (Bod A) <span class="icon-help" onclick="showInfo(T('helpStart'))">i</span></label>
+                <input type="text" id="startAdresa" value="Věrovany 94" oninput="autoSave()">
             </div>
 
-            <!-- KONTEJNER PRO ZASTÁVKY (WAYPOINTS) -->
+            <!-- ZASTÁVKY -->
             <div id="waypointsContainer" class="waypoints-container"></div>
-            <button class="btn-add-wp" id="btnAddWp" onclick="addWaypoint()">+ Přidat zastávku / Přikládku</button>
+            <button class="btn-add-wp" id="btnAddWp" onclick="addWaypoint()">+ Přidat zastávku / Přejezd</button>
 
             <div class="input-group">
                 <label id="lblCil">Konečný Cíl (Bod B) <span class="icon-help" onclick="showInfo(T('helpCil'))">i</span></label>
-                <input type="text" id="cilAdresa" placeholder="Např. Milán 20121">
+                <input type="text" id="cilAdresa" placeholder="Např. Milán 20121" oninput="autoSave()">
             </div>
 
             <div class="form-grid">
                 <div class="input-group">
-                    <label id="lblCilStat">Země určení <span class="icon-help" onclick="showInfo(T('helpCilStat'))">i</span></label>
-                    <select id="cilStat">
+                    <label id="lblCilStat">Země určení (Garance) <span class="icon-help" onclick="showInfo(T('helpCilStat'))">i</span></label>
+                    <select id="cilStat" onchange="autoSave()">
                         <option value="">-- Automaticky --</option>
                         <option value="CZ">Česko</option>
                         <option value="DE">Německo</option>
@@ -197,11 +215,11 @@
                 <div class="input-group">
                     <label id="lblMenaKurz">Měna & Kurz <span class="icon-help" onclick="showInfo(T('helpMena'))">i</span></label>
                     <div style="display: flex; gap: 4px;">
-                        <select id="menaSelect" onchange="calculate()" style="width: 55%;">
-                            <option value="CZK">CZK (Kč)</option>
-                            <option value="EUR">EUR (€)</option>
+                        <select id="menaSelect" onchange="calculate(); autoSave();" style="width: 55%;">
+                            <option value="CZK">CZK</option>
+                            <option value="EUR">EUR</option>
                         </select>
-                        <input type="number" id="kurzEuro" value="25" step="0.1" oninput="calculate()" style="width: 45%;">
+                        <input type="number" id="kurzEuro" value="25" step="0.1" oninput="calculate(); autoSave();" style="width: 45%;">
                     </div>
                 </div>
             </div>
@@ -209,21 +227,24 @@
             <button id="btnTrasa" class="btn" onclick="spocitatTrasu()">Spočítat trasu a mýto</button>
             <div id="apiStatus"></div>
             
-            <div class="form-grid" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee;">
+            <!-- MAPA -->
+            <div id="map-container"><div id="map" style="width: 100%; height: 100%;"></div></div>
+            
+            <div class="form-grid" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
                 <div class="input-group">
                     <label id="lblCelkemKm">Celkem km</label>
-                    <input type="number" id="vzdalenost" value="0" step="0.1" style="font-weight: 800;" readonly>
+                    <input type="number" id="vzdalenost" value="0" step="0.1" class="readonly-highlight" readonly>
+                </div>
+                <div class="input-group">
+                    <label id="lblPrejezdyKm">Z toho Přejezdy (km)</label>
+                    <input type="number" id="prejezdyShow" value="0" step="0.1" style="background:#f4f4f4; color:#777;" readonly>
                 </div>
                 <div class="input-group">
                     <label id="lblTypTrasy">Typ trasy <span class="icon-help" onclick="showInfo(T('helpTypTrasy'))">i</span></label>
-                    <select id="typTrasy" onchange="spocitatTrasu()">
+                    <select id="typTrasy" onchange="spocitatTrasu(); autoSave();">
                         <option value="1" id="optNaprimo">Napřímo</option>
-                        <option value="2" id="optKolecko">Kolečko (Tam i zpět)</option>
+                        <option value="2" id="optKolecko">Kolečko</option>
                     </select>
-                </div>
-                <div class="input-group">
-                    <label id="lblDokladky">Dokládky km <span class="icon-help" onclick="showInfo(T('helpDokladky'))">i</span></label>
-                    <input type="number" id="dokladky" value="0" oninput="calculate()">
                 </div>
             </div>
 
@@ -236,11 +257,11 @@
         </div>
 
         <div class="card">
-            <h2 id="lblSec2"><span>02.</span> Technika vozidla</h2>
+            <h2><span class="num">02.</span> <span id="lblSec2">Technika vozidla</span></h2>
             <div class="form-grid">
                 <div class="input-group">
                     <label id="lblEuro">Euro Norma <span class="icon-help" onclick="showInfo(T('helpEuro'))">i</span></label>
-                    <select id="euroNorma" onchange="updateAllSegmentTolls()">
+                    <select id="euroNorma" onchange="updateAllSegmentTolls(); autoSave();">
                         <option value="1.0">Euro VI</option>
                         <option value="1.15">Euro V</option>
                         <option value="1.3">Euro IV</option>
@@ -249,7 +270,7 @@
                 </div>
                 <div class="input-group">
                     <label id="lblNapravy">Nápravy celkem</label>
-                    <select id="napravyFyzicke" onchange="updateAllSegmentTolls()">
+                    <select id="napravyFyzicke" onchange="updateAllSegmentTolls(); autoSave();">
                         <option value="5">5 náprav (2+3)</option>
                         <option value="6">6 a více (3+3)</option>
                         <option value="4">4 nápravy (2+2)</option>
@@ -258,46 +279,47 @@
                 </div>
                 <div class="input-group">
                     <label id="lblZvedle">Zvednuté nápravy</label>
-                    <select id="zvedleNapravy" onchange="calculate()"><option value="0">0 (Dole)</option><option value="1">1 nahoře</option><option value="2">2 nahoře</option></select>
+                    <select id="zvedleNapravy" onchange="calculate(); autoSave();"><option value="0">0 (Dole)</option><option value="1">1 nahoře</option><option value="2">2 nahoře</option></select>
                 </div>
             </div>
             <div class="form-grid" style="margin-top: 12px; border-top: 1px solid #eee; padding-top: 12px;">
                 <div class="input-group">
                     <label id="lblSpotreba">Spotřeba prázdné <span class="icon-help" onclick="showInfo(T('helpPrazdna'))">i</span></label>
-                    <input type="number" id="spotrebaPrazdne" value="25" step="0.1" oninput="calculate()">
+                    <input type="number" id="spotrebaPrazdne" value="25" step="0.1" oninput="calculate(); autoSave();">
                 </div>
                 <div class="input-group">
-                    <label id="lblNaklad">Počáteční Náklad (t) <span class="icon-help" onclick="showInfo(T('helpVaha'))">i</span></label>
-                    <input type="number" id="vahaNakladu" value="10" step="0.1" oninput="calculate()">
+                    <label id="lblNaklad">Start. Náklad (t) <span class="icon-help" onclick="showInfo(T('helpVaha'))">i</span></label>
+                    <input type="number" id="vahaNakladu" value="10" step="0.1" oninput="calculate(); autoSave();">
                 </div>
                 <div class="input-group">
                     <label id="lblNaftaCena">Cena nafty / L</label>
-                    <input type="number" id="cenaNafty" value="36.50" step="0.10" oninput="calculate()">
+                    <input type="number" id="cenaNafty" value="36.50" step="0.10" oninput="calculate(); autoSave();">
                 </div>
             </div>
         </div>
 
         <div class="card">
-            <h2 id="lblSec3"><span>03.</span> Náklady & Řidič</h2>
+            <h2><span class="num">03.</span> <span id="lblSec3">Náklady & Řidič</span></h2>
             <div class="form-grid">
                 <div class="input-group" style="grid-column: 1 / -1;">
                     <label id="lblTypMzdy">Odměňování řidiče</label>
-                    <select id="typMzdy" onchange="calculate()">
+                    <select id="typMzdy" onchange="calculate(); autoSave();">
                         <option value="denni" id="optZamestnanec">Zaměstnanec (Denní mzda vč. diet)</option>
                         <option value="fixni" id="optBrigadnik">Brigádník (Paušál za točku)</option>
                     </select>
                 </div>
                 <div class="input-group">
                     <label id="lblOdmena">Odměna</label>
-                    <input type="number" id="mzdaHodnota" value="3000" oninput="calculate()">
+                    <input type="number" id="mzdaHodnota" value="3000" oninput="calculate(); autoSave();">
                 </div>
                 <div class="input-group" id="dnyContainer">
-                    <label id="lblTrvani">Trvání (Dny)</label>
-                    <input type="number" id="dny" value="1" step="0.5" oninput="calculate()">
+                    <label id="lblTrvani">Trvání (Dny) <span class="icon-help" onclick="showInfo('Automaticky spočítáno z AETR, lze ručně přepsat.')">i</span></label>
+                    <input type="number" id="dny" value="1" step="0.5" oninput="calculate(); autoSave();" class="readonly-highlight">
+                    <div id="aetrInfo" class="aetr-info"></div>
                 </div>
                 <div class="input-group">
                     <label id="lblFixAuto">Fix auto/den</label>
-                    <input type="number" id="nakladyAutoDen" value="2500" oninput="calculate()">
+                    <input type="number" id="nakladyAutoDen" value="2500" oninput="calculate(); autoSave();">
                 </div>
             </div>
         </div>
@@ -315,7 +337,7 @@
             <h2 id="lblCenikovaKalk" style="font-size: 13px; color: #666;">Ceníková Kalkulace</h2>
             
             <div class="result-row" style="background: #f8f9fa; padding: 8px; border-radius: 4px; border: 1px solid #ddd; margin-bottom: 8px;">
-                <span class="result-label" id="lblSpotrebaVcDph" style="color: var(--cp-dark);">Průměrná spotřeba úseků:</span>
+                <span class="result-label" id="lblSpotrebaVcDph" style="color: var(--cp-dark);">Prům. spotřeba trasy:</span>
                 <span class="result-val" id="resSpotrebaDynamicka" style="color: var(--cp-red);">0 L/100 km</span>
             </div>
 
@@ -341,11 +363,17 @@
             
             <div class="input-group" style="margin-top: 12px;">
                 <label id="lblMarze">Požadovaná marže (%)</label>
-                <input type="number" id="marze" value="15" oninput="calculate()">
+                <input type="number" id="marze" value="15" oninput="calculate(); autoSave();">
             </div>
             <div class="result-row" style="margin-top: 8px;">
                 <span class="result-label" id="lblProdejniCena" style="color: var(--cp-dark);">Ceníková prodejní cena:</span>
                 <span class="result-val" id="resProdejniCena" style="font-size: 16px;">0 Kč</span>
+            </div>
+
+            <!-- AKČNÍ TLAČÍTKA -->
+            <div style="display:flex; gap:10px; margin-top: 15px;">
+                <button class="btn btn-secondary btn-whatsapp" onclick="shareSummary()" id="btnShare">📤 Kopírovat Souhrn</button>
+                <button class="btn btn-secondary" onclick="openNav()" id="btnNav">🧭 Otevřít Navigaci</button>
             </div>
         </div>
 
@@ -353,7 +381,7 @@
             <h2 id="lblSec4"><span>04.</span> Analýza reality</h2>
             <div class="input-group" style="margin-bottom: 12px;">
                 <label id="lblSjednanaCena" style="color:#fff;">Sjednaná cena za přepravu</label>
-                <input type="number" id="skutecnaCena" value="0" oninput="calculate()">
+                <input type="number" id="skutecnaCena" value="0" oninput="calculate(); autoSave();">
             </div>
             <div class="result-row" style="border-color:#444;">
                 <span class="result-label" id="lblRealTrzba" style="color:#ccc;">Reálná tržba na 1 km:</span>
@@ -367,19 +395,20 @@
 </div>
 
 <script>
+    // --- PŘEKLADY A LOKALIZACE ---
     const TRANSLATIONS = {
         cs: {
-            analytik: "ANALÝZA", start: "Start (Bod A)", cil: "Konečný Cíl (Bod B)", cilStat: "Země určení", menaKurz: "Měna & Kurz",
-            btnTrasa: "Spočítat trasu a mýto", celkemKm: "Celkem km", typTrasy: "Typ trasy",
+            analytik: "ANALÝZA", start: "Start (Bod A)", cil: "Konečný Cíl (Bod B)", cilStat: "Země určení (Garance)", menaKurz: "Měna & Kurz",
+            btnTrasa: "Spočítat trasu a mýto", celkemKm: "Celkem km", typTrasy: "Typ trasy", prejezdyKm: "Z toho Přejezdy (km)",
             naprimo: "Napřímo", kolecko: "Kolečko (Tam i zpět)", dokladky: "Dokládky km",
             rozpad: "Rozpad mýta dle států", technika: "Technika vozidla",
             euro: "Euro Norma", naprazy: "Nápravy celkem", zvedle: "Zvednuté nápravy",
-            spotreba: "Spotřeba prázdné", naklad: "Počáteční Náklad (t)", nafta: "Cena nafty / L",
+            spotreba: "Spotřeba prázdné", naklad: "Start. Náklad (t)", nafta: "Cena nafty / L",
             nakladyRidic: "Náklady & Řidič", typMzdy: "Odměňování řidiče",
             zamestnanec: "Zaměstnanec (Denní mzda vč. diet)", brigadnik: "Brigádník (Paušál za točku)",
             odmena: "Odměna", trvani: "Trvání (Dny)", fixAuto: "Fix auto/den",
             dphVcetne: "Zobrazit VČETNĚ DPH (21%)", dphBez: "Zobrazit BEZ DPH",
-            ceník: "Ceníková Kalkulace", spotrebaVcDph: "Průměrná spotřeba úseků:",
+            ceník: "Ceníková Kalkulace", spotrebaVcDph: "Prům. spotřeba trasy:",
             resNafta: "Nafta celkem:", resMzda: "Odměna řidič:", resFix: "Fixní náklady & Pneu:",
             resMyto: "Mýto celkem:", resNakladyCelkem: "Náklady celkem:",
             kmBezMyta: "Náklad na 1 km (bez mýta):", kmVcMyta: "Náklad na 1 km (vč. mýta):",
@@ -387,24 +416,21 @@
             analytikaReality: "Analýza reality", sjednanaCena: "Sjednaná cena za přepravu",
             realTrzba: "Reálná tržba na 1 km:", cekamZadani: "Čekám na zadání ceny",
             objit: "OBJET", zakaz: "Zákazy tranzitu (Objížďka aktivní):", povolit: "Povolit",
-            chybaAdresa: "Adresa nebyla nalezena.", prubeh: "Počítám trasu...", hotovo: "Hotovo",
-            wpAdd: "+ Přidat zastávku / Přikládku", wpPlaceholder: "Adresa zastávky",
-            wpTypeTransit: "Průjezd (Náklad beze změny)", wpTypeEmpty: "Vykládka (Dále jede prázdný)",
-            wpTypeHalf: "Částečná (Dále s 1/2 nákladu)", wpTypeFull: "Nová nakládka (Dále plný)",
-            alertAvoidFail: "Pozor: Vybraný stát nelze matematicky objet nebo OSRM server nenašel objízdnou trasu. Trasa byla vrácena do původního stavu. Přidejte prosím ručně Zastávku přes sousední zemi.",
-            helpStart: "Odkud přesně vyjíždíte (Město, PSČ, GPS).",
-            helpCil: "Kde trasa končí.",
-            helpCilStat: "Garantuje výpočet pro zemi, i když ji GPS špatně detekuje.",
-            helpMena: "Přepočítá veškeré hodnoty a ceníky do Eura/Kč.",
-            helpTypTrasy: "Kolečko je zablokováno, pokud přidáte zastávku (kvůli logice výpočtu).",
-            helpDokladky: "Extra ujeté km mimo trasu (nafta se zvedne, mýto už ne).",
-            helpEuro: "Horší emisní třída prodraží sazby mýta v tabulce.",
-            helpPrazdna: "Kolik bere tahač, když jede zcela prázdný.",
-            helpVaha: "Každá tuna nákladu automaticky zvedne spotřebu o 0.2 L / 100 km v daném úseku."
+            chybaAdresa: "Adresa nebyla nalezena.", prubeh: "Počítám trasu a AETR...", hotovo: "Hotovo",
+            wpAdd: "+ Přidat zastávku / Přejezd", wpPlaceholder: "Adresa zastávky",
+            wpTypeTransit: "Průjezd (Náklad beze změny)", wpTypeEmpty: "Vykládka (Dále jede prázdný / Přejezd)",
+            wpTypePrejezd: "Přejezd (Prázdný přesun)", wpTypeHalf: "Částečná (Dále s 1/2 nákladu)", wpTypeFull: "Nová nakládka (Dále plný)",
+            alertAvoidFail: "Pozor: Zvolený stát nelze matematicky objet přes OSRM. Trasa byla vrácena. Přidejte prosím ručně Zastávku přes sousední zemi.",
+            aetrText: "AETR Odhad: {h}h jízdy, min. {d} směn(y)", shareBtn: "📤 Kopírovat Souhrn", navBtn: "🧭 Otevřít Navigaci",
+            favBtn: "⭐ Uložit šablonu", favSel: "-- Načíst oblíbenou trasu --",
+            helpStart: "Odkud přesně vyjíždíte.", helpCil: "Kde trasa končí.", helpCilStat: "Garantuje výpočet pro zemi, i když ji GPS špatně detekuje.",
+            helpMena: "Přepočítá veškeré hodnoty.", helpTypTrasy: "Kolečko je zablokováno, pokud přidáte zastávku.",
+            helpDokladky: "Extra ujeté km mimo trasu.", helpEuro: "Horší emisní třída prodraží sazby mýta.", 
+            helpPrazdna: "Kolik bere tahač, když jede zcela prázdný.", helpVaha: "Každá tuna nákladu zvedne spotřebu o 0.2 L / 100 km v daném úseku."
         },
         en: {
             analytik: "ANALYSIS", start: "Start (Point A)", cil: "Destination (Point B)", cilStat: "Target Country", menaKurz: "Currency & Rate",
-            btnTrasa: "Calculate Route & Toll", celkemKm: "Total km", typTrasy: "Route Type",
+            btnTrasa: "Calculate Route & Toll", celkemKm: "Total km", typTrasy: "Route Type", prejezdyKm: "Empty Runs (km)",
             naprimo: "Direct", kolecko: "Roundtrip", dokladky: "Extra km",
             rozpad: "Toll Breakdown by Country", technika: "Vehicle Tech",
             euro: "Euro Standard", naprazy: "Total Axles", zvedle: "Lifted Axles",
@@ -413,7 +439,7 @@
             zamestnanec: "Employee (Daily w. per diem)", brigadnik: "Contractor (Flat fee)",
             odmena: "Reward", trvani: "Duration (Days)", fixAuto: "Fix cost/day",
             dphVcetne: "Show WITH VAT (21%)", dphBez: "Show WITHOUT VAT",
-            ceník: "Price Calculation", spotrebaVcDph: "Average Segment Consumption:",
+            ceník: "Price Calculation", spotrebaVcDph: "Avg. Route Consumption:",
             resNafta: "Total Fuel:", resMzda: "Driver Reward:", resFix: "Fixed Costs & Tires:",
             resMyto: "Total Toll:", resNakladyCelkem: "Total Costs:",
             kmBezMyta: "Cost per 1 km (excl. toll):", kmVcMyta: "Cost per 1 km (incl. toll):",
@@ -421,18 +447,20 @@
             analytikaReality: "Reality Analysis", sjednanaCena: "Agreed Transport Price",
             realTrzba: "Real Revenue per 1 km:", cekamZadani: "Waiting for price input",
             objit: "AVOID", zakaz: "Transit Bans (Detour Active):", povolit: "Allow",
-            chybaAdresa: "Address not found.", prubeh: "Calculating route...", hotovo: "Done",
-            wpAdd: "+ Add Stop / Waypoint", wpPlaceholder: "Waypoint address",
+            chybaAdresa: "Address not found.", prubeh: "Calculating route & AETR...", hotovo: "Done",
+            wpAdd: "+ Add Stop / Empty Run", wpPlaceholder: "Waypoint address",
             wpTypeTransit: "Transit (Keep current load)", wpTypeEmpty: "Unload (Empty hereafter)",
-            wpTypeHalf: "Partial Unload (Half load hereafter)", wpTypeFull: "New Load (Full hereafter)",
-            alertAvoidFail: "Warning: The selected country cannot be avoided mathematically or the server found no detour. Route reverted. Please add a Waypoint manually in a neighboring country.",
+            wpTypePrejezd: "Empty Run (Relocation)", wpTypeHalf: "Partial Unload (Half load)", wpTypeFull: "New Load (Full load)",
+            alertAvoidFail: "Warning: The selected country cannot be avoided automatically. Route reverted. Please add a Waypoint manually in a neighboring country.",
+            aetrText: "AETR Est: {h}h drive, min. {d} shift(s)", shareBtn: "📤 Copy Summary", navBtn: "🧭 Open Navigation",
+            favBtn: "⭐ Save Template", favSel: "-- Load Saved Route --",
             helpStart: "Starting location.", helpCil: "Final destination.", helpCilStat: "Ensures proper toll calculation for destination.",
             helpMena: "Converts all outputs.", helpTypTrasy: "Roundtrip is disabled if waypoints are added.",
-            helpDokladky: "Extra km driving off-route.", helpEuro: "Worse emissions = higher toll.", helpPrazdna: "Base fuel consumption empty.", helpVaha: "Every ton adds 0.2 L / 100 km."
+            helpDokladky: "Extra km.", helpEuro: "Worse emissions = higher toll.", helpPrazdna: "Base fuel consumption empty.", helpVaha: "Every ton adds 0.2 L / 100 km."
         },
         de: {
             analytik: "ANALYSE", start: "Start (Punkt A)", cil: "Ziel (Punkt B)", cilStat: "Zielland", menaKurz: "Währung & Kurs",
-            btnTrasa: "Route & Maut Berechnen", celkemKm: "Gesamt km", typTrasy: "Routentyp",
+            btnTrasa: "Route & Maut Berechnen", celkemKm: "Gesamt km", typTrasy: "Routentyp", prejezdyKm: "Davon Leerfahrten (km)",
             naprimo: "Direkt", kolecko: "Hin & Rück", dokladky: "Zusatz km",
             rozpad: "Maut nach Ländern", technika: "Fahrzeugtechnik",
             euro: "Euro-Norm", naprazy: "Achsen gesamt", zvedle: "Angehobene Achsen",
@@ -449,18 +477,18 @@
             analytikaReality: "Realitätsanalyse", sjednanaCena: "Vereinbarter Preis",
             realTrzba: "Echte Einnahme pro 1 km:", cekamZadani: "Warte auf Preiseingabe",
             objit: "UMFAHREN", zakaz: "Transitverbote (Umleitung):", povolit: "Erlauben",
-            chybaAdresa: "Adresse nicht gefunden.", prubeh: "Route wird berechnet...", hotovo: "Fertig",
-            wpAdd: "+ Zwischenstopp hinzufügen", wpPlaceholder: "Stopp Adresse",
+            chybaAdresa: "Adresse nicht gefunden.", prubeh: "Route & AETR wird berechnet...", hotovo: "Fertig",
+            wpAdd: "+ Zwischenstopp / Leerfahrt", wpPlaceholder: "Stopp Adresse",
             wpTypeTransit: "Transit (Ladung unverändert)", wpTypeEmpty: "Entladen (Fährt leer weiter)",
-            wpTypeHalf: "Teilentladung (1/2 Ladung weiter)", wpTypeFull: "Neu beladen (Voll weiter)",
-            alertAvoidFail: "Achtung: Land kann nicht automatisch umfahren werden. Bitte fügen Sie manuell einen Zwischenstopp über ein Nachbarland hinzu.",
-            helpStart: "Startpunkt", helpCil: "Endziel", helpCilStat: "Garantiert die Maut für das Zielland.",
-            helpMena: "Währung umrechnen.", helpTypTrasy: "Hin & Rück ist bei Zwischenstopps deaktiviert.",
-            helpDokladky: "Extrakilometer", helpEuro: "Abgasnorm beeinflusst Maut", helpPrazdna: "Leerverbrauch L/100km", helpVaha: "Jede Tonne = +0.2 L/100km."
+            wpTypePrejezd: "Leerfahrt (Umsetzen)", wpTypeHalf: "Teilentladung (1/2 Ladung weiter)", wpTypeFull: "Neu beladen (Voll weiter)",
+            alertAvoidFail: "Achtung: Land kann nicht automatisch umfahren werden. Bitte fügen Sie manuell einen Stopp über ein Nachbarland hinzu.",
+            aetrText: "AETR: {h}h Fahrt, min. {d} Schicht(en)", shareBtn: "📤 Zusammenfassung kopieren", navBtn: "🧭 Navigation öffnen",
+            favBtn: "⭐ Vorlage speichern", favSel: "-- Favorit laden --",
+            helpStart: "Startpunkt", helpCil: "Endziel", helpCilStat: "Garantiert die Maut für das Zielland.", helpMena: "Währung umrechnen.", helpTypTrasy: "Hin & Rück ist bei Stopps deaktiviert.", helpDokladky: "Extrakilometer", helpEuro: "Abgasnorm beeinflusst Maut", helpPrazdna: "Leerverbrauch L/100km", helpVaha: "Jede Tonne = +0.2 L/100km."
         },
         pl: {
             analytik: "ANALIZA", start: "Start (Punkt A)", cil: "Cel (Punkt B)", cilStat: "Kraj docelowy", menaKurz: "Waluta i Kurs",
-            btnTrasa: "Oblicz Trasę i Myto", celkemKm: "Razem km", typTrasy: "Typ trasy",
+            btnTrasa: "Oblicz Trasę i Myto", celkemKm: "Razem km", typTrasy: "Typ trasy", prejezdyKm: "Puste przebiegi (km)",
             naprimo: "W jedną stronę", kolecko: "W obie strony", dokladky: "Dodatkowe km",
             rozpad: "Rozbicie myta wg krajów", technika: "Pojazd",
             euro: "Norma Euro", naprazy: "Ośki razem", zvedle: "Uniesione osie",
@@ -477,20 +505,20 @@
             analytikaReality: "Analiza Rzeczywistości", sjednanaCena: "Uzgodniona cena transportu",
             realTrzba: "Rzeczywisty przychód 1 km:", cekamZadani: "Oczekiwanie na cenę",
             objit: "OMIJAĆ", zakaz: "Zakazy tranzytu (Objazd):", povolit: "Zezwól",
-            chybaAdresa: "Nie znaleziono adresu.", prubeh: "Obliczanie...", hotovo: "Gotowe",
-            wpAdd: "+ Dodaj przystanek / Załadunek", wpPlaceholder: "Adres przystanku",
+            chybaAdresa: "Nie znaleziono adresu.", prubeh: "Obliczanie trasy...", hotovo: "Gotowe",
+            wpAdd: "+ Dodaj przystanek / Pusty", wpPlaceholder: "Adres przystanku",
             wpTypeTransit: "Przejazd (Ładunek bez zmian)", wpTypeEmpty: "Rozładunek (Dalej pusty)",
-            wpTypeHalf: "Częściowy rozładunek (1/2)", wpTypeFull: "Nowy załadunek (Pełny)",
+            wpTypePrejezd: "Pusty przebieg", wpTypeHalf: "Częściowy rozładunek (1/2)", wpTypeFull: "Nowy załadunek (Pełny)",
             alertAvoidFail: "Uwaga: Nie można automatycznie ominąć tego kraju. Dodaj ręcznie przystanek w innym kraju.",
-            helpStart: "Skąd wyjeżdżasz", helpCil: "Dokąd jedziesz", helpCilStat: "Kraj docelowy myta",
-            helpMena: "Waluta", helpTypTrasy: "Trasa w obie strony zablokowana przy przystankach.",
-            helpDokladky: "Dodatkowe km", helpEuro: "Norma spalin = wyższe myto", helpPrazdna: "Spalanie pustego", helpVaha: "Każda tona = +0.2L"
+            aetrText: "AETR: {h}h jazdy, min. {d} dni", shareBtn: "📤 Kopiuj podsumowanie", navBtn: "🧭 Otwórz Nawigację",
+            favBtn: "⭐ Zapisz Szablon", favSel: "-- Wczytaj ulubioną --",
+            helpStart: "Skąd wyjeżdżasz", helpCil: "Dokąd jedziesz", helpCilStat: "Kraj docelowy myta", helpMena: "Waluta", helpTypTrasy: "Trasa w obie strony zablokowana.", helpDokladky: "Dodatkowe km", helpEuro: "Norma spalin = wyższe myto", helpPrazdna: "Spalanie pustego", helpVaha: "Każda tona = +0.2L"
         },
         it: {
             analytik: "ANALISI", start: "Partenza (Punto A)", cil: "Destinazione (Punto B)", cilStat: "Paese Destinazione", menaKurz: "Valuta e Tasso",
-            btnTrasa: "Calcola Percorso e Pedaggio", celkemKm: "Km totali", typTrasy: "Tipo percorso",
-            naprimo: "Solo andata", kolecko: "Andata e ritorno", dokladky: "Km extra",
-            rozpad: "Ripartizione pedaggio paesi", technika: "Veicolo",
+            btnTrasa: "Calcola Percorso", celkemKm: "Km totali", typTrasy: "Tipo percorso", prejezdyKm: "Di cui a vuoto (km)",
+            naprimo: "Diretto", kolecko: "Andata e ritorno", dokladky: "Km extra",
+            rozpad: "Ripartizione pedaggio", technika: "Veicolo",
             euro: "Norma Euro", naprazy: "Assi totali", zvedle: "Assi sollevati",
             spotreba: "Consumo a vuoto", naklad: "Carico Iniziale (t)", nafta: "Prezzo carburante",
             nakladyRidic: "Costi & Autista", typMzdy: "Stipendio",
@@ -504,15 +532,15 @@
             marze: "Margine richiesto (%)", prodejniCena: "Prezzo finale:",
             analytikaReality: "Analisi della Realtà", sjednanaCena: "Prezzo concordato",
             realTrzba: "Ricavo reale per 1 km:", cekamZadani: "In attesa di prezzo",
-            objit: "EVITARE", zakaz: "Divieti di transito (Deviazione):", povolit: "Permetti",
+            objit: "EVITARE", zakaz: "Divieti di transito:", povolit: "Permetti",
             chybaAdresa: "Indirizzo non trovato.", prubeh: "Calcolando...", hotovo: "Fatto",
-            wpAdd: "+ Aggiungi Fermata / Carico", wpPlaceholder: "Indirizzo fermata",
+            wpAdd: "+ Aggiungi Fermata / Vuoto", wpPlaceholder: "Indirizzo fermata",
             wpTypeTransit: "Transito (Carico invariato)", wpTypeEmpty: "Scarico (Prosegue vuoto)",
-            wpTypeHalf: "Scarico parziale (1/2 carico)", wpTypeFull: "Nuovo Carico (Pieno)",
-            alertAvoidFail: "Attenzione: Impossibile evitare automaticamente questo paese. Aggiungi manualmente una fermata in un paese vicino.",
-            helpStart: "Partenza", helpCil: "Destinazione", helpCilStat: "Paese finale",
-            helpMena: "Cambia valuta", helpTypTrasy: "A/R disabilitato con fermate intermedie.",
-            helpDokladky: "Km extra", helpEuro: "Norma inquinamento", helpPrazdna: "Consumo vuoto", helpVaha: "Ogni tonnellata = +0.2L"
+            wpTypePrejezd: "Tragitto a vuoto", wpTypeHalf: "Scarico parziale (1/2)", wpTypeFull: "Nuovo Carico (Pieno)",
+            alertAvoidFail: "Attenzione: Impossibile evitare automaticamente questo paese. Aggiungi manualmente una fermata.",
+            aetrText: "AETR: {h}h guida, min. {d} turni", shareBtn: "📤 Copia Riepilogo", navBtn: "🧭 Apri Navigazione",
+            favBtn: "⭐ Salva Modello", favSel: "-- Carica preferito --",
+            helpStart: "Partenza", helpCil: "Destinazione", helpCilStat: "Paese finale", helpMena: "Cambia valuta", helpTypTrasy: "A/R disabilitato con fermate.", helpDokladky: "Km extra", helpEuro: "Norma inquinamento", helpPrazdna: "Consumo vuoto", helpVaha: "Ogni tonnellata = +0.2L"
         }
     };
 
@@ -530,6 +558,7 @@
         document.getElementById('lblMenaKurz').innerHTML = `${T('menaKurz')} <span class="icon-help" onclick="showInfo(T('helpMena'))">i</span>`;
         document.getElementById('btnTrasa').innerText = T('btnTrasa');
         document.getElementById('lblCelkemKm').innerText = T('celkemKm');
+        document.getElementById('lblPrejezdyKm').innerText = T('prejezdyKm');
         document.getElementById('lblTypTrasy').innerHTML = `${T('typTrasy')} <span class="icon-help" onclick="showInfo(T('helpTypTrasy'))">i</span>`;
         document.getElementById('optNaprimo').innerText = T('naprimo');
         document.getElementById('optKolecko').innerText = T('kolecko');
@@ -549,7 +578,7 @@
         document.getElementById('optZamestnanec').innerText = T('zamestnanec');
         document.getElementById('optBrigadnik').innerText = T('brigadnik');
         document.getElementById('lblOdmena').innerText = T('odmena');
-        document.getElementById('lblTrvani').innerText = T('trvani');
+        document.getElementById('lblTrvani').innerHTML = `${T('trvani')} <span class="icon-help" onclick="showInfo('Automaticky spočítáno z AETR, lze ručně přepsat.')">i</span>`;
         document.getElementById('lblFixAuto').innerText = T('fixAuto');
 
         document.getElementById('lblCenikovaKalk').innerText = T('ceník');
@@ -569,10 +598,125 @@
         document.getElementById('lblRealTrzba').innerText = T('realTrzba');
         
         document.getElementById('btnAddWp').innerText = T('wpAdd');
+        document.getElementById('btnShare').innerText = T('shareBtn');
+        document.getElementById('btnNav').innerText = T('navBtn');
+        document.getElementById('btnSaveFav').innerText = T('favBtn');
+        document.getElementById('lblSelFav').innerText = T('favSel');
         
         renderAvoidList();
-        renderBreakdownSegments(globalBreakdown);
+        renderWaypoints();
+        renderBreakdownSegments(globalBreakdown, parseFloat(document.getElementById('typTrasy').value));
         calculate();
+    }
+
+    // --- MAPA INIT ---
+    let map, routeLayer, markerGroup;
+    function initMap() {
+        if(!map) {
+            document.getElementById('map-container').style.display = 'block';
+            map = L.map('map').setView([49.5, 17.2], 5);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+            markerGroup = L.layerGroup().addTo(map);
+        }
+    }
+    function drawMap(coordsGeoJson) {
+        initMap();
+        if(routeLayer) map.removeLayer(routeLayer);
+        markerGroup.clearLayers();
+
+        let latlngs = coordsGeoJson.map(c => [c[1], c[0]]);
+        routeLayer = L.polyline(latlngs, {color: '#e3000f', weight: 4}).addTo(map);
+        map.fitBounds(routeLayer.getBounds(), {padding: [20,20]});
+
+        // Markery Start a Cíl
+        L.marker(latlngs[0]).addTo(markerGroup).bindPopup("Start");
+        L.marker(latlngs[latlngs.length-1]).addTo(markerGroup).bindPopup("Cíl");
+    }
+
+    // --- ZÁKLADNÍ DATA ---
+    const OPOTREBENI_PNEU_KOLO_KM = 0.15;
+    const SPOTREBA_NA_TUNU = 0.20; 
+    const DPH_SAZBA = 1.21;
+    
+    const MYTO_STATY = {
+        'CZ': { name: 'Česko', rate: 4.5 }, 'SK': { name: 'Slovensko', rate: 5.0 }, 'DE': { name: 'Německo', rate: 8.5 }, 
+        'AT': { name: 'Rakousko', rate: 11.5 }, 'IT': { name: 'Itálie', rate: 6.0 }, 'PL': { name: 'Polsko', rate: 3.5 },
+        'HU': { name: 'Maďarsko', rate: 8.0 }, 'RO': { name: 'Rumunsko', rate: 2.0 }, 'ES': { name: 'Španělsko', rate: 4.0 },
+        'NL': { name: 'Nizozemí', rate: 1.0 }, 'BE': { name: 'Belgie', rate: 4.5 }
+    };
+    const MYTO_NAPRAVY_KOEF = { '2': 0.7, '3': 0.8, '4': 1.0, '5': 1.0, '6': 1.1 };
+
+    function formatMoney(amountInCZK) {
+        let mena = document.getElementById('menaSelect').value;
+        let kurz = parseFloat(document.getElementById('kurzEuro').value) || 25;
+        let finalVal = mena === 'EUR' ? amountInCZK / kurz : amountInCZK;
+        let fmt = new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: mena, minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        return fmt.format(finalVal);
+    }
+
+    let globalBreakdown = [];
+    let excludedCountries = [];
+    let waypoints = []; // {id: 1, address: "", type: "transit"}
+    let wpCounter = 0;
+    let avgFuelConsumption = 0; 
+    let totalPrejezdKm = 0; 
+    let lastRouteData = null; // Pro sdílení
+
+    // --- AUTO-SAVE DO LOCALSTORAGE ---
+    function autoSave() {
+        const data = {
+            start: document.getElementById('startAdresa').value,
+            cil: document.getElementById('cilAdresa').value,
+            cilStat: document.getElementById('cilStat').value,
+            mena: document.getElementById('menaSelect').value,
+            kurz: document.getElementById('kurzEuro').value,
+            typTrasy: document.getElementById('typTrasy').value,
+            dokladky: document.getElementById('dokladky').value,
+            euro: document.getElementById('euroNorma').value,
+            napravy: document.getElementById('napravyFyzicke').value,
+            zvedle: document.getElementById('zvedleNapravy').value,
+            prazdna: document.getElementById('spotrebaPrazdne').value,
+            vaha: document.getElementById('vahaNakladu').value,
+            nafta: document.getElementById('cenaNafty').value,
+            mzdaTyp: document.getElementById('typMzdy').value,
+            mzdaHodnota: document.getElementById('mzdaHodnota').value,
+            dny: document.getElementById('dny').value,
+            fix: document.getElementById('nakladyAutoDen').value,
+            dph: document.getElementById('dphToggle').checked,
+            marze: document.getElementById('marze').value,
+            skutecna: document.getElementById('skutecnaCena').value,
+            waypoints: waypoints
+        };
+        localStorage.setItem('controlPointDraft', JSON.stringify(data));
+    }
+
+    function loadAutoSave() {
+        const d = JSON.parse(localStorage.getItem('controlPointDraft'));
+        if(d) {
+            document.getElementById('startAdresa').value = d.start || "";
+            document.getElementById('cilAdresa').value = d.cil || "";
+            document.getElementById('cilStat').value = d.cilStat || "";
+            document.getElementById('menaSelect').value = d.mena || "CZK";
+            document.getElementById('kurzEuro').value = d.kurz || "25";
+            document.getElementById('typTrasy').value = d.typTrasy || "1";
+            document.getElementById('dokladky').value = d.dokladky || "0";
+            document.getElementById('euroNorma').value = d.euro || "1.0";
+            document.getElementById('napravyFyzicke').value = d.napravy || "5";
+            document.getElementById('zvedleNapravy').value = d.zvedle || "0";
+            document.getElementById('spotrebaPrazdne').value = d.prazdna || "25";
+            document.getElementById('vahaNakladu').value = d.vaha || "10";
+            document.getElementById('cenaNafty').value = d.nafta || "36.50";
+            document.getElementById('typMzdy').value = d.mzdaTyp || "denni";
+            document.getElementById('mzdaHodnota').value = d.mzdaHodnota || "3000";
+            document.getElementById('dny').value = d.dny || "1";
+            document.getElementById('nakladyAutoDen').value = d.fix || "2500";
+            document.getElementById('dphToggle').checked = !!d.dph;
+            document.getElementById('marze').value = d.marze || "15";
+            document.getElementById('skutecnaCena').value = d.skutecna || "0";
+            if(d.waypoints) { waypoints = d.waypoints; wpCounter = Math.max(0, ...waypoints.map(w=>w.id)); }
+        }
+        updateFavoritesDropdown();
+        changeLanguage(); 
     }
 
     window.addEventListener('load', () => {
@@ -580,6 +724,7 @@
             const loader = document.getElementById('loading-screen');
             if(loader) { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 600); }
         }, 1000); 
+        loadAutoSave();
     });
 
     function showInfo(text) {
@@ -587,61 +732,67 @@
         document.getElementById('infoModal').style.display = 'flex';
     }
 
-    const OPOTREBENI_PNEU_KOLO_KM = 0.15;
-    const SPOTREBA_NA_TUNU = 0.20; 
-    const DPH_SAZBA = 1.21;
-    
-    const MYTO_STATY = {
-        'CZ': { name: 'Česko', rate: 4.5 },
-        'SK': { name: 'Slovensko', rate: 5.0 },
-        'DE': { name: 'Německo', rate: 8.5 }, 
-        'AT': { name: 'Rakousko', rate: 11.5 },
-        'IT': { name: 'Itálie', rate: 6.0 },
-        'PL': { name: 'Polsko', rate: 3.5 },
-        'HU': { name: 'Maďarsko', rate: 8.0 },
-        'RO': { name: 'Rumunsko', rate: 2.0 },
-        'ES': { name: 'Španělsko', rate: 4.0 },
-        'NL': { name: 'Nizozemí', rate: 1.0 }, 
-        'BE': { name: 'Belgie', rate: 4.5 }
-    };
-
-    const MYTO_NAPRAVY_KOEF = { '2': 0.7, '3': 0.8, '4': 1.0, '5': 1.0, '6': 1.1 };
-
-    function formatMoney(amountInCZK) {
-        let mena = document.getElementById('menaSelect').value;
-        let kurz = parseFloat(document.getElementById('kurzEuro').value) || 25;
-        let finalVal = mena === 'EUR' ? amountInCZK / kurz : amountInCZK;
-        
-        let fmt = new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: mena, minimumFractionDigits: 0, maximumFractionDigits: 2 });
-        return fmt.format(finalVal);
-    }
-
-    let globalBreakdown = [];
-    let excludedCountries = [];
-    let waypoints = []; // [{ id: 1, address: "...", type: "transit" }]
-    let wpCounter = 0;
-    let avgFuelConsumption = 0; // Uchovává váženou spotřebu
-
     function setStatus(msg, type) {
         const box = document.getElementById('apiStatus');
         box.className = 'msg-' + type;
         box.innerText = msg;
     }
 
-    // --- SPRÁVA ZASTÁVEK (WAYPOINTS) ---
+    // --- OBLÍBENÉ TRASY (ŠABLONY) ---
+    function updateFavoritesDropdown() {
+        let favs = JSON.parse(localStorage.getItem('cpFavorites')) || {};
+        let sel = document.getElementById('favSelect');
+        sel.innerHTML = `<option value="" id="lblSelFav">${T('favSel')}</option>`;
+        for(let k in favs) { sel.insertAdjacentHTML('beforeend', `<option value="${k}">${k}</option>`); }
+    }
+
+    function saveFavorite() {
+        let name = prompt("Zadejte název šablony (např. Mohelnice - Miláno):");
+        if(!name) return;
+        let favs = JSON.parse(localStorage.getItem('cpFavorites')) || {};
+        favs[name] = JSON.parse(localStorage.getItem('controlPointDraft'));
+        localStorage.setItem('cpFavorites', JSON.stringify(favs));
+        updateFavoritesDropdown();
+        alert("Uloženo!");
+    }
+
+    function loadFavorite() {
+        let name = document.getElementById('favSelect').value;
+        if(!name) return;
+        let favs = JSON.parse(localStorage.getItem('cpFavorites')) || {};
+        if(favs[name]) {
+            localStorage.setItem('controlPointDraft', JSON.stringify(favs[name]));
+            loadAutoSave();
+            spocitatTrasu();
+        }
+    }
+
+    function removeFavorite() {
+        let name = document.getElementById('favSelect').value;
+        if(!name) return;
+        if(confirm(`Opravdu smazat šablonu ${name}?`)) {
+            let favs = JSON.parse(localStorage.getItem('cpFavorites')) || {};
+            delete favs[name];
+            localStorage.setItem('cpFavorites', JSON.stringify(favs));
+            updateFavoritesDropdown();
+        }
+    }
+
+    // --- ZASTÁVKY A PŘEJEZDY ---
     function addWaypoint() {
         wpCounter++;
-        const id = wpCounter;
-        waypoints.push({ id: id, address: "", type: "transit" });
+        waypoints.push({ id: wpCounter, address: "", type: "transit" });
         renderWaypoints();
         checkKoleckoStatus();
+        autoSave();
     }
 
     function removeWaypoint(id) {
         waypoints = waypoints.filter(wp => wp.id !== id);
         renderWaypoints();
         checkKoleckoStatus();
-        spocitatTrasu();
+        autoSave();
+        if(document.getElementById('vzdalenost').value > 0) spocitatTrasu();
     }
 
     function updateWaypoint(id) {
@@ -650,7 +801,8 @@
             wp.address = document.getElementById(`wp_addr_${id}`).value;
             wp.type = document.getElementById(`wp_type_${id}`).value;
         }
-        calculate(); // Typ nákladu mění dynamickou spotřebu
+        autoSave();
+        if(wp.address && document.getElementById('vzdalenost').value > 0) spocitatTrasu();
     }
 
     function renderWaypoints() {
@@ -665,6 +817,7 @@
                     <select id="wp_type_${wp.id}" onchange="updateWaypoint(${wp.id})">
                         <option value="transit" ${wp.type === 'transit' ? 'selected' : ''}>${T('wpTypeTransit')}</option>
                         <option value="empty" ${wp.type === 'empty' ? 'selected' : ''}>${T('wpTypeEmpty')}</option>
+                        <option value="prejezd" ${wp.type === 'prejezd' ? 'selected' : ''}>${T('wpTypePrejezd')}</option>
                         <option value="half" ${wp.type === 'half' ? 'selected' : ''}>${T('wpTypeHalf')}</option>
                         <option value="full" ${wp.type === 'full' ? 'selected' : ''}>${T('wpTypeFull')}</option>
                     </select>
@@ -677,12 +830,8 @@
 
     function checkKoleckoStatus() {
         let typSel = document.getElementById('typTrasy');
-        if(waypoints.length > 0) {
-            typSel.value = "1";
-            typSel.disabled = true;
-        } else {
-            typSel.disabled = false;
-        }
+        if(waypoints.length > 0) { typSel.value = "1"; typSel.disabled = true; } 
+        else { typSel.disabled = false; }
     }
 
     // --- OBJÍŽĎKY ---
@@ -715,7 +864,7 @@
         }
     }
 
-    // --- GEOLOKACE A MAPOVÁNÍ ---
+    // --- GEOLOKACE A ROUTOVÁNÍ ---
     async function getCoordinates(address) {
         if(!address) return null;
         let gpsMatch = address.match(/^([-+]?\d{1,2}\.\d+)[,\s]+([-+]?\d{1,3}\.\d+)$/);
@@ -759,7 +908,6 @@
         setStatus(T('prubeh'), "info");
 
         try {
-            // Sestavení bodů trasy (Start -> Zastávky -> Cíl)
             let coordStrings = [];
             const startCoords = await getCoordinates(startStr);
             coordStrings.push(`${startCoords[0]},${startCoords[1]}`);
@@ -782,20 +930,54 @@
             if(!data.routes || data.routes.length === 0) throw new Error("Trasa nenalezena.");
             
             let route = data.routes[0];
-            let distTotal = (route.distance / 1000).toFixed(1);
+            let distTotal = (route.distance / 1000);
             let coords = route.geometry.coordinates;
 
-            // Vzorkování pro zjištění států na trase
+            // Vykreslit MAPU
+            drawMap(coords);
+
+            // VÝPOČET AETR (Odhad hodin a dnů)
+            let hoursDrive = distTotal / 70; // průměr 70km/h
+            let shifts = Math.max(0.5, Math.ceil(hoursDrive / 9)); // 9h jízdy na den
+            let aetrBox = document.getElementById('aetrInfo');
+            aetrBox.innerText = T('aetrText').replace('{h}', hoursDrive.toFixed(1)).replace('{d}', shifts);
+            aetrBox.style.display = 'block';
+            document.getElementById('dny').value = shifts; // Automatické propsání
+
+            // DYNAMICKÁ SPOTŘEBA A PŘEJEZDY DLE LEGŮ
+            let legs = route.legs;
+            let totalLiters = 0;
+            totalPrejezdKm = 0;
+            let currentWeight = parseFloat(document.getElementById('vahaNakladu').value) || 0;
+            let emptyCons = parseFloat(document.getElementById('spotrebaPrazdne').value) || 25;
+
+            for(let i=0; i<legs.length; i++) {
+                // Typ zastávky určuje náklad pro tento leg
+                if(i > 0 && i <= waypoints.length) {
+                    let wType = waypoints[i-1].type;
+                    if(wType === 'empty' || wType === 'prejezd') currentWeight = 0;
+                    else if(wType === 'half') currentWeight = (parseFloat(document.getElementById('vahaNakladu').value) || 0) / 2;
+                    else if(wType === 'full') currentWeight = parseFloat(document.getElementById('vahaNakladu').value) || 0;
+                }
+
+                let legKm = legs[i].distance / 1000;
+                if(currentWeight === 0) totalPrejezdKm += legKm;
+                
+                let legRate = emptyCons + (currentWeight * SPOTREBA_NA_TUNU);
+                totalLiters += (legKm / 100) * legRate;
+            }
+
+            avgFuelConsumption = distTotal > 0 ? (totalLiters / distTotal) * 100 : emptyCons;
+            document.getElementById('prejezdyShow').value = totalPrejezdKm.toFixed(1);
+
+            // VZORKOVÁNÍ STÁTŮ
             let detectedCountries = [];
             let step = Math.max(1, Math.floor(coords.length / 15));
             for(let i = 0; i < coords.length; i += step) {
                 let cCode = await getCountryCodeFromCoords(coords[i][0], coords[i][1]);
-                if(MYTO_STATY[cCode] && !detectedCountries.includes(cCode)) {
-                    detectedCountries.push(cCode);
-                }
+                if(MYTO_STATY[cCode] && !detectedCountries.includes(cCode)) detectedCountries.push(cCode);
             }
 
-            // Garanční cílový stát
             let targetCountry = manualStat;
             if (!targetCountry) {
                 let text = cilStr.toUpperCase();
@@ -806,28 +988,25 @@
                 else if(text.includes('MUNCHEN') || text.includes('DE')) targetCountry = 'DE';
                 else targetCountry = detectedCountries[detectedCountries.length - 1] || 'DE'; 
             }
+            if (!detectedCountries.includes(targetCountry)) detectedCountries.push(targetCountry);
 
-            if (!detectedCountries.includes(targetCountry)) {
-                detectedCountries.push(targetCountry);
-            }
-
-            // Kontrola objížděk – OSRM neumí objet stát, zkontrolujeme, jestli trasa tím státem přesto vede
+            // KONTROLA OBJÍŽDĚK
             for(let exc of excludedCountries) {
                 if(detectedCountries.includes(exc)) {
-                    excludedCountries = excludedCountries.filter(c => c !== exc); // Vyhodíme neproveditelnou objížďku
+                    excludedCountries = excludedCountries.filter(c => c !== exc);
                     renderAvoidList();
                     alert(T('alertAvoidFail'));
                     btn.disabled = false;
                     setStatus(T('alertAvoidFail'), "warning");
-                    return; // Zastaví výpočet
+                    return; 
                 }
             }
 
-            // Rozdělení kilometrů logicky do států
+            // ROZDĚLENÍ KM DO STÁTŮ
             let activeCountries = detectedCountries.filter(c => !excludedCountries.includes(c));
             if(activeCountries.length === 0) activeCountries = ['CZ'];
 
-            let remainingKm = parseFloat(distTotal);
+            let remainingKm = distTotal;
             let segments = [];
 
             if (remainingKm > 200 && targetCountry !== 'CZ' && activeCountries.length > 1) {
@@ -837,7 +1016,6 @@
                     remainingKm -= czKm;
                 }
 
-                // Pokud IT bez AT (zakázáno), zbývá už jen DE/CH (máme DE)
                 let tranzitKm = remainingKm * 0.5;
                 if(activeCountries.includes('AT') && !excludedCountries.includes('AT')) {
                     segments.push({ code: 'AT', km: Math.min(tranzitKm, 350) });
@@ -852,39 +1030,23 @@
                 segments.push({ code: targetCountry, km: remainingKm });
             }
 
-            // DYNAMICKÁ SPOTŘEBA PO ÚSECÍCH (LEGS)
-            let legs = route.legs;
-            let totalLiters = 0;
-            let currentWeight = parseFloat(document.getElementById('vahaNakladu').value) || 0;
-            let emptyCons = parseFloat(document.getElementById('spotrebaPrazdne').value) || 25;
-
-            for(let i=0; i<legs.length; i++) {
-                let legKm = legs[i].distance / 1000;
-                let legRate = emptyCons + (currentWeight * SPOTREBA_NA_TUNU);
-                totalLiters += (legKm / 100) * legRate;
-
-                // Aktualizace váhy pro další leg podle zastávky
-                if(i < waypoints.length) {
-                    let wType = waypoints[i].type;
-                    if(wType === 'empty') currentWeight = 0;
-                    else if(wType === 'half') currentWeight = currentWeight / 2;
-                    else if(wType === 'full') currentWeight = parseFloat(document.getElementById('vahaNakladu').value) || 0;
-                }
-            }
-            avgFuelConsumption = distTotal > 0 ? (totalLiters / distTotal) * 100 : emptyCons;
-
             globalBreakdown = segments;
-            document.getElementById('vzdalenost').value = distTotal;
+            document.getElementById('vzdalenost').value = distTotal.toFixed(1);
+            
+            // PŘÍPRAVA NA SDÍLENÍ
+            lastRouteData = { start: startStr, cil: cilStr, wps: waypoints.map(w=>w.address), dist: distTotal.toFixed(1) };
+
             let vMulti = waypoints.length > 0 ? 1 : parseFloat(document.getElementById('typTrasy').value) || 1;
             renderBreakdownSegments(globalBreakdown, vMulti);
             
-            setStatus(T('hotovo') + `: ${distTotal} km`, "success");
+            setStatus(T('hotovo') + `: ${distTotal.toFixed(1)} km`, "success");
             calculate();
 
         } catch (error) {
             setStatus("CHYBA: " + error.message, "error");
         } finally {
             btn.disabled = false;
+            autoSave();
         }
     }
 
@@ -893,7 +1055,6 @@
         const list = document.getElementById('breakdownList');
         list.innerHTML = "";
         if(segments.length === 0) { container.style.display = 'none'; return; }
-        
         container.style.display = 'block';
 
         let euroKoef = parseFloat(document.getElementById('euroNorma').value);
@@ -920,9 +1081,7 @@
                 <div class="breakdown-row" id="segRow_${index}">
                     <div class="breakdown-input-group">
                         <label>Stát</label>
-                        <select class="seg-stat" data-index="${index}" onchange="updateSegment(${index})">
-                            ${optionsHtml}
-                        </select>
+                        <select class="seg-stat" data-index="${index}" onchange="updateSegment(${index})">${optionsHtml}</select>
                     </div>
                     <div class="breakdown-input-group">
                         <label>Km</label>
@@ -961,9 +1120,7 @@
     }
 
     function updateAllSegmentTolls() {
-        document.querySelectorAll('.seg-stat').forEach(sel => {
-            updateSegment(sel.getAttribute('data-index'));
-        });
+        document.querySelectorAll('.seg-stat').forEach(sel => { updateSegment(sel.getAttribute('data-index')); });
     }
 
     function calculate() {
@@ -988,9 +1145,10 @@
         let typTrasyMulti = waypoints.length > 0 ? 1 : (parseFloat(document.getElementById('typTrasy').value) || 1);
         let celkoveKm = (vzdalenostBase * typTrasyMulti) + dokladky;
 
-        // Spotřeba (zohledňuje dynamiku přes waypoints, pokud existuje)
         let spotrebaPrazdne = parseFloat(document.getElementById('spotrebaPrazdne').value) || 0;
         let vahaNakladu = parseFloat(document.getElementById('vahaNakladu').value) || 0;
+        
+        // Spotřeba (zohledňuje dynamiku přes waypoints, viz spocitatTrasu)
         if(avgFuelConsumption === 0 || waypoints.length === 0) {
             avgFuelConsumption = spotrebaPrazdne + (vahaNakladu * SPOTREBA_NA_TUNU);
         }
@@ -1054,6 +1212,32 @@
         } else {
             ziskBox.className = "profit-status status-neutral"; ziskBox.innerText = T('cekamZadani'); if(procBox) procBox.innerText = "";
         }
+        
+        autoSave();
+    }
+
+    // --- NAVIGACE A SDÍLENÍ ---
+    function openNav() {
+        if(!lastRouteData) { alert("Nejprve spočítejte trasu."); return; }
+        let url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(lastRouteData.start)}&destination=${encodeURIComponent(lastRouteData.cil)}`;
+        if(lastRouteData.wps && lastRouteData.wps.length > 0) {
+            let wpsStr = lastRouteData.wps.filter(w=>w.trim()!=="").map(w => encodeURIComponent(w)).join('|');
+            if(wpsStr) url += `&waypoints=${wpsStr}`;
+        }
+        window.open(url, '_blank');
+    }
+
+    function shareSummary() {
+        if(!lastRouteData) { alert("Nejprve spočítejte trasu."); return; }
+        let wpsText = lastRouteData.wps.filter(w=>w.trim()!=="").join(' -> ');
+        let routeText = `${lastRouteData.start} -> ${wpsText ? wpsText + ' -> ' : ''}${lastRouteData.cil}`;
+        let cena = document.getElementById('resProdejniCena').innerText;
+        let km = document.getElementById('vzdalenost').value;
+        let text = `🚛 CONTROL POINT - ANALÝZA TRASY\nTrasa: ${routeText}\nVzdálenost: ${km} km\nCeníková cena: ${cena}\n(Cena zahrnuje mýto, naftu i mzdu řidiče)`;
+        
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Souhrn zkopírován do schránky! Můžete jej vložit do e-mailu nebo WhatsAppu.");
+        });
     }
 
     document.querySelectorAll('input, select').forEach(el => {
@@ -1063,7 +1247,6 @@
         });
     });
 
-    changeLanguage(); // Inicializace jazyka
 </script>
 </body>
 </html>
