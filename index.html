@@ -70,13 +70,10 @@
 
         /* ROZPAD TRASY */
         .breakdown-container { background: #e3f2fd; padding: 12px; border-radius: 6px; border: 1px solid #b6d4fe; margin-top: 12px; display: none; }
-        .breakdown-row { display: grid; grid-template-columns: 1.4fr 0.8fr 1fr auto; align-items: center; gap: 6px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #b6d4fe; }
+        .breakdown-row { display: grid; grid-template-columns: 1.5fr 1fr 1fr; align-items: center; gap: 6px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #b6d4fe; }
         .breakdown-row:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
         .breakdown-input-group { display: flex; flex-direction: column; gap: 2px; font-size: 9px; font-weight: 800; color: #0d47a1; text-transform: uppercase; }
         .breakdown-input-group input, .breakdown-input-group select { padding: 6px 4px; font-size: 11px; border-color: #b6d4fe; background: #fff; width: 100%; }
-        
-        .btn-avoid { background: #d32f2f; color: white; border: none; padding: 6px 4px; border-radius: 4px; font-size: 9px; font-weight: 800; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
-        .btn-avoid:hover { background: #b71c1c; }
 
         .toggle-container { display: flex; align-items: center; justify-content: space-between; background: var(--cp-dark); color: white; padding: 10px 12px; border-radius: 6px; margin-bottom: 12px; }
         .toggle-label { font-weight: 600; font-size: 13px; }
@@ -139,8 +136,6 @@
         
         <div class="card">
             <h2><span>01.</span> Lokace & Trasa</h2>
-            
-            <div id="avoidListContainer"></div>
 
             <div class="form-grid">
                 <div class="input-group" style="grid-column: 1 / -1;">
@@ -148,7 +143,7 @@
                     <input type="text" id="startAdresa" value="Věrovany 94">
                 </div>
                 <div class="input-group">
-                    <label>Cíl <span class="icon-help" onclick="showInfo('Cílové město či adresa. Pro cizí státy doporučujeme i PSČ.')">i</span></label>
+                    <label>Cíl <span class="icon-help" onclick="showInfo('Cílové město či adresa. Pro cizí státy doporučujeme i PSČ (např. Mnichov 80331).')">i</span></label>
                     <input type="text" id="cilAdresa" placeholder="Např. Mnichov 80331">
                 </div>
                 <div class="input-group">
@@ -180,7 +175,7 @@
                 </div>
                 <div class="input-group">
                     <label>Typ trasy <span class="icon-help" onclick="showInfo('Kolečko automaticky zdvojnásobí dálniční km i mýto.')">i</span></label>
-                    <select id="typTrasy" onchange="spocitatTrasu()">
+                    <select id="typTrasy" onchange="renderBreakdownSegments(globalBreakdown, parseFloat(this.value))">
                         <option value="1">Napřímo</option>
                         <option value="2">Kolečko</option>
                     </select>
@@ -192,9 +187,8 @@
             </div>
 
             <div id="breakdownContainer" class="breakdown-container">
-                <h3 style="font-size: 12px; margin-bottom: 8px; color: #0d47a1; text-transform: uppercase; display: flex; align-items: center; justify-content: space-between;">
+                <h3 style="font-size: 12px; margin-bottom: 8px; color: #0d47a1; text-transform: uppercase;">
                     Rozpad mýta dle států (Tranzit)
-                    <span class="icon-help" style="background:#0d47a1; color:white;" onclick="showInfo('Zde vidíte rozpad kilometrů a mýta pro každý stát zvlášť. Můžete stát objet tlačítkem OBJET nebo kilometry přepsat.')">i</span>
                 </h3>
                 <div id="breakdownList"></div>
             </div>
@@ -370,42 +364,11 @@
     const fmt = new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: 'CZK', minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
     let globalBreakdown = [];
-    let activeAvoids = [];
 
     function setStatus(msg, type) {
         const box = document.getElementById('apiStatus');
         box.className = 'msg-' + type;
         box.innerText = msg;
-    }
-
-    function renderAvoidList() {
-        let container = document.getElementById('avoidListContainer');
-        if(activeAvoids.length === 0) { container.innerHTML = ''; return; }
-        
-        let html = '<div style="font-size:11px; font-weight:600; color:white; margin-bottom:12px; background:var(--cp-danger); padding:8px; border-radius:4px;"><b>Aktivní vyhýbání státu:</b><br>';
-        activeAvoids.forEach(code => {
-            let name = MYTO_STATY[code] ? MYTO_STATY[code].name : code;
-            html += `<span style="display:inline-block; margin-top:4px; background:rgba(0,0,0,0.3); color:white; padding:4px 8px; border-radius:3px; margin-right:4px; cursor:pointer;" onclick="removeAvoid('${code}')">✕ Povolit ${name}</span>`;
-        });
-        html += '</div>';
-        container.innerHTML = html;
-    }
-
-    function removeAvoid(code) {
-        activeAvoids = activeAvoids.filter(c => c !== code);
-        renderAvoidList();
-        spocitatTrasu();
-    }
-
-    window.promptAvoidCountry = function(code) {
-        let name = MYTO_STATY[code] ? MYTO_STATY[code].name : code;
-        if(confirm(`Chcete přegenerovat trasu a vyhnout se státu: ${name}?`)) {
-            if(!activeAvoids.includes(code)) {
-                activeAvoids.push(code);
-                renderAvoidList();
-                spocitatTrasu();
-            }
-        }
     }
 
     async function getCoordinates(address) {
@@ -427,7 +390,6 @@
         throw new Error(`Adresa '${address}' nenalezena.`);
     }
 
-    // Inteligentní rozdělení trasy do států (CZ -> Tranzit -> Cíl)
     async function spocitatTrasu() {
         let startStr = document.getElementById('startAdresa').value.trim();
         let cilStr = document.getElementById('cilAdresa').value.trim();
@@ -437,78 +399,59 @@
         if (!startStr || !cilStr) { setStatus("Vyplňte Start i Cíl.", "error"); return; }
         
         btn.disabled = true;
-        setStatus("Počítám trasu a rozpad úseků...", "info");
+        setStatus("Počítám trasu...", "info");
 
         try {
             const startCoords = await getCoordinates(startStr);
             const cilCoords = await getCoordinates(cilStr);
             
-            let bodyReq = { coordinates: [startCoords, cilCoords] };
-            if(activeAvoids.length > 0) {
-                bodyReq.options = { avoid_countries: activeAvoids };
-            }
+            let url = `https://api.openrouteservice.org/v2/directions/driving-hgv?api_key=${ORS_API_KEY}&start=${startCoords[0]},${startCoords[1]}&end=${cilCoords[0]},${cilCoords[1]}`;
 
-            let res = await fetch(`https://api.openrouteservice.org/v2/directions/driving-hgv`, {
-                method: 'POST',
-                headers: { 'Authorization': ORS_API_KEY, 'Content-Type': 'application/json' },
-                body: JSON.stringify(bodyReq)
-            });
-
-            if(!res.ok) throw new Error("Server trasy neodpovídá.");
+            let res = await fetch(url);
+            if(!res.ok) throw new Error("Chyba při výpočtu trasy.");
             let data = await res.json();
             
-            let distTotal = (data.routes[0].summary.distance / 1000).toFixed(1);
-            
-            // Inteligentní odhad tranzitu podle vzdálenosti a států
-            let segments = [];
-            let typTrasyMulti = parseFloat(document.getElementById('typTrasy').value) || 1;
-            
-            if(!cilStat) {
+            let distTotal = (data.features[0].properties.summary.distance / 1000).toFixed(1);
+
+            if (!cilStat) {
                 let text = cilStr.toUpperCase();
-                if(text.includes('WIEN') || text.includes('AT')) cilStat = 'AT';
+                if(text.includes('WIEN') || text.includes('GRAZ') || text.includes('AT')) cilStat = 'AT';
                 else if(text.includes('BRATISLAVA') || text.includes('SK')) cilStat = 'SK';
+                else if(text.includes('PRAHA') || text.includes('BRNO') || text.includes('CZ')) cilStat = 'CZ';
                 else if(text.includes('WARSZAWA') || text.includes('PL')) cilStat = 'PL';
                 else if(text.includes('MILANO') || text.includes('IT')) cilStat = 'IT';
-                else cilStat = 'DE';
+                else cilStat = 'DE'; 
             }
 
-            // Pokud je trasa dlouhá, rozdělíme ji na CZ -> Tranzit (např. Rakousko/Německo) -> Cíl
-            if(distTotal > 300 && cilStat !== 'CZ') {
-                let czKm = Math.min(100, distTotal * 0.2);
-                let remainingKm = distTotal - czKm;
-                
+            let segments = [];
+            let remaining = parseFloat(distTotal);
+
+            if(remaining > 300 && cilStat !== 'CZ') {
+                let czKm = Math.min(100, remaining * 0.25);
                 segments.push({ code: 'CZ', km: czKm });
-                
-                // Pokud jedeme do Itálie nebo Slovinska přes Rakousko a nemáme ho zakázané
-                if((cilStat === 'IT' || cilStat === 'SI' || cilStat === 'HR') && !activeAvoids.includes('AT')) {
-                    let atKm = remainingKm * 0.4;
-                    segments.push({ code: 'AT', km: atKm });
-                    segments.push({ code: cilStat, km: remainingKm - atKm });
-                } else if(cilStat !== 'DE' && distTotal > 500 && !activeAvoids.includes('DE')) {
-                    let deKm = remainingKm * 0.5;
-                    segments.push({ code: 'DE', km: deKm });
-                    segments.push({ code: cilStat, km: remainingKm - deKm });
+                remaining -= czKm;
+
+                if(cilStat === 'IT' && remaining > 300) {
+                    segments.push({ code: 'AT', km: remaining * 0.5 });
+                    segments.push({ code: 'IT', km: remaining * 0.5 });
+                } else if(cilStat === 'AT') {
+                    segments.push({ code: 'AT', km: remaining });
                 } else {
-                    segments.push({ code: cilStat, km: remainingKm });
+                    segments.push({ code: cilStat, km: remaining });
                 }
             } else {
-                segments.push({ code: cilStat || 'CZ', km: parseFloat(distTotal) });
+                segments.push({ code: cilStat, km: remaining });
             }
 
             globalBreakdown = segments;
             document.getElementById('vzdalenost').value = distTotal;
-            renderBreakdownSegments(globalBreakdown, typTrasyMulti);
+            renderBreakdownSegments(globalBreakdown, parseFloat(document.getElementById('typTrasy').value));
             
             setStatus(`Hotovo: ${distTotal} km.`, "success");
             calculate();
 
         } catch (error) {
-            setStatus("Nouzový výpočet (přímý odhad)", "info");
-            let vzd = 500.0;
-            document.getElementById('vzdalenost').value = vzd;
-            globalBreakdown = [{ code: cilStat || 'DE', km: vzd }];
-            renderBreakdownSegments(globalBreakdown, parseFloat(document.getElementById('typTrasy').value));
-            calculate();
+            setStatus("CHYBA: " + error.message, "error");
         } finally {
             btn.disabled = false;
         }
@@ -535,12 +478,6 @@
                 optionsHtml += `<option value="${k}" ${sel}>${MYTO_STATY[k].name} (${MYTO_STATY[k].rate} Kč/km)</option>`; 
             }
 
-            let btnObjet = "";
-            // Tlačítko objet u tranzitních států (např. Rakousko, Německo)
-            if(seg.code !== 'CZ' && segments.length > 1) {
-                btnObjet = `<button class="btn-avoid" onclick="window.promptAvoidCountry('${seg.code}')" title="Vyhnout se tomuto státu">⛔<br>OBJET</button>`;
-            }
-
             let rowHtml = `
                 <div class="breakdown-row" id="segRow_${index}">
                     <div class="breakdown-input-group">
@@ -557,7 +494,6 @@
                         <label>Kč Mýto</label>
                         <input type="number" class="seg-toll" data-index="${index}" value="${Math.round(estToll)}" oninput="calculate()">
                     </div>
-                    <div>${btnObjet}</div>
                 </div>
             `;
             list.insertAdjacentHTML('beforeend', rowHtml);
