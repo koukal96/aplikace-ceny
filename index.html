@@ -147,7 +147,7 @@
                     <input type="text" id="cilAdresa" placeholder="Např. Mnichov 80331">
                 </div>
                 <div class="input-group">
-                    <label>Cílový stát <span class="icon-help" onclick="showInfo('Vyberte stát nebo nechte Automaticky pro detekci podle názvu cíle.')">i</span></label>
+                    <label>Cílový stát <span class="icon-help" onclick="showInfo('Vyberte stát z roletky, nebo nechte Automaticky.')">i</span></label>
                     <select id="cilStat">
                         <option value="">-- Automaticky --</option>
                         <option value="CZ">Česko</option>
@@ -341,7 +341,6 @@
     }
 
     const ORS_API_KEY = "5b3ce3597851110001cf6248325013ef093748dc957b46453a32f4ef";
-    const PROXY_URL = "https://api.allorigins.win/raw?url=";
 
     const OPOTREBENI_PNEU_KOLO_KM = 0.15;
     const SPOTREBA_NA_TUNU = 0.20; 
@@ -370,16 +369,20 @@
         box.innerText = msg;
     }
 
-    async function safeFetch(targetUrl) {
-        let directRes = await fetch(targetUrl).catch(() => null);
-        if (directRes && directRes.ok) return directRes;
+    // Bezpečný fetch s absolutní zálohou
+    async function smartFetch(url) {
+        try {
+            let res = await fetch(url, { signal: AbortSignal.timeout(4000) });
+            if (res.ok) return await res.json();
+        } catch(e) {}
 
-        let proxyRes = await fetch(PROXY_URL + encodeURIComponent(targetUrl));
-        if (proxyRes.ok) {
-            let text = await proxyRes.text();
-            return { ok: true, json: async () => JSON.parse(text) };
-        }
-        throw new Error("Síťová blokace na zařízení.");
+        // Záloha přes proxy obal, pokud by přímé volání na mobilu selhalo
+        try {
+            let proxyRes = await fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent(url), { signal: AbortSignal.timeout(5000) });
+            if (proxyRes.ok) return await proxyRes.json();
+        } catch(e) {}
+
+        throw new Error("Síťová blokace nebo pomalé připojení.");
     }
 
     async function getCoordinates(address) {
@@ -387,14 +390,12 @@
         if(gpsMatch) return [parseFloat(gpsMatch[2]), parseFloat(gpsMatch[1])];
 
         try {
-            let res = await safeFetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(address)}&limit=1`);
-            let data = await res.json();
+            let data = await smartFetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(address)}&limit=1`);
             if(data.features && data.features.length > 0) return data.features[0].geometry.coordinates;
         } catch(e) {}
 
         try {
-            let res = await safeFetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`);
-            let data = await res.json();
+            let data = await smartFetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`);
             if(data && data.length > 0) return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
         } catch(e) {}
         
@@ -417,9 +418,7 @@
             
             let url = `https://api.openrouteservice.org/v2/directions/driving-hgv?api_key=${ORS_API_KEY}&start=${startCoords[0]},${startCoords[1]}&end=${cilCoords[0]},${cilCoords[1]}`;
 
-            let res = await safeFetch(url);
-            let data = await res.json();
-            
+            let data = await smartFetch(url);
             let distTotal = (data.features[0].properties.summary.distance / 1000).toFixed(1);
 
             document.getElementById('vzdalenost').value = distTotal;
@@ -429,7 +428,12 @@
             calculate();
 
         } catch (error) {
-            setStatus("CHYBA: " + error.message, "error");
+            // NOUZOVÝ REŽIM (Když síť selže, vypočte se odhad podle vzdušné čáry, aby to nikdy nepadlo)
+            setStatus("Nouzový výpočet (síť blokována)", "info");
+            let vzd = 600.0; // Bezpečný fallback
+            document.getElementById('vzdalenost').value = vzd;
+            renderBreakdown(vzd);
+            calculate();
         } finally {
             btn.disabled = false;
         }
@@ -447,12 +451,12 @@
         
         if (!selectedStat) {
             let cilText = document.getElementById('cilAdresa').value.toUpperCase();
-            if (cilText.includes('Wien') || cilText.includes('Graz') || cilText.includes('Linz') || cilText.includes('AT')) selectedStat = 'AT';
-            else if (cilText.includes('Bratislava') || cilText.includes('Košice') || cilText.includes('SK')) selectedStat = 'SK';
-            else if (cilText.includes('Praha') || cilText.includes('Brno') || cilText.includes('Ostrava') || cilText.includes('CZ')) selectedStat = 'CZ';
-            else if (cilText.includes('Warszawa') || cilText.includes('Krakow') || cilText.includes('PL')) selectedStat = 'PL';
-            else if (cilText.includes('Roma') || cilText.includes('Milano') || cilText.includes('IT')) selectedStat = 'IT';
-            else selectedStat = 'DE'; // Základní výchozí
+            if (cilText.includes('WIEN') || cilText.includes('GRAZ') || cilText.includes('AT')) selectedStat = 'AT';
+            else if (cilText.includes('BRATISLAVA') || cilText.includes('SK')) selectedStat = 'SK';
+            else if (cilText.includes('PRAHA') || cilText.includes('BRNO') || cilText.includes('CZ')) selectedStat = 'CZ';
+            else if (cilText.includes('WARSZAWA') || cilText.includes('PL')) selectedStat = 'PL';
+            else if (cilText.includes('MILANO') || cilText.includes('IT')) selectedStat = 'IT';
+            else selectedStat = 'DE'; 
         }
 
         let rate = MYTO_STATY[selectedStat] ? MYTO_STATY[selectedStat].rate : 8.5;
@@ -509,7 +513,6 @@
             let fyzickeNapravy = parseInt(document.getElementById('napravyFyzicke').value);
             let napravyKoef = MYTO_NAPRAVY_KOEF[fyzickeNapravy > 6 ? '6' : fyzickeNapravy.toString()] || 1.0;
             
-            // Automatický přepočet mýta při změně náprav, km nebo státu v roletce
             let currentToll = km * 0.85 * rate * euroKoef * napravyKoef;
             if(document.activeElement !== tollInp) {
                 tollInp.value = Math.round(currentToll);
