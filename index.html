@@ -21,7 +21,7 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .loading-text { font-size: 18px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
 
-        /* HEADER - VYLEPŠENÝ PRO MOBIL */
+        /* HEADER */
         header { background-color: var(--cp-dark); padding: 10px 15px; text-align: center; border-bottom: 4px solid var(--cp-red); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; }
         .logo-container { display: flex; align-items: center; gap: 8px; width: 100%; justify-content: center; }
         header img { max-height: 32px; display: block; width: auto; } 
@@ -335,12 +335,12 @@
     }
 
     const ORS_API_KEY = "5b3ce3597851110001cf6248325013ef093748dc957b46453a32f4ef";
+    const PROXY_URL = "https://api.allorigins.win/raw?url="; // Obalovač pro obejití blokace na iPhonu
 
     const OPOTREBENI_PNEU_KOLO_KM = 0.15;
     const SPOTREBA_NA_TUNU = 0.20; 
     const DPH_SAZBA = 1.21;
     
-    // Kompletní ceník sazeb pro požadované státy dle zadání
     const MYTO_STATY = {
         'CZ': { name: 'Česko', rate: 4.5 },
         'SK': { name: 'Slovensko', rate: 5.0 },
@@ -353,7 +353,7 @@
         'ES': { name: 'Španělsko', rate: 4.0 },
         'NL': { name: 'Nizozemí', rate: 1.0 }, 
         'BE': { name: 'Belgie', rate: 4.5 },
-        'UNKNOWN': { name: 'Česko (Základ)', rate: 4.5 }
+        'UNKNOWN': { name: 'Česko', rate: 4.5 }
     };
 
     const MYTO_NAPRAVY_KOEF = { '2': 0.7, '3': 0.8, '4': 1.0, '5': 1.0, '6': 1.1 };
@@ -389,6 +389,20 @@
         spocitatTrasu();
     }
 
+    // BEZPEČNÝ PROXY FETCH PRO IPHONE
+    async function safeFetch(targetUrl) {
+        let directRes = await fetch(targetUrl).catch(() => null);
+        if (directRes && directRes.ok) return directRes;
+
+        // Pokud to iOS zablokuje, použijeme proxy obal
+        let proxyRes = await fetch(PROXY_URL + encodeURIComponent(targetUrl));
+        if (proxyRes.ok) {
+            let text = await proxyRes.text();
+            return { ok: true, json: async () => JSON.parse(text) };
+        }
+        throw new Error("Síťová blokace na zařízení.");
+    }
+
     async function getCoordinates(address, targetCountryCode = null) {
         let gpsMatch = address.match(/^([-+]?\d{1,2}\.\d+)[,\s]+([-+]?\d{1,3}\.\d+)$/);
         if(gpsMatch) return [parseFloat(gpsMatch[2]), parseFloat(gpsMatch[1])];
@@ -397,19 +411,15 @@
         if(targetCountryCode) query += `, ${targetCountryCode}`;
 
         try {
-            let res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=1`);
-            if(res.ok) {
-                let data = await res.json();
-                if(data.features && data.features.length > 0) return data.features[0].geometry.coordinates;
-            }
+            let res = await safeFetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=1`);
+            let data = await res.json();
+            if(data.features && data.features.length > 0) return data.features[0].geometry.coordinates;
         } catch(e) {}
 
         try {
-            let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
-            if(res.ok) {
-                let data = await res.json();
-                if(data && data.length > 0) return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
-            }
+            let res = await safeFetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+            let data = await res.json();
+            if(data && data.length > 0) return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
         } catch(e) {}
         
         throw new Error(`Adresa '${address}' nenalezena.`);
@@ -428,19 +438,17 @@
         if(countryCache[cacheKey]) return countryCache[cacheKey];
 
         try {
-            let res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=3`);
-            if(res.ok) {
-                let data = await res.json();
-                if(data.address && data.address.country_code) {
-                    let code = data.address.country_code.toUpperCase();
-                    if(MYTO_STATY[code]) {
-                        countryCache[cacheKey] = code;
-                        return code;
-                    }
+            let res = await safeFetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=3`);
+            let data = await res.json();
+            if(data.address && data.address.country_code) {
+                let code = data.address.country_code.toUpperCase();
+                if(MYTO_STATY[code]) {
+                    countryCache[cacheKey] = code;
+                    return code;
                 }
             }
         } catch(e) {}
-        return "CZ"; // Bezpečná fallback na ČR, žádné "Neznámé státy"
+        return "CZ";
     }
 
     async function spocitatTrasu() {
@@ -458,22 +466,19 @@
             const startCoords = await getCoordinates(startStr);
             const cilCoords = await getCoordinates(cilStr, cilStat);
             
-            let bodyReq = { coordinates: [startCoords, cilCoords], extra_info: ["countryinfo"] };
+            let url = `https://api.openrouteservice.org/v2/directions/driving-hgv?api_key=${ORS_API_KEY}&start=${startCoords[0]},${startCoords[1]}&end=${cilCoords[0]},${cilCoords[1]}&extra_info=countryinfo`;
+            
             if(activeAvoids.length > 0) {
-                // Převod kódů států na ORS interní filtry, pokud jsou aktivní
-                bodyReq.options = { avoid_countries: activeAvoids.map(a => a.code) };
+                let opt = { avoid_countries: activeAvoids.map(a => a.code) };
+                url += `&options=${encodeURIComponent(JSON.stringify(opt))}`;
             }
 
-            let res = await fetch(`https://api.openrouteservice.org/v2/directions/driving-hgv`, {
-                method: 'POST', headers: { 'Authorization': ORS_API_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(bodyReq)
-            });
-            
-            if(!res.ok) throw new Error("Mapový server odmítl trasu.");
+            let res = await safeFetch(url);
             let data = await res.json();
             
-            let distTotal = (data.routes[0].summary.distance / 1000).toFixed(1);
-            let geom = data.routes[0].geometry.coordinates;
-            let countryInfoIndices = data.routes[0].extras && data.routes[0].extras.countryinfo ? data.routes[0].extras.countryinfo.values : null;
+            let distTotal = (data.features[0].properties.summary.distance / 1000).toFixed(1);
+            let geom = data.features[0].geometry.coordinates;
+            let countryInfoIndices = data.features[0].properties.extras && data.features[0].properties.extras.countryinfo ? data.features[0].properties.extras.countryinfo.values : null;
 
             let breakdownArr = [];
             if(countryInfoIndices) {
@@ -501,7 +506,6 @@
             let finalArr = [];
             for(let c in merged) finalArr.push({code: c, km: parseFloat(merged[c].km.toFixed(1)), internalId: merged[c].internalId});
 
-            // Upozornění na Rakousko
             let detectedCodes = finalArr.map(b => b.code);
             if (detectedCodes.includes("AT") && !avoidAustriaPromptShown && !activeAvoids.find(a => a.code === 'AT')) {
                 avoidAustriaPromptShown = true; 
@@ -509,7 +513,7 @@
                 if(atSeg) {
                     btn.disabled = false;
                     if(confirm("POZOR: Trasa vede přes Rakousko (drahé mýto).\n\nChcete Rakousko objet?")) {
-                        activeAvoids.push({id: atSeg.internalId || 0, code: 'AT'});
+                        activeAvoids.push({id: 0, code: 'AT'});
                         renderAvoidList();
                         return spocitatTrasu();
                     }
@@ -668,7 +672,10 @@
         let nakladPneu = celkoveKm * (kolaNaZemi * OPOTREBENI_PNEU_KOLO_KM);
 
         let nakladNafta = (celkoveKm / 100) * celkovaSpotrebaLitr * cenaNafty;
-        let nakladyCelkem = nakladNafta + nakladMzda + nakladFixAuto + nakladPneu + totalMyto;
+        let nakladyCelkem = nakladNafta + nakladMzda + nakldFixAuto = nakladFixAuto + nakladPneu + totalMyto; // oprava
+        // (zarovnáno:)
+        nakladyCelkem = nakladNafta + nakladMzda + nakladFixAuto + nakladPneu + totalMyto;
+
         let marze = parseFloat(document.getElementById('marze').value) || 0;
         let prodejniCena = nakladyCelkem * (1 + (marze / 100));
 
@@ -691,20 +698,20 @@
         
         document.getElementById('realTrzbaKm').innerText = fmt.format(realTrzbaKm) + " / km";
         let ziskBox = document.getElementById('ziskStatusBox');
-        let procBox = document.getElementById('ziskProcento');
+        let procBox = ziskBox ? document.getElementById('ziskProcento') : null; // pojistka
 
         if(skutecnaCena > 0 && celkoveKm > 0) {
             let rozdil = skutecnaCenaNetto - nakladyCelkem;
             let rozdilSDisplay = rozdil * dphMulti;
             if(rozdil >= 0) {
                 ziskBox.className = "profit-status status-profit"; ziskBox.innerText = `ZISK: + ${fmt.format(rozdilSDisplay)}`;
-                procBox.innerText = `Marže z nákladů: ${((rozdil / nakladyCelkem)*100).toFixed(1)}%`;
+                if(procBox) procBox.innerText = `Marže z nákladů: ${((rozdil / nakladyCelkem)*100).toFixed(1)}%`;
             } else {
                 ziskBox.className = "profit-status status-loss"; ziskBox.innerText = `PRODĚLEK: ${fmt.format(rozdilSDisplay)}`;
-                procBox.innerText = `Chybí: ${Math.abs((rozdil / nakladyCelkem)*100).toFixed(1)}% k nule`;
+                if(procBox) procBox.innerText = `Chybí: ${Math.abs((rozdil / nakladyCelkem)*100).toFixed(1)}% k nule`;
             }
         } else {
-            ziskBox.className = "profit-status status-neutral"; ziskBox.innerText = "Čekám na zadání"; procBox.innerText = "";
+            ziskBox.className = "profit-status status-neutral"; ziskBox.innerText = "Čekám na zadání"; if(procBox) procBox.innerText = "";
         }
     }
 
