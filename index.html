@@ -13,13 +13,25 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
         body { background-color: var(--cp-gray); color: var(--cp-dark); line-height: 1.5; }
 
-        /* LOADING */
-        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000 url('IMG_9552.png') no-repeat right center; background-size: cover; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.6s ease-out; }
-        #loading-screen::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.75); }
-        .loader-content { position: relative; z-index: 10000; text-align: center; color: white; }
-        .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--cp-red); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px auto; }
+        /* --- LOADING SCREEN --- */
+        #loading-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000 url('IMG_9552.png') no-repeat right center;
+            background-size: cover; z-index: 99999; display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.6s ease-out;
+        }
+        #loading-screen::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+        }
+        .loader-content { position: relative; z-index: 100000; text-align: center; color: white; }
+        .spinner {
+            width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid var(--cp-red); border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 0 auto 15px auto;
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .loading-text { font-size: 18px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+        .loading-text { font-size: 18px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
 
         /* HEADER */
         header { background-color: var(--cp-dark); padding: 10px 15px; text-align: center; border-bottom: 4px solid var(--cp-red); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; }
@@ -101,6 +113,7 @@
 </head>
 <body>
 
+<!-- LOADING SCREEN S KABINOU -->
 <div id="loading-screen">
     <div class="loader-content">
         <div class="spinner"></div>
@@ -211,7 +224,7 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label>Zvedlé nápravy <span class="icon-help" onclick="showInfo('Šetří opotřebení pneu.')">i</span></label>
+                    <label>Zvednuté nápravy <span class="icon-help" onclick="showInfo('Šetří opotřebení pneu.')">i</span></label>
                     <select id="zvedleNapravy"><option value="0">0 (Dole)</option><option value="1">1 nahoře</option><option value="2">2 nahoře</option></select>
                 </div>
             </div>
@@ -322,11 +335,15 @@
 </div>
 
 <script>
+    // Bezpečné odstranění načítací obrazovky
     window.addEventListener('load', () => {
         setTimeout(() => {
             const loader = document.getElementById('loading-screen');
-            if(loader) { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 600); }
-        }, 1200); 
+            if(loader) { 
+                loader.style.opacity = '0'; 
+                setTimeout(() => loader.style.display = 'none', 600); 
+            }
+        }, 1000); 
     });
 
     function showInfo(text) {
@@ -335,7 +352,7 @@
     }
 
     const ORS_API_KEY = "5b3ce3597851110001cf6248325013ef093748dc957b46453a32f4ef";
-    const PROXY_URL = "https://api.allorigins.win/raw?url="; // Obalovač pro obejití blokace na iPhonu
+    const PROXY_URL = "https://api.allorigins.win/raw?url=";
 
     const OPOTREBENI_PNEU_KOLO_KM = 0.15;
     const SPOTREBA_NA_TUNU = 0.20; 
@@ -389,12 +406,10 @@
         spocitatTrasu();
     }
 
-    // BEZPEČNÝ PROXY FETCH PRO IPHONE
     async function safeFetch(targetUrl) {
         let directRes = await fetch(targetUrl).catch(() => null);
         if (directRes && directRes.ok) return directRes;
 
-        // Pokud to iOS zablokuje, použijeme proxy obal
         let proxyRes = await fetch(PROXY_URL + encodeURIComponent(targetUrl));
         if (proxyRes.ok) {
             let text = await proxyRes.text();
@@ -672,9 +687,7 @@
         let nakladPneu = celkoveKm * (kolaNaZemi * OPOTREBENI_PNEU_KOLO_KM);
 
         let nakladNafta = (celkoveKm / 100) * celkovaSpotrebaLitr * cenaNafty;
-        let nakladyCelkem = nakladNafta + nakladMzda + nakldFixAuto = nakladFixAuto + nakladPneu + totalMyto; // oprava
-        // (zarovnáno:)
-        nakladyCelkem = nakladNafta + nakladMzda + nakladFixAuto + nakladPneu + totalMyto;
+        let nakladyCelkem = nakladNafta + nakladMzda + nakladFixAuto + nakladPneu + totalMyto;
 
         let marze = parseFloat(document.getElementById('marze').value) || 0;
         let prodejniCena = nakladyCelkem * (1 + (marze / 100));
@@ -698,7 +711,7 @@
         
         document.getElementById('realTrzbaKm').innerText = fmt.format(realTrzbaKm) + " / km";
         let ziskBox = document.getElementById('ziskStatusBox');
-        let procBox = ziskBox ? document.getElementById('ziskProcento') : null; // pojistka
+        let procBox = document.getElementById('ziskProcento');
 
         if(skutecnaCena > 0 && celkoveKm > 0) {
             let rozdil = skutecnaCenaNetto - nakladyCelkem;
