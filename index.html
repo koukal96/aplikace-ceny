@@ -25,7 +25,7 @@
         header { background-color: var(--cp-dark); padding: 15px 0; text-align: center; border-bottom: 5px solid var(--cp-red); position: sticky; top: 0; z-index: 100; }
         header img { max-height: 45px; display: inline-block; } 
 
-        .container { max-width: 1500px; margin: 20px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 480px; gap: 20px; }
+        .container { max-width: 1500px; margin: 20px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 500px; gap: 20px; }
         @media (max-width: 1100px) { .container { grid-template-columns: 1fr; } }
 
         .card { background: var(--cp-white); border-radius: 8px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 20px; border-left: 4px solid var(--cp-red); }
@@ -45,10 +45,9 @@
         .icon-help { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; background-color: #888; color: white; border-radius: 50%; font-size: 11px; font-weight: 800; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
         .icon-help:hover { background-color: var(--cp-red); transform: scale(1.1); }
 
-        /* --- MODAL VYSVĚTLIVKY (SPOLEHLIVÉ NA MOBILU) --- */
+        /* --- MODAL VYSVĚTLIVKY --- */
         #infoModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(3px); }
-        .info-box { background: white; padding: 25px; border-radius: 8px; max-width: 400px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border-top: 5px solid var(--cp-red); animation: popIn 0.3s ease-out; }
-        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .info-box { background: white; padding: 25px; border-radius: 8px; max-width: 400px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border-top: 5px solid var(--cp-red); }
         .info-box p { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 20px; line-height: 1.5; }
         .info-box button { background: var(--cp-dark); color: white; padding: 12px 20px; border: none; border-radius: 4px; font-weight: 800; cursor: pointer; width: 100%; text-transform: uppercase; letter-spacing: 1px; }
 
@@ -59,10 +58,10 @@
 
         /* --- ROZPAD TRASY --- */
         .breakdown-container { background: #e3f2fd; padding: 15px; border-radius: 6px; border: 1px solid #b6d4fe; margin-top: 15px; display: none; }
-        .breakdown-row { display: grid; grid-template-columns: 1.5fr 1fr 1.2fr auto; align-items: center; gap: 8px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #b6d4fe; }
+        .breakdown-row { display: grid; grid-template-columns: 2fr 1fr 1fr auto; align-items: center; gap: 8px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #b6d4fe; }
         .breakdown-row:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
         .breakdown-input-group { display: flex; flex-direction: column; gap: 2px; font-size: 10px; font-weight: 800; color: #0d47a1; text-transform: uppercase; }
-        .breakdown-input-group input, .breakdown-input-group select { padding: 8px 5px; font-size: 12px; border-color: #b6d4fe; background: #fff; }
+        .breakdown-input-group input, .breakdown-input-group select { padding: 8px 5px; font-size: 12px; border-color: #b6d4fe; background: #fff; width: 100%; }
         
         .btn-avoid { background: #d32f2f; color: white; border: none; padding: 8px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
         .btn-avoid:hover { background: #b71c1c; }
@@ -76,7 +75,7 @@
         input:checked + .slider { background-color: var(--cp-red); }
         input:checked + .slider:before { transform: translateX(22px); }
 
-        .btn { background-color: var(--cp-red); color: var(--cp-white); border: none; padding: 15px 15px; border-radius: 4px; font-size: 14px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: var(--transition); width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 10px; }
+        .btn { background-color: var(--cp-red); color: var(--cp-white); border: none; padding: 15px 15px; border-radius: 4px; font-size: 15px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: var(--transition); width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 10px; }
         .btn:hover { background-color: var(--cp-red-hover); transform: translateY(-2px); }
         .btn:disabled { background-color: #ccc; cursor: not-allowed; }
 
@@ -110,11 +109,11 @@
     </div>
 </div>
 
-<!-- MODAL PRO VYSVĚTLIVKY (Zaručeně funguje i na mobilech) -->
+<!-- MODAL PRO VYSVĚTLIVKY -->
 <div id="infoModal">
     <div class="info-box">
         <p id="infoModalText">Nápověda</p>
-        <button onclick="document.getElementById('infoModal').style.display='none'">ZAVŘÍT</button>
+        <button onclick="document.getElementById('infoModal').style.display='none'">ROZUMÍM</button>
     </div>
 </div>
 
@@ -125,7 +124,7 @@
 <div class="container">
     <div class="inputs-section">
         
-        <!-- LOKACE A TRASA -->
+        <!-- TRASA -->
         <div class="card">
             <h2><span>01.</span> Lokace & Chytrá trasa</h2>
             
@@ -133,34 +132,33 @@
 
             <div class="form-grid">
                 <div class="input-group" style="grid-column: 1 / -1;">
-                    <label>Start <span class="icon-help" onclick="showInfo('Zadejte Město, PSČ, přesnou adresu, nebo přímo GPS souřadnice ve formátu např. 49.593, 17.250')">i</span></label>
+                    <label>Start <span class="icon-help" onclick="showInfo('Zadejte Město, PSČ, adresu nebo přesné GPS souřadnice (např. 49.593, 17.250).')">i</span></label>
                     <input type="text" id="startAdresa" value="Věrovany 94">
                 </div>
                 <div class="input-group">
-                    <label>Cíl <span class="icon-help" onclick="showInfo('Město, adresa nebo GPS cíle. U zahraničních měst raději zadejte i PSČ.')">i</span></label>
+                    <label>Cíl <span class="icon-help" onclick="showInfo('Cílové město nebo GPS. Pro cizí státy doporučujeme přidat i PSČ pro maximální přesnost.')">i</span></label>
                     <input type="text" id="cilAdresa" placeholder="Např. Mnichov 80331">
                 </div>
                 <div class="input-group">
-                    <label>Cílový stát <span class="icon-help" onclick="showInfo('Pojistka: Pokud existuje stejně pojmenované město u nás i v cizině (např. Frankfurt), vyberte stát přímo z roletky.')">i</span></label>
+                    <label>Cílový stát <span class="icon-help" onclick="showInfo('Pojistka pro mapy: Pokud se město jmenuje stejně u nás i v cizině, vyberte z roletky správný stát.')">i</span></label>
                     <select id="cilStat">
                         <option value="">-- Automaticky --</option>
-                        <option value="CZ">Česká republika</option>
+                        <option value="CZ">Česko</option>
                         <option value="DE">Německo</option>
                         <option value="AT">Rakousko</option>
                         <option value="SK">Slovensko</option>
                         <option value="PL">Polsko</option>
                         <option value="IT">Itálie</option>
                         <option value="HU">Maďarsko</option>
-                        <option value="ES">Španělsko</option>
-                        <option value="FR">Francie</option>
-                        <option value="NL">Nizozemsko</option>
-                        <option value="BE">Belgie</option>
                         <option value="RO">Rumunsko</option>
+                        <option value="ES">Španělsko</option>
+                        <option value="NL">Nizozemí</option>
+                        <option value="BE">Belgie</option>
                     </select>
                 </div>
             </div>
 
-            <button id="btnTrasa" class="btn" onclick="spocitatTrasu()">Spočítat trasu a detekovat mýto</button>
+            <button id="btnTrasa" class="btn" onclick="spocitatTrasu()">Spočítat trasu a detekovat mýtné úseky</button>
             <div id="apiStatus"></div>
             
             <div class="form-grid" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
@@ -176,7 +174,7 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label>Dokládky (km) <span class="icon-help" onclick="showInfo('Další ujeté kilometry navíc z důvodu nakládek. Tyto kilometry zvyšují naftu a opotřebení, ale mýto už se z nich automaticky nepřipočítává.')">i</span></label>
+                    <label>Dokládky (km) <span class="icon-help" onclick="showInfo('Kilometry ujeté navíc z důvodu nakládek. Z těchto km se mýto už automaticky nepřipočítává.')">i</span></label>
                     <input type="number" id="dokladky" value="0">
                 </div>
             </div>
@@ -185,7 +183,7 @@
             <div id="breakdownContainer" class="breakdown-container">
                 <h3 style="font-size: 13px; margin-bottom: 10px; color: #0d47a1; text-transform: uppercase; display: flex; align-items: center; justify-content: space-between;">
                     Rozpad trasy (státy a mýto)
-                    <span class="icon-help" style="background:#0d47a1;" onclick="showInfo('Detekované státy. U každého úseku můžete ručně přepsat cenu mýta. Pokud se chcete některému státu na trase zcela vyhnout, klikněte u něj na červené tlačítko ⛔ OBJET a celá trasa se přepočítá jinudy.')">i</span>
+                    <span class="icon-help" style="background:#0d47a1; color:white;" onclick="showInfo('Tento rozpad ukazuje státy detekované satelitem. \n\nMůžete ručně přepsat cenu mýta nebo upravit kilometry. \n\nZměnou náprav se mýto v roletkách automaticky přepočítá. \n\nPokud kliknete na červené ⛔ OBJET, systém trasu přegeneruje, aby se tomuto státu vyhnul.')">i</span>
                 </h3>
                 <div id="breakdownList"></div>
             </div>
@@ -197,8 +195,8 @@
             
             <div class="form-grid">
                 <div class="input-group">
-                    <label>Euro Norma <span class="icon-help" onclick="showInfo('Horší ekologická norma auta automaticky zdražuje mýto. Jakmile ji změníte, mýto v úsecích nahoře se ihned přepočítá.')">i</span></label>
-                    <select id="euroNorma">
+                    <label>Euro Norma <span class="icon-help" onclick="showInfo('Ekologická třída tahače. Horší norma automaticky zdraží úseky mýta.')">i</span></label>
+                    <select id="euroNorma" onchange="updateAllSegmentTolls()">
                         <option value="1.0">Euro VI</option>
                         <option value="1.15">Euro V</option>
                         <option value="1.3">Euro IV</option>
@@ -206,8 +204,8 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label>Nápravy celkem <span class="icon-help" onclick="showInfo('Fyzický součet náprav (tahač + návěs). Určuje dražší mýtnou třídu. Změna ihned přepočítá mýto v úsecích.')">i</span></label>
-                    <select id="napravyFyzicke">
+                    <label>Nápravy celkem <span class="icon-help" onclick="showInfo('Fyzický součet náprav (tahač + návěs). Určuje dražší mýtnou třídu. Při změně se mýto v úsecích hned přepočítá.')">i</span></label>
+                    <select id="napravyFyzicke" onchange="updateAllSegmentTolls()">
                         <option value="5">5 náprav (Standard 2+3)</option>
                         <option value="6">6 a více náprav (3+3...)</option>
                         <option value="4">4 nápravy (2+2)</option>
@@ -215,18 +213,18 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label>Zvednuté nápravy <span class="icon-help" onclick="showInfo('Mýto zůstane stejné (platí se za fyzické), ale zlevní to kalkulaci opotřebení pneumatik.')">i</span></label>
+                    <label>Zvednuté nápravy <span class="icon-help" onclick="showInfo('Mýto zůstane stejné (platí se za fyzické maximum), ale zlevní to kalkulaci opotřebení pneu.')">i</span></label>
                     <select id="zvedleNapravy"><option value="0">0 (Vše na zemi)</option><option value="1">1 nahoře</option><option value="2">2 nahoře</option></select>
                 </div>
             </div>
             
             <div class="form-grid" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
                 <div class="input-group">
-                    <label>Spotřeba prázdné <span class="icon-help" onclick="showInfo('Kolik litrů nafty si kamion vezme na 100 km, když by jel bez nákladu.')">i</span></label>
+                    <label>Spotřeba prázdné <span class="icon-help" onclick="showInfo('Litrů nafty na 100 km, kdyby jel kamion bez nákladu.')">i</span></label>
                     <input type="number" id="spotrebaPrazdne" value="25" step="0.1">
                 </div>
                 <div class="input-group">
-                    <label>Váha nákladu (t) <span class="icon-help" onclick="showInfo('Každá 1 tuna nákladu automaticky zvedne kalkulovanou spotřebu o 0.2 Litru / 100 km.')">i</span></label>
+                    <label>Váha nákladu (t) <span class="icon-help" onclick="showInfo('Každá 1 tuna nákladu automaticky zvedne počítanou spotřebu o 0.2 Litru / 100 km.')">i</span></label>
                     <input type="number" id="vahaNakladu" value="10" step="0.1">
                 </div>
                 <div class="input-group">
@@ -241,7 +239,7 @@
             <h2><span>03.</span> Personální & Fixní náklady</h2>
             <div class="form-grid">
                 <div class="input-group" style="grid-column: 1 / -1;">
-                    <label>Typ odměňování řidiče <span class="icon-help" onclick="showInfo('Zaměstnanec: Odměna se násobí počtem dnů trasy. Brigádník: Fixní jednorázová odměna za odjetí trasy.')">i</span></label>
+                    <label>Typ odměňování řidiče <span class="icon-help" onclick="showInfo('Zaměstnanec: Odměna se násobí počtem dnů trasy. Brigádník: Fixní jednorázová odměna za celou trasu nezávisle na dnech.')">i</span></label>
                     <select id="typMzdy">
                         <option value="denni">Zaměstnanec (Rozpočítaná denní mzda vč. diet)</option>
                         <option value="fixni">Brigádník (Fixní částka pouze za tuto točku)</option>
@@ -256,7 +254,7 @@
                     <input type="number" id="dny" value="1" step="0.5">
                 </div>
                 <div class="input-group">
-                    <label>Fix na auto / Den <span class="icon-help" onclick="showInfo('Odpisy, silniční daň, pojištění a poplatky dispečinku rozpočítané na 1 den vlastnictví vozu.')">i</span></label>
+                    <label>Fix na auto / Den <span class="icon-help" onclick="showInfo('Odpisy, silniční daň, pojištění a poplatky dispečinku rozpočítané na 1 den (Násobí se počtem dnů jízdy).')">i</span></label>
                     <input type="number" id="nakladyAutoDen" value="2500">
                 </div>
             </div>
@@ -341,7 +339,7 @@
         document.getElementById('infoModal').style.display = 'flex';
     }
 
-    // --- NASTAVENÍ A ZÁKLADNÍ ÚDAJE ---
+    // --- NASTAVENÍ ---
     const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbxWsYRFEsaePghTkbsDQJVsweH2rbfEZHazGLtuFilWArfv3IgWMxdxLsYDTGxmHPkj/exec";
     const ORS_API_KEY = "5b3ce3597851110001cf6248325013ef093748dc957b46453a32f4ef";
 
@@ -349,7 +347,7 @@
     const SPOTREBA_NA_TUNU = 0.20; 
     const DPH_SAZBA = 1.21;
     
-    // Kompletní matice států
+    // Rozšířený seznam států + sazby (dle požadavku: CZ, SK, PL, D, A, I, H, RO, E, NL, B)
     const MYTO_STATY = {
         'CZ': { name: 'Česko', rate: 4.5 },
         'SK': { name: 'Slovensko', rate: 5.0 },
@@ -363,8 +361,7 @@
         'NL': { name: 'Nizozemí', rate: 1.0 }, 
         'BE': { name: 'Belgie', rate: 4.5 },
         'FR': { name: 'Francie', rate: 7.0 },
-        'SI': { name: 'Slovinsko', rate: 6.5 },
-        'UNKNOWN': { name: 'Jiný stát', rate: 4.5 }
+        'UNKNOWN': { name: 'Neznámý úsek', rate: 4.5 }
     };
 
     const MYTO_NAPRAVY_KOEF = { '2': 0.7, '3': 0.8, '4': 1.0, '5': 1.0, '6': 1.1 };
@@ -372,7 +369,6 @@
 
     let globalBreakdown = [];
     let activeAvoids = [];
-    let avoidAustriaPromptShown = false; // Aby prompt nevyskakoval pořád dokola
 
     function setStatus(msg, type) {
         const box = document.getElementById('apiStatus');
@@ -380,16 +376,14 @@
         box.innerText = msg;
     }
 
-    // --- ZÍSKÁNÍ SOUŘADNIC (BEZPEČNÝ DVOJITÝ MOTOR: Nominatim -> ORS) ---
+    // --- ZÍSKÁNÍ SOUŘADNIC ---
     async function getCoordinates(address, targetCountryCode = null) {
-        // Kontrola jestli to jsou už rovnou GPS
         let gpsMatch = address.match(/^([-+]?\d{1,2}\.\d+)[,\s]+([-+]?\d{1,3}\.\d+)$/);
         if(gpsMatch) return [parseFloat(gpsMatch[2]), parseFloat(gpsMatch[1])];
 
         let query = address;
         if(targetCountryCode) query += `, ${targetCountryCode}`;
 
-        // 1. Nominatim (Přežije přísné štíty na mobilu Safari)
         try {
             let url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
             let res = await fetch(url);
@@ -399,7 +393,6 @@
             }
         } catch(e) {}
 
-        // 2. ORS Geocoding (Záloha)
         try {
             const url = `https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(query)}`;
             const response = await fetch(url);
@@ -409,7 +402,7 @@
             }
         } catch(e) {}
         
-        throw new Error(`Místo '${address}' nelze na mapě nalézt. Zkuste připsat PSČ nebo stát.`);
+        throw new Error(`Místo '${address}' nelze nalézt. Zkuste připsat PSČ nebo stát.`);
     }
 
     function getDistanceKm(lat1, lon1, lat2, lon2) {
@@ -421,90 +414,71 @@
         return R * c;
     }
 
-    // --- HLAVNÍ ROUTOVACÍ MOTOR (BEZPEČNÝ: ORS -> OSRM) ---
-    async function getAdvancedRouteInfo(startCoords, cilCoords) {
-        let avoidActive = activeAvoids.length > 0;
+    // --- HLAVNÍ MAPOVÝ MOTOR PRO ÚSEKY A MÝTO (BEZPEČNÝ GET FORMÁT) ---
+    async function getAdvancedRouteInfoGET(startCoords, cilCoords) {
+        // Tvoříme GET URL pro iPhone
+        let url = `https://api.openrouteservice.org/v2/directions/driving-hgv?api_key=${ORS_API_KEY}&start=${startCoords[0]},${startCoords[1]}&end=${cilCoords[0]},${cilCoords[1]}&extra_info=countryinfo`;
         
-        try {
-            // Zkusíme plný ORS výpočet se státy
-            let distTotal, geom, countryInfoIndices;
-            
-            if (avoidActive) {
-                let bodyReq = {
-                    coordinates: [startCoords, cilCoords],
-                    extra_info: ["countryinfo"],
-                    options: { avoid_countries: activeAvoids.map(a => a.id) }
-                };
-                let res = await fetch(`https://api.openrouteservice.org/v2/directions/driving-hgv`, {
-                    method: 'POST',
-                    headers: { 'Authorization': ORS_API_KEY, 'Content-Type': 'application/json' },
-                    body: JSON.stringify(bodyReq)
-                });
-                if(!res.ok) throw new Error("Chyba API. Možná se snažíte objet stát, ve kterém začínáte/končíte.");
-                let data = await res.json();
-                distTotal = (data.routes[0].summary.distance / 1000).toFixed(1);
-                geom = data.routes[0].geometry.coordinates;
-                countryInfoIndices = data.routes[0].extras && data.routes[0].extras.countryinfo ? data.routes[0].extras.countryinfo.values : null;
-            } else {
-                let url = `https://api.openrouteservice.org/v2/directions/driving-hgv?api_key=${ORS_API_KEY}&start=${startCoords[0]},${startCoords[1]}&end=${cilCoords[0]},${cilCoords[1]}&extra_info=countryinfo`;
-                let res = await fetch(url);
-                if(!res.ok) throw new Error("Nelze spočítat dálnici.");
-                let data = await res.json();
-                distTotal = (data.features[0].properties.summary.distance / 1000).toFixed(1);
-                geom = data.features[0].geometry.coordinates;
-                countryInfoIndices = data.features[0].properties.extras && data.features[0].properties.extras.countryinfo ? data.features[0].properties.extras.countryinfo.values : null;
-            }
-            
-            let breakdownArr = [];
-            if(countryInfoIndices) {
-                for(let segment of countryInfoIndices) {
-                    let startIdx = segment[0];
-                    let endIdx = segment[1];
-                    let internalId = segment[2];
-                    
-                    let distSegment = 0;
-                    for(let j = startIdx; j < endIdx; j++) {
-                        if(j+1 < geom.length) distSegment += getDistanceKm(geom[j][1], geom[j][0], geom[j+1][1], geom[j+1][0]);
-                    }
-                    
-                    let midIdx = Math.floor((startIdx + endIdx) / 2);
-                    let lat = geom[midIdx][1], lon = geom[midIdx][0];
-                    let cCode = "UNKNOWN";
-                    
+        // Aplikace objížděk přes options string
+        if (activeAvoids.length > 0) {
+            let opt = { avoid_countries: activeAvoids.map(a => parseInt(a.id)) };
+            url += `&options=${encodeURIComponent(JSON.stringify(opt))}`;
+        }
+        url += `&_cb=${Date.now()}`; // Bypass cache
+
+        let response = await fetch(url);
+        if (!response.ok) {
+            if(activeAvoids.length > 0) throw new Error("Nelze spočítat. Možná se snažíte objet stát nakládky nebo vykládky.");
+            throw new Error("Chyba serveru ORS. Mapy jsou aktuálně přetížené.");
+        }
+        
+        let data = await response.json();
+        let distTotal = (data.features[0].properties.summary.distance / 1000).toFixed(1);
+        let geom = data.features[0].geometry.coordinates; // [lon, lat][]
+        let extras = data.features[0].properties.extras;
+        
+        let breakdownArr = [];
+        
+        if (extras && extras.countryinfo) {
+            let segments = extras.countryinfo.values;
+            for(let seg of segments) {
+                let sIdx = seg[0], eIdx = seg[1], internalId = seg[2];
+                let distSegment = 0;
+                for(let i=sIdx; i<eIdx; i++) {
+                    if(i+1 < geom.length) distSegment += getDistanceKm(geom[i][1], geom[i][0], geom[i+1][1], geom[i+1][0]);
+                }
+                
+                let mid = Math.floor((sIdx + eIdx)/2);
+                let cCode = "UNKNOWN";
+                
+                // Zjištění státu pomocí záložních API
+                try {
+                    let nomUrl = `https://nominatim.openstreetmap.org/reverse?lat=${geom[mid][1]}&lon=${geom[mid][0]}&format=json&zoom=3`;
+                    let nomRes = await fetch(nomUrl);
+                    if(nomRes.ok) { let nomData = await nomRes.json(); cCode = nomData.address.country_code.toUpperCase(); }
+                } catch(e) {
                     try {
-                        let bdcUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`;
+                        let bdcUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${geom[mid][1]}&longitude=${geom[mid][0]}&localityLanguage=en`;
                         let bdcRes = await fetch(bdcUrl);
                         if(bdcRes.ok) { let bdcData = await bdcRes.json(); cCode = bdcData.countryCode.toUpperCase(); }
                     } catch(e) {}
-                    
-                    breakdownArr.push({code: cCode, km: distSegment, internalId: internalId});
                 }
-            } else {
-                breakdownArr.push({code: 'UNKNOWN', km: parseFloat(distTotal), internalId: null});
+                breakdownArr.push({ code: cCode, km: distSegment, internalId: internalId });
             }
-            
-            let merged = {};
-            for(let br of breakdownArr) {
-                if(!merged[br.code]) merged[br.code] = {km: 0, internalId: br.internalId};
-                merged[br.code].km += br.km;
-            }
-            let finalArr = [];
-            for(let c in merged) finalArr.push({code: c, km: parseFloat(merged[c].km.toFixed(1)), internalId: merged[c].internalId});
-            
-            return { distance: distTotal, breakdown: finalArr };
-            
-        } catch(e) {
-            console.warn("ORS neprošel, zkouším záložní mapu OSRM...", e);
-            // KDYŽ SAFARI ZABLOKUJE HLAVNÍ MAPU, POUŽIJEME VEŘEJNOU ZÁLOHU BEZ KLÍČE (OSRM)
-            let osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startCoords[0]},${startCoords[1]};${cilCoords[0]},${cilCoords[1]}?overview=false`;
-            let res = await fetch(osrmUrl);
-            if(res.ok) {
-                let data = await res.json();
-                let dist = (data.routes[0].distance / 1000).toFixed(1);
-                return { distance: dist, breakdown: [{code: 'UNKNOWN', km: parseFloat(dist), internalId: null}] };
-            }
-            throw new Error("I záložní mapa selhala. Váš iPhone silně blokuje data.");
+        } else {
+            breakdownArr.push({ code: 'UNKNOWN', km: parseFloat(distTotal), internalId: null });
         }
+
+        // Sloučení stejných států do jednoho (kdyby hranice udělala kličku)
+        let merged = {};
+        for(let br of breakdownArr) {
+            if(!merged[br.code]) merged[br.code] = {km: 0, internalId: br.internalId};
+            merged[br.code].km += br.km;
+        }
+        let finalArr = [];
+        for(let c in merged) finalArr.push({code: c, km: parseFloat(merged[c].km.toFixed(1)), internalId: merged[c].internalId});
+        
+        return { distance: distTotal, breakdown: finalArr };
     }
 
     // --- SPRÁVA BLOKOVANÝCH STÁTŮ (OBJÍŽĎKY) ---
@@ -514,17 +488,21 @@
         
         let html = '<div style="font-size:12px; font-weight:600; color:white; margin-bottom:15px; background:var(--cp-danger); padding:10px; border-radius:6px;"><b>Aktivní zákazy tranzitu (Objížďka):</b><br>';
         activeAvoids.forEach(a => {
-            html += `<span style="display:inline-block; margin-top:5px; background:rgba(0,0,0,0.3); color:white; padding:5px 10px; border-radius:4px; margin-right:5px; cursor:pointer; font-size:11px;" onclick="removeAvoidCountry(${a.id})" title="Povolit">✕ Povolit ${MYTO_STATY[a.code] ? MYTO_STATY[a.code].name : a.code}</span>`;
+            let name = MYTO_STATY[a.code] ? MYTO_STATY[a.code].name : a.code;
+            html += `<span style="display:inline-block; margin-top:5px; background:rgba(0,0,0,0.3); color:white; padding:5px 10px; border-radius:4px; margin-right:5px; cursor:pointer; font-size:11px;" onclick="removeAvoidCountry(${a.id})" title="Povolit a přepočítat">✕ Povolit ${name}</span>`;
         });
         html += '</div>';
         container.innerHTML = html;
     }
 
-    function addAvoidCountry(id, code) {
-        if(!activeAvoids.find(a => a.id === id)) {
-            activeAvoids.push({id: id, code: code});
-            renderAvoidList();
-            spocitatTrasu(); // Automaticky to celé přepočítá s novým blokem
+    function promptAvoidCountry(internalId, code) {
+        let countryName = MYTO_STATY[code] ? MYTO_STATY[code].name : code;
+        if(confirm(`Opravdu chcete přegenerovat celou trasu tak, abyste se vyhnuli státu: ${countryName}?\n\n(Může se výrazně změnit doba a kilometry)`)) {
+            if(!activeAvoids.find(a => a.id === internalId)) {
+                activeAvoids.push({id: internalId, code: code});
+                renderAvoidList();
+                spocitatTrasu(); // Přepočet
+            }
         }
     }
 
@@ -547,9 +525,7 @@
         const routeName = `${startStr.toLowerCase()} - ${cilStr.toLowerCase()}${avoidStr}`;
         btn.disabled = true;
 
-        setStatus("Zjišťuji data k trase...", "info");
-        
-        // 1. CHYTRÁ PAMĚŤ
+        setStatus("Ověřuji v chytré paměti...", "info");
         try {
             const sheetResponse = await fetch(`${GOOGLE_SHEET_API}?route=${encodeURIComponent(routeName)}`);
             const sheetData = await sheetResponse.json();
@@ -567,27 +543,12 @@
             }
         } catch(e) {}
 
-        // 2. POČÍTÁME NAŽIVO
         setStatus("Počítám úseky mapy a dálnice...", "info");
         try {
             const startCoords = await getCoordinates(startStr);
             const cilCoords = await getCoordinates(cilStr, cilStat);
-            const routeInfo = await getAdvancedRouteInfo(startCoords, cilCoords);
+            const routeInfo = await getAdvancedRouteInfoGET(startCoords, cilCoords);
             
-            // AUTOMATICKÉ VAROVÁNÍ PRO RAKOUSKO
-            let detectedCodes = routeInfo.breakdown.map(b => b.code);
-            if (detectedCodes.includes("AT") && !avoidAustriaPromptShown && !activeAvoids.find(a => a.code === 'AT')) {
-                btn.disabled = false;
-                avoidAustriaPromptShown = true; 
-                if(confirm("POZOR:\nTrasa vede přes Rakousko, které má extrémně drahé mýto.\n\nChcete zkusit přepočítat mapu a Rakousko zcela objet?")) {
-                    let atSegment = routeInfo.breakdown.find(b => b.code === 'AT');
-                    if(atSegment && atSegment.internalId) {
-                        addAvoidCountry(atSegment.internalId, 'AT');
-                        return; // Skočíme ven, addAvoidCountry zapne nový přepočet
-                    }
-                }
-            }
-
             document.getElementById('vzdalenost').value = routeInfo.distance;
             globalBreakdown = routeInfo.breakdown;
             renderBreakdown(globalBreakdown);
@@ -595,7 +556,6 @@
             setStatus(`Hotovo: ${routeInfo.distance} km.`, "success");
             calculate();
 
-            // 3. ULOŽENÍ
             try {
                 let dbValue = `${routeInfo.distance}|${JSON.stringify(globalBreakdown)}`;
                 await fetch(GOOGLE_SHEET_API, { method: 'POST', body: JSON.stringify({ route: routeName, km: dbValue }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
@@ -622,45 +582,51 @@
         let fyzickeNapravy = parseInt(document.getElementById('napravyFyzicke').value);
         let napravyKoef = MYTO_NAPRAVY_KOEF[fyzickeNapravy > 6 ? '6' : fyzickeNapravy.toString()] || 1.0;
 
+        // Vytvoření seznamu států pro roletky vč. ceny za km
         let optionsHtml = '';
-        for(let k in MYTO_STATY) { optionsHtml += `<option value="${k}">${MYTO_STATY[k].name}</option>`; }
+        for(let k in MYTO_STATY) { 
+            optionsHtml += `<option value="${k}">${MYTO_STATY[k].name} (${MYTO_STATY[k].rate} Kč/km)</option>`; 
+        }
 
         breakdownArr.forEach((item, index) => {
             let actKm = item.km * typTrasyMulti;
             let currentRate = (MYTO_STATY[item.code] || MYTO_STATY['UNKNOWN']).rate;
             let estToll = actKm * 0.85 * currentRate * euroKoef * napravyKoef;
             
-            // Tlačítko Objet ukážeme jen u tranzitních států s platným ID z mapy
+            // Tlačítko Objet - ukážeme ho jen u tranzitních států (ne první/poslední)
             let btnObjet = "";
             if(item.internalId && index > 0 && index < breakdownArr.length - 1) {
-                btnObjet = `<button class="btn-avoid" onclick="addAvoidCountry(${item.internalId}, '${item.code}')" title="Vyhnout se státu">⛔<br>OBJET</button>`;
+                btnObjet = `<button class="btn-avoid" onclick="promptAvoidCountry(${item.internalId}, '${item.code}')" title="Vyhnout se státu">⛔<br>OBJET</button>`;
             }
 
             let rowHtml = `
                 <div class="breakdown-row" id="brRow_${index}">
                     <div class="breakdown-input-group">
                         <label>Stát</label>
-                        <select class="country-select" data-index="${index}" onchange="updateSegmentToll(${index})">${optionsHtml}</select>
+                        <select class="country-select" data-index="${index}" onchange="updateSegmentToll(${index})" style="min-width: 140px;">
+                            ${optionsHtml}
+                        </select>
                     </div>
                     <div class="breakdown-input-group">
                         <label>Km</label>
-                        <input type="number" id="brKm_${index}" value="${actKm.toFixed(0)}" oninput="updateSegmentToll(${index})" class="km-override">
+                        <input type="number" id="brKm_${index}" value="${actKm.toFixed(0)}" oninput="updateSegmentToll(${index})" class="km-override" style="min-width: 60px;">
                     </div>
                     <div class="breakdown-input-group">
                         <label>Kč Mýto</label>
-                        <input type="number" id="brToll_${index}" value="${Math.round(estToll)}" class="toll-override" oninput="calculate()">
+                        <input type="number" id="brToll_${index}" value="${Math.round(estToll)}" class="toll-override" oninput="calculate()" style="min-width: 70px;">
                     </div>
                     <div>${btnObjet}</div>
                 </div>
             `;
             list.insertAdjacentHTML('beforeend', rowHtml);
             
+            // Vybrání správného státu do roletky
             let sel = document.querySelector(`#brRow_${index} .country-select`);
             if(MYTO_STATY[item.code]) { sel.value = item.code; } else { sel.value = 'UNKNOWN'; }
         });
     }
 
-    // PŘEPOČET PŘI MANUÁLNÍ ZMĚNĚ ROLETKY / KM
+    // PŘEPOČET KONKRÉTNÍHO ÚSEKU
     function updateSegmentToll(index) {
         let sel = document.querySelector(`#brRow_${index} .country-select`);
         let kmInp = document.getElementById(`brKm_${index}`);
@@ -670,6 +636,7 @@
         let code = sel.value;
         let km = parseFloat(kmInp.value) || 0;
         let rate = MYTO_STATY[code].rate;
+        
         let euroKoef = parseFloat(document.getElementById('euroNorma').value);
         let fyzickeNapravy = parseInt(document.getElementById('napravyFyzicke').value);
         let napravyKoef = MYTO_NAPRAVY_KOEF[fyzickeNapravy > 6 ? '6' : fyzickeNapravy.toString()] || 1.0;
@@ -680,18 +647,21 @@
         calculate(); 
     }
 
+    // PŘEPOČET VŠECH ÚSEKŮ (volá se z onchange u Euro a Náprav nahoře)
+    function updateAllSegmentTolls() {
+        if(globalBreakdown && globalBreakdown.length > 0) {
+            document.querySelectorAll('.country-select').forEach(sel => {
+                updateSegmentToll(sel.getAttribute('data-index'));
+            });
+        }
+        calculate();
+    }
+
     function calculate() {
         const includesDph = document.getElementById('dphToggle').checked;
         const dphMulti = includesDph ? DPH_SAZBA : 1;
         document.getElementById('dphStatusLabel').innerText = includesDph ? "Ceny VČETNĚ DPH (21%)" : "Ceny BEZ DPH";
         document.getElementById('dphStatusLabel').style.color = includesDph ? "var(--cp-red)" : "white";
-
-        // Pokud se mění nápravy nahoře, musíme updatnout všechny úseky mýta
-        if(event && ['euroNorma', 'napravyFyzicke', 'typTrasy'].includes(event.target.id)) {
-            document.querySelectorAll('.country-select').forEach(sel => {
-                updateSegmentToll(sel.getAttribute('data-index'));
-            });
-        }
 
         let totalMyto = 0;
         let totalKmZeStatu = 0;
@@ -705,6 +675,8 @@
 
         let vzdalenostBase = parseFloat(document.getElementById('vzdalenost').value) || 0;
         let dokladky = parseFloat(document.getElementById('dokladky').value) || 0;
+        
+        // Pokud je rozpad zobrazen, "vzdalenostBase" už v sobě má násobek kolečka (nasčítalo se to z úseků)
         let celkoveKm = hasBreakdown ? (vzdalenostBase + dokladky) : ((vzdalenostBase * parseFloat(document.getElementById('typTrasy').value)) + dokladky);
 
         let spotrebaPrazdne = parseFloat(document.getElementById('spotrebaPrazdne').value) || 0;
@@ -774,6 +746,9 @@
     document.querySelectorAll('input, select').forEach(el => {
         el.addEventListener('input', (event) => {
             if (el.id === 'typMzdy') { document.getElementById('dnyContainer').style.opacity = el.value === 'fixni' ? '0.3' : '1'; }
+            if (el.id === 'typTrasy') { 
+                if(globalBreakdown && globalBreakdown.length > 0) { renderBreakdown(globalBreakdown); }
+            }
             calculate();
         });
     });
