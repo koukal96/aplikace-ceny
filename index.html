@@ -67,7 +67,7 @@
         .status-loss { background: rgba(198, 40, 40, 0.2); color: #ef5350; border: 2px solid #ef5350; }
         .status-neutral { background: #333; color: #aaa; border: 2px solid #555; }
 
-        #apiStatus { margin-top: 10px; font-size: 12px; font-weight: 600; padding: 8px; border-radius: 4px; display: none; }
+        #apiStatus { margin-top: 10px; font-size: 12px; font-weight: 600; padding: 10px; border-radius: 4px; display: none; word-wrap: break-word; }
         .msg-info { background: #e3f2fd; color: #0d47a1; display: block !important; }
         .msg-success { background: #d4edda; color: #155724; display: block !important; }
         .msg-error { background: #f8d7da; color: #721c24; display: block !important; }
@@ -85,7 +85,6 @@
 <div class="container">
     <div class="inputs-section">
         
-        <!-- TRASA & PAMĚŤ -->
         <div class="card">
             <h2><span>01.</span> Lokace & Centrální Databáze</h2>
             <div class="form-grid">
@@ -120,7 +119,6 @@
             </div>
         </div>
 
-        <!-- MÝTO & TECHNIKA -->
         <div class="card">
             <h2><span>02.</span> Inteligentní odhad mýta & Technika</h2>
             
@@ -165,7 +163,6 @@
                 <div class="input-group">
                     <label>Zvednuté nápravy návěsu</label>
                     <select id="zvedleNapravy"><option value="0">0 (Vše dole)</option><option value="1">1 nahoře</option><option value="2">2 nahoře</option></select>
-                    <div class="input-hint">Šetří pneu. Mýto se platí za fyzický součet.</div>
                 </div>
             </div>
             
@@ -181,7 +178,6 @@
             </div>
         </div>
 
-        <!-- PERSONÁLIE A FIX -->
         <div class="card">
             <h2><span>03.</span> Personální & Fixní náklady</h2>
             <div class="form-grid">
@@ -208,7 +204,6 @@
         </div>
     </div>
 
-    <!-- PRAVÝ SLOUPEC -->
     <div class="dashboards-section">
         
         <div class="card dashboard">
@@ -266,12 +261,14 @@
 </div>
 
 <script>
-    // TVOJE AKTIVNÍ NAPOJENÍ
+    // TVOJE FIREMNÍ GOOGLE TABULKA
     const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbxWsYRFEsaePghTkbsDQJVsweH2rbfEZHazGLtuFilWArfv3IgWMxdxLsYDTGxmHPkj/exec";
-    const ORS_API_KEY = "EyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjMyNTAxM2VmMDkzNzQ4ZGM5NTdiNDY0NTNhMzJmNGVmIiwiaCI6Im11cm11cjY0In0=";
+    
+    // API KLÍČ
+    const ORS_API_KEY = "5b3ce3597851110001cf6248325013ef093748dc957b46453a32f4ef";
+
     const OPOTREBENI_PNEU_KOLO_KM = 0.15;
     const DPH_SAZBA = 1.21;
-
     const MYTO_STATY_ZAKLAD = { 'CZ': 4.5, 'DE': 8.5, 'AT': 11.5, 'SK': 5.0, 'PL': 3.5, 'HU': 8.0, 'MIX': 6.5 };
     const MYTO_NAPRAVY_KOEF = { '2': 0.7, '3': 0.8, '4': 1.0, '5': 1.0, '6': 1.1 };
     const fmt = new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: 'CZK', minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -282,17 +279,58 @@
         box.innerText = msg;
     }
 
+    // DVOJITÝ MOTOR PRO SOUŘADNICE (ORS -> NOMINATIM)
     async function getCoordinates(address) {
+        let debugLog = "";
+        
+        // POKUS 1: OpenRouteService
         try {
             const url = `https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(address)}`;
-            const response = await fetch(url, { redirect: 'follow' });
-            if (!response.ok) throw new Error("Chyba spojení s mapovým serverem.");
-            const data = await response.json();
-            if (data.features && data.features.length > 0) return data.features[0].geometry.coordinates;
-            throw new Error(`Místo '${address}' nebylo nalezeno v mapách.`);
-        } catch (e) {
-            throw new Error(`Výpadek spojení s mapami (OpenRouteService). Není blokován ve vašem prohlížeči?`);
-        }
+            const response = await fetch(url);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.features && data.features.length > 0) return data.features[0].geometry.coordinates;
+            } else { debugLog += `[ORS_Geo:${response.status}] `; }
+        } catch (e) { debugLog += `[ORS_Geo:Blokováno] `; }
+
+        // POKUS 2: Nominatim (Veřejná záloha - funguje bez klíče)
+        try {
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+            const response = await fetch(url);
+            if (response.ok) {
+                const data = await response.json();
+                if (data && data.length > 0) return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
+            } else { debugLog += `[Nom_Geo:${response.status}] `; }
+        } catch (e) { debugLog += `[Nom_Geo:Blokováno] `; }
+
+        throw new Error(`GPS nenalezeno. Detaily pro IT: ${debugLog}`);
+    }
+
+    // DVOJITÝ MOTOR PRO TRASU (ORS HGV -> OSRM PUBLIC)
+    async function getRouteDistance(startCoords, cilCoords) {
+        let debugLog = "";
+        
+        // POKUS 1: OpenRouteService HGV Kamion
+        try {
+            const routeUrl = `https://api.openrouteservice.org/v2/directions/driving-hgv?api_key=${ORS_API_KEY}&start=${startCoords[0]},${startCoords[1]}&end=${cilCoords[0]},${cilCoords[1]}`;
+            const response = await fetch(routeUrl);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.features && data.features.length > 0) return (data.features[0].properties.segments[0].distance / 1000).toFixed(1);
+            } else { debugLog += `[ORS_Trasa:${response.status}] `; }
+        } catch (e) { debugLog += `[ORS_Trasa:Blokováno] `; }
+
+        // POKUS 2: OSRM (Veřejná záloha - Auto)
+        try {
+            const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startCoords[0]},${startCoords[1]};${cilCoords[0]},${cilCoords[1]}?overview=false`;
+            const response = await fetch(osrmUrl);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.routes && data.routes.length > 0) return (data.routes[0].distance / 1000).toFixed(1);
+            } else { debugLog += `[OSRM_Trasa:${response.status}] `; }
+        } catch (e) { debugLog += `[OSRM_Trasa:Blokováno] `; }
+
+        throw new Error(`Výpočet zcela zablokován. Detaily pro IT: ${debugLog}`);
     }
 
     async function spocitatTrasu() {
@@ -304,7 +342,7 @@
         const routeName = `${startStr.toLowerCase()} - ${cilStr.toLowerCase()}`;
         btn.disabled = true;
 
-        // 1. KROK: DOTAZ DO GOOGLE TABULKY (PŘÍSNĚ OBCHÁZÍME CORS)
+        // 1. ZKUSÍME NAČÍST Z GOOGLE TABULKY
         setStatus("Hledám trasu ve firemní Google Tabulce...", "info");
         try {
             const sheetResponse = await fetch(`${GOOGLE_SHEET_API}?route=${encodeURIComponent(routeName)}`, { redirect: 'follow' });
@@ -319,48 +357,34 @@
                 return; 
             }
         } catch(e) {
-            console.warn("Databáze neodpověděla nebo přístup odepřen (CORS). Zkuste zkontrolovat nasazení Google Skriptu.", e);
-            // Pokračujeme dál k mapám, nesmíme zastavit aplikaci.
+            console.warn("Google Tabulka neodpověděla.");
         }
 
-        // 2. KROK: POČÍTÁME PŘES MAPY ORS
-        setStatus("Trasa není v DB. Počítám přes dálnice (Mapy)...", "info");
+        // 2. POČÍTÁME PŘES MAPOVÉ MOTORY
+        setStatus("Počítám vzdálenost přes dálnice...", "info");
 
         try {
             const startCoords = await getCoordinates(startStr);
             const cilCoords = await getCoordinates(cilStr);
-            const routeUrl = `https://api.openrouteservice.org/v2/directions/driving-hgv?api_key=${ORS_API_KEY}&start=${startCoords[0]},${startCoords[1]}&end=${cilCoords[0]},${cilCoords[1]}`;
+            const distanceKm = await getRouteDistance(startCoords, cilCoords);
             
-            const routeResponse = await fetch(routeUrl, { redirect: 'follow' });
-            if (!routeResponse.ok) throw new Error("Chyba výpočtu trasy na serveru ORS.");
-            const routeData = await routeResponse.json();
+            document.getElementById('vzdalenost').value = distanceKm;
+            spocitejInteligentniMyto(); 
+            setStatus(`Nová trasa spočítána: ${distanceKm} km.`, "success");
+            calculate();
 
-            if (routeData.features && routeData.features.length > 0) {
-                const distanceKm = (routeData.features[0].properties.segments[0].distance / 1000).toFixed(1);
-                document.getElementById('vzdalenost').value = distanceKm;
-                
-                spocitejInteligentniMyto(); 
-                setStatus(`Nová trasa z map: ${distanceKm} km. Pokouším se uložit do DB...`, "success");
-                calculate();
+            // 3. ULOŽÍME DO TABULKY
+            try {
+                await fetch(GOOGLE_SHEET_API, {
+                    method: 'POST',
+                    body: JSON.stringify({ route: routeName, km: distanceKm }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    redirect: 'follow'
+                });
+            } catch(e) {}
 
-                // 3. KROK: BEZPEČNÝ ZÁPIS DO GOOGLE TABULKY (TEXT/PLAIN)
-                try {
-                    await fetch(GOOGLE_SHEET_API, {
-                        method: 'POST',
-                        body: JSON.stringify({ route: routeName, km: distanceKm }),
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        redirect: 'follow'
-                    });
-                } catch(postErr) {
-                    console.warn("Trasa se spočítala, ale nešlo ji zapsat do Google tabulky.", postErr);
-                }
-
-            } else {
-                throw new Error("Cestu pro kamion se nepodařilo nalézt.");
-            }
         } catch (error) {
-            // Tohle se stane, pokud tě např. AdBlock odřízne od OpenRouteService
-            setStatus("CHYBA VÝPOČTU: " + error.message, "error");
+            setStatus("CHYBA: " + error.message, "error");
         } finally {
             btn.disabled = false;
         }
@@ -375,7 +399,6 @@
         let placeneKm = celkoveKm * 0.85;
         let vybranyStat = document.getElementById('statMyto').value;
         let euroKoeficient = parseFloat(document.getElementById('euroNorma').value);
-        
         let fyzickeNapravy = parseInt(document.getElementById('napravyTahac').value) + parseInt(document.getElementById('napravyNaves').value);
         let napravyKoef = MYTO_NAPRAVY_KOEF[fyzickeNapravy > 6 ? '6' : fyzickeNapravy.toString()] || 1.0;
 
@@ -418,7 +441,6 @@
 
         let nakladNafta = (celkoveKm / 100) * spotreba * cenaNafty;
         let nakladyCelkem = nakladNafta + nakladMzda + nakladFixAuto + nakladPneu + myto;
-        
         let marze = parseFloat(document.getElementById('marze').value) || 0;
         let prodejniCena = nakladyCelkem * (1 + (marze / 100));
 
