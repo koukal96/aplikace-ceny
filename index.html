@@ -9,90 +9,91 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
 
     <style>
-        :root { --cp-red: #e3000f; --cp-red-hover: #b3000b; --cp-dark: #1a1a1a; --cp-gray: #f4f4f4; --cp-border: #e0e0e0; --cp-white: #ffffff; --cp-success: #2e7d32; --cp-danger: #c62828; --shadow: 0 8px 30px rgba(0,0,0,0.08); --transition: all 0.3s ease; }
+        :root { --cp-red: #e3000f; --cp-red-hover: #b3000b; --cp-dark: #1a1a1a; --cp-gray: #f4f4f4; --cp-border: #e0e0e0; --cp-white: #ffffff; --cp-success: #2e7d32; --cp-danger: #c62828; --shadow: 0 4px 20px rgba(0,0,0,0.06); --transition: all 0.3s ease; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
-        body { background-color: var(--cp-gray); color: var(--cp-dark); line-height: 1.6; }
+        body { background-color: var(--cp-gray); color: var(--cp-dark); line-height: 1.5; }
 
         /* LOADING */
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000 url('IMG_9552.png') no-repeat right center; background-size: cover; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.6s ease-out; }
         #loading-screen::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.75); }
         .loader-content { position: relative; z-index: 10000; text-align: center; color: white; }
-        .spinner { width: 60px; height: 60px; border: 5px solid rgba(255,255,255,0.1); border-top: 5px solid var(--cp-red); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px auto; }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--cp-red); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .loading-text { font-size: 22px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .loading-text { font-size: 18px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
 
-        /* HEADER */
-        header { background-color: var(--cp-dark); padding: 12px 0; text-align: center; border-bottom: 5px solid var(--cp-red); position: sticky; top: 0; z-index: 100; display: flex; justify-content: center; align-items: center; }
-        .logo-container { display: flex; align-items: center; gap: 12px; }
-        header img { max-height: 45px; display: block; } 
-        .analysis-text { color: #888; font-size: 13px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; border-left: 2px solid #444; padding-left: 12px; }
+        /* HEADER - VYLEPŠENÝ PRO MOBIL */
+        header { background-color: var(--cp-dark); padding: 10px 15px; text-align: center; border-bottom: 4px solid var(--cp-red); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; }
+        .logo-container { display: flex; align-items: center; gap: 8px; width: 100%; justify-content: center; }
+        header img { max-height: 32px; display: block; width: auto; } 
+        .analysis-text { color: #aaa; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; border-left: 2px solid var(--cp-red); padding-left: 8px; }
 
-        .container { max-width: 1500px; margin: 20px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 500px; gap: 20px; }
+        .container { max-width: 1400px; margin: 10px auto; padding: 0 10px; display: grid; grid-template-columns: 1fr 450px; gap: 15px; }
         @media (max-width: 1100px) { .container { grid-template-columns: 1fr; } }
 
-        .card { background: var(--cp-white); border-radius: 8px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 20px; border-left: 4px solid var(--cp-red); }
+        .card { background: var(--cp-white); border-radius: 6px; padding: 15px; box-shadow: var(--shadow); margin-bottom: 15px; border-left: 4px solid var(--cp-red); }
         .card.dashboard { border-left: 4px solid var(--cp-dark); }
         .card.analysis { border-left: 4px solid var(--cp-red); background: #1a1a1a; color: white; }
         
-        h2 { font-size: 16px; font-weight: 800; text-transform: uppercase; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; color: var(--cp-dark); }
+        h2 { font-size: 14px; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--cp-dark); }
         h2 span { color: var(--cp-red); }
         .analysis h2 { color: white; }
 
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
         .input-group { display: flex; flex-direction: column; position: relative; }
-        .input-group label { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 4px; text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
+        .input-group label { font-size: 11px; font-weight: 600; color: #555; margin-bottom: 3px; text-transform: uppercase; display: flex; align-items: center; gap: 4px; }
         .analysis .input-group label { color: #aaa; }
         
-        .icon-help { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; background-color: #888; color: white; border-radius: 50%; font-size: 11px; font-weight: 800; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
-        .icon-help:hover { background-color: var(--cp-red); transform: scale(1.1); }
+        .icon-help { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; background-color: #888; color: white; border-radius: 50%; font-size: 10px; font-weight: 800; cursor: pointer; flex-shrink: 0; }
+        .icon-help:hover { background-color: var(--cp-red); }
 
-        #infoModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(3px); }
-        .info-box { background: white; padding: 25px; border-radius: 8px; max-width: 400px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border-top: 5px solid var(--cp-red); }
-        .info-box p { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 20px; line-height: 1.5; }
-        .info-box button { background: var(--cp-dark); color: white; padding: 12px 20px; border: none; border-radius: 4px; font-weight: 800; cursor: pointer; width: 100%; text-transform: uppercase; letter-spacing: 1px; }
+        /* MODAL */
+        #infoModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); }
+        .info-box { background: white; padding: 20px; border-radius: 6px; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-top: 4px solid var(--cp-red); }
+        .info-box p { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 15px; line-height: 1.4; }
+        .info-box button { background: var(--cp-dark); color: white; padding: 10px; border: none; border-radius: 4px; font-weight: 800; cursor: pointer; width: 100%; text-transform: uppercase; }
 
-        input, select { width: 100%; padding: 10px 12px; border: 1px solid var(--cp-border); border-radius: 4px; font-size: 14px; font-family: 'Roboto Mono', monospace; font-weight: 600; color: var(--cp-dark); background: #fafafa; transition: var(--transition); }
+        input, select { width: 100%; padding: 8px 10px; border: 1px solid var(--cp-border); border-radius: 4px; font-size: 13px; font-family: 'Roboto Mono', monospace; font-weight: 600; color: var(--cp-dark); background: #fafafa; }
         input:focus, select:focus { border-color: var(--cp-red); outline: none; background: var(--cp-white); }
-        .analysis input { background: #333; border-color: #555; color: #fff; font-size: 18px; }
-        .analysis input:focus { border-color: var(--cp-red); background: #222; }
+        .analysis input { background: #333; border-color: #555; color: #fff; font-size: 16px; }
 
-        .breakdown-container { background: #e3f2fd; padding: 15px; border-radius: 6px; border: 1px solid #b6d4fe; margin-top: 15px; display: none; }
-        .breakdown-row { display: grid; grid-template-columns: 2fr 1fr 1fr auto; align-items: center; gap: 8px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #b6d4fe; }
+        /* ROZPAD TRASY */
+        .breakdown-container { background: #e3f2fd; padding: 12px; border-radius: 6px; border: 1px solid #b6d4fe; margin-top: 12px; display: none; }
+        .breakdown-row { display: grid; grid-template-columns: 1.4fr 0.8fr 1fr auto; align-items: center; gap: 6px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #b6d4fe; }
         .breakdown-row:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-        .breakdown-input-group { display: flex; flex-direction: column; gap: 2px; font-size: 10px; font-weight: 800; color: #0d47a1; text-transform: uppercase; }
-        .breakdown-input-group input, .breakdown-input-group select { padding: 8px 5px; font-size: 12px; border-color: #b6d4fe; background: #fff; width: 100%; }
+        .breakdown-input-group { display: flex; flex-direction: column; gap: 2px; font-size: 9px; font-weight: 800; color: #0d47a1; text-transform: uppercase; }
+        .breakdown-input-group input, .breakdown-input-group select { padding: 6px 4px; font-size: 11px; border-color: #b6d4fe; background: #fff; width: 100%; }
         
-        .btn-avoid { background: #d32f2f; color: white; border: none; padding: 8px 6px; border-radius: 4px; font-size: 9px; font-weight: 800; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+        .btn-avoid { background: #d32f2f; color: white; border: none; padding: 6px 4px; border-radius: 4px; font-size: 9px; font-weight: 800; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
         .btn-avoid:hover { background: #b71c1c; }
 
-        .toggle-container { display: flex; align-items: center; justify-content: space-between; background: var(--cp-dark); color: white; padding: 12px 15px; border-radius: 6px; margin-bottom: 15px; }
-        .toggle-label { font-weight: 600; font-size: 14px; }
-        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .toggle-container { display: flex; align-items: center; justify-content: space-between; background: var(--cp-dark); color: white; padding: 10px 12px; border-radius: 6px; margin-bottom: 12px; }
+        .toggle-label { font-weight: 600; font-size: 13px; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--cp-red); }
-        input:checked + .slider:before { transform: translateX(22px); }
+        input:checked + .slider:before { transform: translateX(20px); }
 
-        .btn { background-color: var(--cp-red); color: var(--cp-white); border: none; padding: 15px 15px; border-radius: 4px; font-size: 15px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: var(--transition); width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 10px; }
-        .btn:hover { background-color: var(--cp-red-hover); transform: translateY(-2px); }
+        .btn { background-color: var(--cp-red); color: var(--cp-white); border: none; padding: 12px; border-radius: 4px; font-size: 14px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: var(--transition); width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 10px; }
+        .btn:hover { background-color: var(--cp-red-hover); }
         .btn:disabled { background-color: #ccc; cursor: not-allowed; opacity: 0.7; }
 
-        .result-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--cp-border); }
+        .result-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--cp-border); }
         .result-row:last-child { border-bottom: none; }
-        .result-label { font-size: 13px; color: #666; font-weight: 600; }
-        .result-val { font-family: 'Roboto Mono', monospace; font-size: 14px; font-weight: 700; color: var(--cp-dark); }
+        .result-label { font-size: 12px; color: #666; font-weight: 600; }
+        .result-val { font-family: 'Roboto Mono', monospace; font-size: 13px; font-weight: 700; color: var(--cp-dark); }
         
-        .dashboard .result-main { background: var(--cp-gray); padding: 12px; border-radius: 6px; margin-top: 10px; border-left: 4px solid var(--cp-red); }
-        .dashboard .result-main .result-label { color: var(--cp-dark); font-size: 14px; text-transform: uppercase; }
-        .dashboard .result-main .result-val { font-size: 20px; color: var(--cp-red); font-weight: 800; }
+        .dashboard .result-main { background: var(--cp-gray); padding: 10px; border-radius: 6px; margin-top: 8px; border-left: 4px solid var(--cp-red); }
+        .dashboard .result-main .result-label { color: var(--cp-dark); font-size: 13px; text-transform: uppercase; }
+        .dashboard .result-main .result-val { font-size: 18px; color: var(--cp-red); font-weight: 800; }
 
-        .profit-status { padding: 15px; border-radius: 6px; margin-top: 15px; text-align: center; font-weight: 800; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
+        .profit-status { padding: 12px; border-radius: 6px; margin-top: 12px; text-align: center; font-weight: 800; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
         .status-profit { background: rgba(46, 125, 50, 0.2); color: #4caf50; border: 2px solid #4caf50; }
         .status-loss { background: rgba(198, 40, 40, 0.2); color: #ef5350; border: 2px solid #ef5350; }
         .status-neutral { background: #333; color: #aaa; border: 2px solid #555; }
 
-        #apiStatus { margin-top: 10px; font-size: 12px; font-weight: 600; padding: 10px; border-radius: 4px; display: none; word-wrap: break-word; }
+        #apiStatus { margin-top: 8px; font-size: 11px; font-weight: 600; padding: 8px; border-radius: 4px; display: none; word-wrap: break-word; }
         .msg-info { background: #e3f2fd; color: #0d47a1; display: block !important; }
         .msg-success { background: #d4edda; color: #155724; display: block !important; }
         .msg-error { background: #f8d7da; color: #721c24; display: block !important; }
@@ -116,7 +117,7 @@
 
 <header>
     <div class="logo-container">
-        <img src="loga_CP_page-0001.jpg" alt="Control Point" onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<span style=\'font-size:24px; font-weight:800; color:white;\'>CONTROL POINT</span>');">
+        <img src="loga_CP_page-0001.jpg" alt="Control Point" onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<span style=\'font-size:20px; font-weight:800; color:white;\'>CONTROL POINT</span>');">
         <span class="analysis-text">ANALÝZA</span>
     </div>
 </header>
@@ -125,21 +126,21 @@
     <div class="inputs-section">
         
         <div class="card">
-            <h2><span>01.</span> Lokace & Chytrá trasa</h2>
+            <h2><span>01.</span> Lokace & Trasa</h2>
             
             <div id="avoidListContainer"></div>
 
             <div class="form-grid">
                 <div class="input-group" style="grid-column: 1 / -1;">
-                    <label>Start <span class="icon-help" onclick="showInfo('Zadejte Město, PSČ, adresu nebo přesné GPS (např. 49.593, 17.250).')">i</span></label>
+                    <label>Start <span class="icon-help" onclick="showInfo('Město, adresa nebo GPS (např. 49.593, 17.250).')">i</span></label>
                     <input type="text" id="startAdresa" value="Věrovany 94">
                 </div>
                 <div class="input-group">
-                    <label>Cíl <span class="icon-help" onclick="showInfo('Cílové město nebo GPS. Pro cizí státy doporučujeme přidat i PSČ pro maximální přesnost.')">i</span></label>
+                    <label>Cíl <span class="icon-help" onclick="showInfo('Cílové město či adresa. Pro cizí státy doporučujeme i PSČ.')">i</span></label>
                     <input type="text" id="cilAdresa" placeholder="Např. Mnichov 80331">
                 </div>
                 <div class="input-group">
-                    <label>Cílový stát <span class="icon-help" onclick="showInfo('Pojistka: Pokud existuje stejně pojmenované město u nás i v cizině (např. Frankfurt), vyberte stát přímo z roletky.')">i</span></label>
+                    <label>Cílový stát <span class="icon-help" onclick="showInfo('Pojistka: Pokud existuje stejné město u nás i v cizině (např. Frankfurt), vyberte stát z roletky.')">i</span></label>
                     <select id="cilStat">
                         <option value="">-- Automaticky --</option>
                         <option value="CZ">Česko</option>
@@ -157,43 +158,42 @@
                 </div>
             </div>
 
-            <button id="btnTrasa" class="btn" onclick="spocitatTrasu()">Spočítat trasu a detekovat mýtné úseky</button>
+            <button id="btnTrasa" class="btn" onclick="spocitatTrasu()">Spočítat trasu a mýto</button>
             <div id="apiStatus"></div>
             
-            <div class="form-grid" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+            <div class="form-grid" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee;">
                 <div class="input-group">
-                    <label>Celková ujetá trasa (km)</label>
+                    <label>Celkem km</label>
                     <input type="number" id="vzdalenost" value="0" step="0.1" style="font-weight: 800;" readonly>
                 </div>
                 <div class="input-group">
-                    <label>Typ trasy <span class="icon-help" onclick="showInfo('Kolečko automaticky vynásobí ujeté dálniční kilometry a vypočtené mýtné dvěma.')">i</span></label>
+                    <label>Typ trasy <span class="icon-help" onclick="showInfo('Kolečko automaticky zdvojnásobí dálniční km i mýto.')">i</span></label>
                     <select id="typTrasy">
-                        <option value="1">Napřímo (Jedna cesta)</option>
-                        <option value="2">Kolečko (Tam i zpět)</option>
+                        <option value="1">Napřímo</option>
+                        <option value="2">Kolečko</option>
                     </select>
                 </div>
                 <div class="input-group">
-                    <label>Dokládky (km) <span class="icon-help" onclick="showInfo('Kilometry ujeté navíc z důvodu nakládek. Z těchto km se mýto už automaticky nepřipočítává.')">i</span></label>
+                    <label>Dokládky km <span class="icon-help" onclick="showInfo('Km navíc (zvyšují naftu, mýto už nepřičítají).')">i</span></label>
                     <input type="number" id="dokladky" value="0">
                 </div>
             </div>
 
             <div id="breakdownContainer" class="breakdown-container">
-                <h3 style="font-size: 13px; margin-bottom: 10px; color: #0d47a1; text-transform: uppercase; display: flex; align-items: center; justify-content: space-between;">
-                    Rozpad trasy (státy a mýto)
-                    <span class="icon-help" style="background:#0d47a1; color:white;" onclick="showInfo('Detekované státy.\nMůžete ručně přepsat cenu mýta nebo změnit stát.\nZměnou náprav nahoře se mýto zde samo přepočítá.\nKliknutím na červené ⛔ OBJET systém trasu přegeneruje.')">i</span>
+                <h3 style="font-size: 12px; margin-bottom: 8px; color: #0d47a1; text-transform: uppercase; display: flex; align-items: center; justify-content: space-between;">
+                    Rozpad mýta dle států
+                    <span class="icon-help" style="background:#0d47a1; color:white;" onclick="showInfo('Můžete přepsat km či mýto, nebo kliknout na ⛔ OBJET pro vyřazení státu.')">i</span>
                 </h3>
                 <div id="breakdownList"></div>
             </div>
         </div>
 
-        <!-- MÝTO & TECHNIKA -->
         <div class="card">
-            <h2><span>02.</span> Technika a parametry vozidla</h2>
+            <h2><span>02.</span> Technika vozidla</h2>
             
             <div class="form-grid">
                 <div class="input-group">
-                    <label>Euro Norma <span class="icon-help" onclick="showInfo('Horší ekologická norma auta automaticky zdražuje mýto. Změna se ihned projeví v úsecích nahoře.')">i</span></label>
+                    <label>Euro Norma <span class="icon-help" onclick="showInfo('Horší norma zvyšuje sazbu mýta v úsecích.')">i</span></label>
                     <select id="euroNorma" onchange="updateAllSegmentTolls()">
                         <option value="1.0">Euro VI</option>
                         <option value="1.15">Euro V</option>
@@ -202,57 +202,56 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label>Nápravy celkem <span class="icon-help" onclick="showInfo('Fyzický součet náprav (tahač + návěs). Určuje dražší mýtnou třídu. Změna ihned přepočítá mýto v úsecích.')">i</span></label>
+                    <label>Nápravy celkem <span class="icon-help" onclick="showInfo('Fyzický součet náprav soupravy pro mýtnou třídu.')">i</span></label>
                     <select id="napravyFyzicke" onchange="updateAllSegmentTolls()">
-                        <option value="5">5 náprav (Standard 2+3)</option>
-                        <option value="6">6 a více náprav (3+3...)</option>
+                        <option value="5">5 náprav (2+3)</option>
+                        <option value="6">6 a více (3+3)</option>
                         <option value="4">4 nápravy (2+2)</option>
-                        <option value="3">3 nápravy (Tandem)</option>
+                        <option value="3">3 nápravy</option>
                     </select>
                 </div>
                 <div class="input-group">
-                    <label>Zvednuté nápravy <span class="icon-help" onclick="showInfo('Mýto zůstane stejné, ale zlevní to kalkulaci opotřebení pneu.')">i</span></label>
-                    <select id="zvedleNapravy"><option value="0">0 (Vše na zemi)</option><option value="1">1 nahoře</option><option value="2">2 nahoře</option></select>
+                    <label>Zvedlé nápravy <span class="icon-help" onclick="showInfo('Šetří opotřebení pneu.')">i</span></label>
+                    <select id="zvedleNapravy"><option value="0">0 (Dole)</option><option value="1">1 nahoře</option><option value="2">2 nahoře</option></select>
                 </div>
             </div>
             
-            <div class="form-grid" style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+            <div class="form-grid" style="margin-top: 12px; border-top: 1px solid #eee; padding-top: 12px;">
                 <div class="input-group">
-                    <label>Spotřeba prázdné <span class="icon-help" onclick="showInfo('Litrů nafty na 100 km, kdyby jel kamion bez nákladu.')">i</span></label>
+                    <label>Spotřeba prázdné <span class="icon-help" onclick="showInfo('L/100km bez nákladu.')">i</span></label>
                     <input type="number" id="spotrebaPrazdne" value="25" step="0.1">
                 </div>
                 <div class="input-group">
-                    <label>Váha nákladu (t) <span class="icon-help" onclick="showInfo('Každá 1 tuna nákladu automaticky zvedne počítanou spotřebu o 0.2 Litru / 100 km.')">i</span></label>
+                    <label>Náklad (t) <span class="icon-help" onclick="showInfo('Každá tuna přidá +0.2L na 100km.')">i</span></label>
                     <input type="number" id="vahaNakladu" value="10" step="0.1">
                 </div>
                 <div class="input-group">
-                    <label>Cena nafty (Kč/L)</label>
+                    <label>Nafta (Kč/L)</label>
                     <input type="number" id="cenaNafty" value="36.50" step="0.10">
                 </div>
             </div>
         </div>
 
-        <!-- PERSONÁLIE A FIX -->
         <div class="card">
-            <h2><span>03.</span> Personální & Fixní náklady</h2>
+            <h2><span>03.</span> Náklady & Řidič</h2>
             <div class="form-grid">
                 <div class="input-group" style="grid-column: 1 / -1;">
-                    <label>Typ odměňování řidiče <span class="icon-help" onclick="showInfo('Zaměstnanec: Odměna se násobí počtem dnů trasy. Brigádník: Fixní jednorázová odměna.')">i</span></label>
+                    <label>Odměňování řidiče</label>
                     <select id="typMzdy">
-                        <option value="denni">Zaměstnanec (Rozpočítaná denní mzda vč. diet)</option>
-                        <option value="fixni">Brigádník (Fixní částka pouze za tuto točku)</option>
+                        <option value="denni">Zaměstnanec (Denní mzda vč. diet)</option>
+                        <option value="fixni">Brigádník (Paušál za točku)</option>
                     </select>
                 </div>
                 <div class="input-group">
-                    <label>Hodnota odměny</label>
+                    <label>Odměna (Kč)</label>
                     <input type="number" id="mzdaHodnota" value="3000">
                 </div>
                 <div class="input-group" id="dnyContainer">
-                    <label>Trvání trasy (Dny)</label>
+                    <label>Trvání (Dny)</label>
                     <input type="number" id="dny" value="1" step="0.5">
                 </div>
                 <div class="input-group">
-                    <label>Fix na auto / Den <span class="icon-help" onclick="showInfo('Odpisy, silniční daň, pojištění a poplatky dispečinku rozpočítané na 1 den (Násobí se počtem dnů jízdy).')">i</span></label>
+                    <label>Fix auto/den <span class="icon-help" onclick="showInfo('Odpisy, pojistky, dispečink na 1 den.')">i</span></label>
                     <input type="number" id="nakladyAutoDen" value="2500">
                 </div>
             </div>
@@ -268,47 +267,47 @@
                 <label class="switch"><input type="checkbox" id="dphToggle"><span class="slider"></span></label>
             </div>
 
-            <h2 style="font-size: 14px; color: #666;">Ceníková Kalkulace</h2>
+            <h2 style="font-size: 13px; color: #666;">Ceníková Kalkulace</h2>
             
-            <div class="result-row" style="background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #ddd; margin-bottom: 10px;">
-                <span class="result-label" style="color: var(--cp-dark);">Kalkulovaná spotřeba vč. nákladu:</span>
+            <div class="result-row" style="background: #f8f9fa; padding: 8px; border-radius: 4px; border: 1px solid #ddd; margin-bottom: 8px;">
+                <span class="result-label" style="color: var(--cp-dark);">Spotřeba vč. nákladu:</span>
                 <span class="result-val" id="resSpotrebaDynamicka" style="color: var(--cp-red);">0 L/100 km</span>
             </div>
 
-            <div class="result-row"><span class="result-label">Cena za spálenou naftu:</span><span class="result-val" id="resNafta">0 Kč</span></div>
+            <div class="result-row"><span class="result-label">Nafta celkem:</span><span class="result-val" id="resNafta">0 Kč</span></div>
             <div class="result-row"><span class="result-label">Odměna řidič:</span><span class="result-val" id="resMzda">0 Kč</span></div>
             <div class="result-row"><span class="result-label">Fixní náklady & Pneu:</span><span class="result-val" id="resFixPneu">0 Kč</span></div>
-            <div class="result-row"><span class="result-label">Součet Mýta ze všech států:</span><span class="result-val" id="resMyto">0 Kč</span></div>
+            <div class="result-row"><span class="result-label">Mýto celkem:</span><span class="result-val" id="resMyto">0 Kč</span></div>
 
             <div class="result-main">
                 <div class="result-row" style="border:none; padding:0;">
-                    <span class="result-label">Vlastní náklady celkem:</span>
+                    <span class="result-label">Náklady celkem:</span>
                     <span class="result-val" id="resNakladyCelkem">0 Kč</span>
                 </div>
-                <div class="result-row" style="border:none; padding:5px 0 0 0;">
-                    <span class="result-label" style="font-size: 12px; color: #555;">Náklad na 1 km (bez mýta):</span>
-                    <span class="result-val" id="resKmBezMyta" style="font-size: 14px; color: #555;">0 Kč/km</span>
+                <div class="result-row" style="border:none; padding:3px 0 0 0;">
+                    <span class="result-label" style="font-size: 11px; color: #555;">Náklad na 1 km (bez mýta):</span>
+                    <span class="result-val" id="resKmBezMyta" style="font-size: 13px; color: #555;">0 Kč/km</span>
                 </div>
                 <div class="result-row" style="border:none; padding:0;">
-                    <span class="result-label" style="font-size: 12px;">Náklad na 1 km (vč. mýta):</span>
-                    <span class="result-val" id="resKmVcMyta" style="font-size: 14px;">0 Kč/km</span>
+                    <span class="result-label" style="font-size: 11px;">Náklad na 1 km (vč. mýta):</span>
+                    <span class="result-val" id="resKmVcMyta" style="font-size: 13px;">0 Kč/km</span>
                 </div>
             </div>
             
-            <div class="input-group" style="margin-top: 15px;">
-                <label>Běžná požadovaná marže (%) <span class="icon-help" onclick="showInfo('Procentuální přirážka čistého zisku k vašim nákladům. Definuje vaši optimální ceníkovou prodejní cenu.')">i</span></label>
+            <div class="input-group" style="margin-top: 12px;">
+                <label>Požadovaná marže (%)</label>
                 <input type="number" id="marze" value="15">
             </div>
-            <div class="result-row" style="margin-top: 10px;">
+            <div class="result-row" style="margin-top: 8px;">
                 <span class="result-label" id="prodejLabel" style="color: var(--cp-dark);">Ceníková prodejní cena:</span>
-                <span class="result-val" id="resProdejniCena" style="font-size: 18px;">0 Kč</span>
+                <span class="result-val" id="resProdejniCena" style="font-size: 16px;">0 Kč</span>
             </div>
         </div>
 
         <div class="card analysis">
             <h2><span>04.</span> Analýza reality</h2>
-            <div class="input-group" style="margin-bottom: 15px;">
-                <label style="color:#fff;">Sjednaná cena za přepravu (Kč) <span class="icon-help" onclick="showInfo('Zadejte částku, za kterou jste trasu reálně střelili. Aplikace automaticky odečte náklady a prozradí váš opravdový čistý zisk nebo ztrátu.')">i</span></label>
+            <div class="input-group" style="margin-bottom: 12px;">
+                <label style="color:#fff;">Sjednaná cena za přepravu (Kč)</label>
                 <input type="number" id="skutecnaCena" value="0">
             </div>
             <div class="result-row" style="border-color:#444;">
@@ -316,7 +315,7 @@
                 <span class="result-val" id="realTrzbaKm" style="color:#fff;">0 Kč/km</span>
             </div>
             <div id="ziskStatusBox" class="profit-status status-neutral">Čekám na zadání ceny</div>
-            <div style="text-align: center; font-size: 12px; color: #888; margin-top: 10px;" id="ziskProcento"></div>
+            <div style="text-align: center; font-size: 11px; color: #888; margin-top: 8px;" id="ziskProcento"></div>
         </div>
 
     </div>
@@ -341,6 +340,7 @@
     const SPOTREBA_NA_TUNU = 0.20; 
     const DPH_SAZBA = 1.21;
     
+    // Kompletní ceník sazeb pro požadované státy dle zadání
     const MYTO_STATY = {
         'CZ': { name: 'Česko', rate: 4.5 },
         'SK': { name: 'Slovensko', rate: 5.0 },
@@ -353,7 +353,7 @@
         'ES': { name: 'Španělsko', rate: 4.0 },
         'NL': { name: 'Nizozemí', rate: 1.0 }, 
         'BE': { name: 'Belgie', rate: 4.5 },
-        'UNKNOWN': { name: 'Jiný stát', rate: 4.5 }
+        'UNKNOWN': { name: 'Česko (Základ)', rate: 4.5 }
     };
 
     const MYTO_NAPRAVY_KOEF = { '2': 0.7, '3': 0.8, '4': 1.0, '5': 1.0, '6': 1.1 };
@@ -374,22 +374,21 @@
         let container = document.getElementById('avoidListContainer');
         if(activeAvoids.length === 0) { container.innerHTML = ''; return; }
         
-        let html = '<div style="font-size:12px; font-weight:600; color:white; margin-bottom:15px; background:var(--cp-danger); padding:10px; border-radius:6px;"><b>Aktivní zákazy tranzitu (Objížďka):</b><br>';
+        let html = '<div style="font-size:11px; font-weight:600; color:white; margin-bottom:12px; background:var(--cp-danger); padding:8px; border-radius:4px;"><b>Aktivní objížďka státu:</b><br>';
         activeAvoids.forEach(a => {
             let name = MYTO_STATY[a.code] ? MYTO_STATY[a.code].name : a.code;
-            html += `<span style="display:inline-block; margin-top:5px; background:rgba(0,0,0,0.3); color:white; padding:5px 10px; border-radius:4px; margin-right:5px; cursor:pointer; font-size:11px;" onclick="removeAvoidCountry(${a.id})" title="Povolit a přepočítat">✕ Povolit ${name}</span>`;
+            html += `<span style="display:inline-block; margin-top:4px; background:rgba(0,0,0,0.3); color:white; padding:4px 8px; border-radius:3px; margin-right:4px; cursor:pointer;" onclick="removeAvoidCountry('${a.code}')">✕ Povolit ${name}</span>`;
         });
         html += '</div>';
         container.innerHTML = html;
     }
 
-    function removeAvoidCountry(id) {
-        activeAvoids = activeAvoids.filter(a => a.id !== id);
+    function removeAvoidCountry(code) {
+        activeAvoids = activeAvoids.filter(a => a.code !== code);
         renderAvoidList();
         spocitatTrasu();
     }
 
-    // --- LOKÁLNÍ VÝPOČTY (BEZ ZÁVISLOSTI NA GOOGLE SCRIPTU) ---
     async function getCoordinates(address, targetCountryCode = null) {
         let gpsMatch = address.match(/^([-+]?\d{1,2}\.\d+)[,\s]+([-+]?\d{1,3}\.\d+)$/);
         if(gpsMatch) return [parseFloat(gpsMatch[2]), parseFloat(gpsMatch[1])];
@@ -398,18 +397,18 @@
         if(targetCountryCode) query += `, ${targetCountryCode}`;
 
         try {
-            let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+            let res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=1`);
             if(res.ok) {
                 let data = await res.json();
-                if(data && data.length > 0) return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
+                if(data.features && data.features.length > 0) return data.features[0].geometry.coordinates;
             }
         } catch(e) {}
 
         try {
-            let res = await fetch(`https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(query)}`);
+            let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
             if(res.ok) {
                 let data = await res.json();
-                if (data.features && data.features.length > 0) return data.features[0].geometry.coordinates;
+                if(data && data.length > 0) return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
             }
         } catch(e) {}
         
@@ -432,12 +431,16 @@
             let res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=3`);
             if(res.ok) {
                 let data = await res.json();
-                let code = data.address.country_code.toUpperCase();
-                countryCache[cacheKey] = code;
-                return code;
+                if(data.address && data.address.country_code) {
+                    let code = data.address.country_code.toUpperCase();
+                    if(MYTO_STATY[code]) {
+                        countryCache[cacheKey] = code;
+                        return code;
+                    }
+                }
             }
         } catch(e) {}
-        return "UNKNOWN";
+        return "CZ"; // Bezpečná fallback na ČR, žádné "Neznámé státy"
     }
 
     async function spocitatTrasu() {
@@ -448,55 +451,32 @@
 
         if (!startStr || !cilStr) { setStatus("Vyplňte Start i Cíl.", "error"); return; }
         
-        let avoidActive = activeAvoids.length > 0;
         btn.disabled = true;
-        setStatus("Počítám dálniční úseky a státy (může chvíli trvat)...", "info");
+        setStatus("Počítám trasu a detekuji státy...", "info");
 
         try {
             const startCoords = await getCoordinates(startStr);
             const cilCoords = await getCoordinates(cilStr, cilStat);
             
-            let distTotal, geom, countryInfoIndices;
-            let usedEngine = "ORS";
-
-            // 1. POKUS: OpenRouteService (Umí objíždět státy)
-            try {
-                if (avoidActive) {
-                    let bodyReq = { coordinates: [startCoords, cilCoords], extra_info: ["countryinfo"] };
-                    bodyReq.options = { avoid_countries: activeAvoids.map(a => a.id) };
-                    
-                    let res = await fetch(`https://api.openrouteservice.org/v2/directions/driving-hgv`, {
-                        method: 'POST', headers: { 'Authorization': ORS_API_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(bodyReq)
-                    });
-                    if(!res.ok) throw new Error("Nelze spočítat.");
-                    let data = await res.json();
-                    distTotal = (data.routes[0].summary.distance / 1000).toFixed(1);
-                    geom = data.routes[0].geometry.coordinates;
-                    countryInfoIndices = data.routes[0].extras && data.routes[0].extras.countryinfo ? data.routes[0].extras.countryinfo.values : null;
-                } else {
-                    let url = `https://api.openrouteservice.org/v2/directions/driving-hgv?api_key=${ORS_API_KEY}&start=${startCoords[0]},${startCoords[1]}&end=${cilCoords[0]},${cilCoords[1]}&extra_info=countryinfo`;
-                    let res = await fetch(url);
-                    if(!res.ok) throw new Error("Nelze spočítat.");
-                    let data = await res.json();
-                    distTotal = (data.features[0].properties.summary.distance / 1000).toFixed(1);
-                    geom = data.features[0].geometry.coordinates;
-                    countryInfoIndices = data.features[0].properties.extras && data.features[0].properties.extras.countryinfo ? data.features[0].properties.extras.countryinfo.values : null;
-                }
-            } catch(e) {
-                // 2. POKUS: Pokud selže ORS, zkusíme záložní OSRM
-                if (avoidActive) throw new Error("Aplikace blokuje objíždění států na pozadí.");
-                usedEngine = "OSRM";
-                let osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startCoords[0]},${startCoords[1]};${cilCoords[0]},${cilCoords[1]}?overview=full&geometries=geojson`;
-                let res = await fetch(osrmUrl);
-                if(!res.ok) throw new Error("Mapové servery nedostupné.");
-                let data = await res.json();
-                distTotal = (data.routes[0].distance / 1000).toFixed(1);
-                geom = data.routes[0].geometry.coordinates;
+            let bodyReq = { coordinates: [startCoords, cilCoords], extra_info: ["countryinfo"] };
+            if(activeAvoids.length > 0) {
+                // Převod kódů států na ORS interní filtry, pokud jsou aktivní
+                bodyReq.options = { avoid_countries: activeAvoids.map(a => a.code) };
             }
 
-            let breakdownArr = [];
+            let res = await fetch(`https://api.openrouteservice.org/v2/directions/driving-hgv`, {
+                method: 'POST', headers: { 'Authorization': ORS_API_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(bodyReq)
+            });
+            
+            if(!res.ok) throw new Error("Mapový server odmítl trasu.");
+            let data = await res.json();
+            
+            let distTotal = (data.routes[0].summary.distance / 1000).toFixed(1);
+            let geom = data.routes[0].geometry.coordinates;
+            let countryInfoIndices = data.routes[0].extras && data.routes[0].extras.countryinfo ? data.routes[0].extras.countryinfo.values : null;
 
-            if(usedEngine === "ORS" && countryInfoIndices) {
+            let breakdownArr = [];
+            if(countryInfoIndices) {
                 for(let seg of countryInfoIndices) {
                     let sIdx = seg[0], eIdx = seg[1], internalId = seg[2];
                     let distSegment = 0;
@@ -508,52 +488,28 @@
                     breakdownArr.push({ code: cCode, km: distSegment, internalId: internalId });
                 }
             } else {
-                // Manuální rozřezání trasy (když zklamou API extras)
-                let currentSegmentKm = 0;
-                let currentCountry = null;
-                let distSinceCheck = 0;
-                let lastCheckIdx = 0;
-
-                for(let i=0; i<geom.length-1; i++) {
-                    let d = getDistanceKm(geom[i][1], geom[i][0], geom[i+1][1], geom[i+1][0]);
-                    currentSegmentKm += d;
-                    distSinceCheck += d;
-
-                    if(distSinceCheck >= 40 || i === geom.length-2) {
-                        let midIdx = Math.floor((lastCheckIdx + i) / 2);
-                        let code = await fetchCountryCode(geom[midIdx][1], geom[midIdx][0]);
-                        
-                        if (currentCountry === null) currentCountry = code;
-                        if (currentCountry !== code) {
-                            breakdownArr.push({code: currentCountry, km: currentSegmentKm, internalId: null});
-                            currentCountry = code;
-                            currentSegmentKm = 0;
-                        }
-                        distSinceCheck = 0;
-                        lastCheckIdx = i;
-                    }
-                }
-                if (currentSegmentKm > 0) breakdownArr.push({code: currentCountry, km: currentSegmentKm, internalId: null});
+                let code = await fetchCountryCode(geom[0][1], geom[0][0]);
+                breakdownArr.push({ code: code, km: parseFloat(distTotal), internalId: null });
             }
 
-            // Sloučení a úklid
             let merged = {};
             for(let br of breakdownArr) {
-                if(!merged[br.code]) merged[br.code] = {km: 0, internalId: br.internalId};
-                merged[br.code].km += br.km;
+                let code = MYTO_STATY[br.code] ? br.code : 'CZ';
+                if(!merged[code]) merged[code] = {km: 0, internalId: br.internalId};
+                merged[code].km += br.km;
             }
             let finalArr = [];
             for(let c in merged) finalArr.push({code: c, km: parseFloat(merged[c].km.toFixed(1)), internalId: merged[c].internalId});
 
-            // Ochrana před Rakouskem
+            // Upozornění na Rakousko
             let detectedCodes = finalArr.map(b => b.code);
             if (detectedCodes.includes("AT") && !avoidAustriaPromptShown && !activeAvoids.find(a => a.code === 'AT')) {
                 avoidAustriaPromptShown = true; 
                 let atSeg = finalArr.find(b => b.code === 'AT');
-                if(atSeg && atSeg.internalId) {
+                if(atSeg) {
                     btn.disabled = false;
-                    if(confirm("POZOR:\nTrasa vede přes Rakousko (extrémně drahé mýto).\n\nChcete přepočítat mapu a Rakousko zcela objet?")) {
-                        activeAvoids.push({id: atSeg.internalId, code: 'AT'});
+                    if(confirm("POZOR: Trasa vede přes Rakousko (drahé mýto).\n\nChcete Rakousko objet?")) {
+                        activeAvoids.push({id: atSeg.internalId || 0, code: 'AT'});
                         renderAvoidList();
                         return spocitatTrasu();
                     }
@@ -589,38 +545,38 @@
 
         breakdownArr.forEach((item, index) => {
             let actKm = item.km * typTrasyMulti;
-            let code = item.code;
-            if(!MYTO_STATY[code]) code = 'UNKNOWN';
+            let code = MYTO_STATY[item.code] ? item.code : 'CZ';
             
             let rate = MYTO_STATY[code].rate;
             let estToll = actKm * 0.85 * rate * euroKoef * napravyKoef;
             
             let btnObjet = "";
-            if(item.internalId && index > 0 && index < breakdownArr.length - 1) {
-                btnObjet = `<button class="btn-avoid" onclick="window.promptAvoidCountry(${item.internalId}, '${code}')" title="Vyhnout se státu">⛔<br>OBJET</button>`;
+            if(index > 0 && index < breakdownArr.length - 1) {
+                btnObjet = `<button class="btn-avoid" onclick="window.promptAvoidCountry('${code}')" title="Vyhnout se státu">⛔<br>OBJET</button>`;
             }
 
             let optionsHtml = '';
             for(let k in MYTO_STATY) { 
+                if(k === 'UNKNOWN') continue;
                 let sel = (k === code) ? "selected" : "";
-                optionsHtml += `<option value="${k}" ${sel}>${MYTO_STATY[k].name} (${MYTO_STATY[k].rate} Kč/km)</option>`; 
+                optionsHtml += `<option value="${k}" ${sel}>${MYTO_STATY[k].name} (${MYTO_STATY[k].rate} Kč)</option>`; 
             }
 
             let rowHtml = `
                 <div class="breakdown-row" id="brRow_${index}">
                     <div class="breakdown-input-group">
                         <label>Stát</label>
-                        <select class="country-select" data-index="${index}" onchange="updateSegmentToll(${index})" style="min-width: 140px;">
+                        <select class="country-select" data-index="${index}" onchange="updateSegmentToll(${index})">
                             ${optionsHtml}
                         </select>
                     </div>
                     <div class="breakdown-input-group">
                         <label>Km</label>
-                        <input type="number" id="brKm_${index}" value="${actKm.toFixed(0)}" oninput="updateSegmentToll(${index})" class="km-override" style="min-width: 60px;">
+                        <input type="number" id="brKm_${index}" value="${actKm.toFixed(0)}" oninput="updateSegmentToll(${index})" class="km-override">
                     </div>
                     <div class="breakdown-input-group">
                         <label>Kč Mýto</label>
-                        <input type="number" id="brToll_${index}" value="${Math.round(estToll)}" class="toll-override" oninput="calculate()" style="min-width: 70px;">
+                        <input type="number" id="brToll_${index}" value="${Math.round(estToll)}" class="toll-override" oninput="calculate()">
                     </div>
                     <div>${btnObjet}</div>
                 </div>
@@ -629,11 +585,11 @@
         });
     }
 
-    window.promptAvoidCountry = function(internalId, code) {
+    window.promptAvoidCountry = function(code) {
         let countryName = MYTO_STATY[code] ? MYTO_STATY[code].name : code;
-        if(confirm(`Opravdu chcete přegenerovat celou trasu tak, abyste se vyhnuli státu: ${countryName}?`)) {
-            if(!activeAvoids.find(a => a.id === internalId)) {
-                activeAvoids.push({id: internalId, code: code});
+        if(confirm(`Chcete přegenerovat trasu a objet stát: ${countryName}?`)) {
+            if(!activeAvoids.find(a => a.code === code)) {
+                activeAvoids.push({id: 0, code: code});
                 renderAvoidList();
                 spocitatTrasu(); 
             }
@@ -649,7 +605,6 @@
         let code = sel.value;
         let km = parseFloat(kmInp.value) || 0;
         let rate = MYTO_STATY[code].rate;
-        
         let euroKoef = parseFloat(document.getElementById('euroNorma').value);
         let fyzickeNapravy = parseInt(document.getElementById('napravyFyzicke').value);
         let napravyKoef = MYTO_NAPRAVY_KOEF[fyzickeNapravy > 6 ? '6' : fyzickeNapravy.toString()] || 1.0;
