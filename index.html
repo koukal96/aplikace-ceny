@@ -147,10 +147,11 @@
                     <input type="text" id="cilAdresa" placeholder="Např. Mnichov 80331">
                 </div>
                 <div class="input-group">
-                    <label>Cílový stát <span class="icon-help" onclick="showInfo('Vyberte hlavní stát určení pro správný výpočet sazeb mýta.')">i</span></label>
+                    <label>Cílový stát <span class="icon-help" onclick="showInfo('Vyberte stát nebo nechte Automaticky pro detekci podle názvu cíle.')">i</span></label>
                     <select id="cilStat">
+                        <option value="">-- Automaticky --</option>
                         <option value="CZ">Česko</option>
-                        <option value="DE" selected>Německo</option>
+                        <option value="DE">Německo</option>
                         <option value="AT">Rakousko</option>
                         <option value="SK">Slovensko</option>
                         <option value="PL">Polsko</option>
@@ -443,9 +444,18 @@
         let typTrasyMulti = parseFloat(document.getElementById('typTrasy').value); 
         let actKm = totalKm * typTrasyMulti;
         let selectedStat = document.getElementById('cilStat').value;
-        if(!MYTO_STATY[selectedStat]) selectedStat = 'DE';
+        
+        if (!selectedStat) {
+            let cilText = document.getElementById('cilAdresa').value.toUpperCase();
+            if (cilText.includes('Wien') || cilText.includes('Graz') || cilText.includes('Linz') || cilText.includes('AT')) selectedStat = 'AT';
+            else if (cilText.includes('Bratislava') || cilText.includes('Košice') || cilText.includes('SK')) selectedStat = 'SK';
+            else if (cilText.includes('Praha') || cilText.includes('Brno') || cilText.includes('Ostrava') || cilText.includes('CZ')) selectedStat = 'CZ';
+            else if (cilText.includes('Warszawa') || cilText.includes('Krakow') || cilText.includes('PL')) selectedStat = 'PL';
+            else if (cilText.includes('Roma') || cilText.includes('Milano') || cilText.includes('IT')) selectedStat = 'IT';
+            else selectedStat = 'DE'; // Základní výchozí
+        }
 
-        let rate = MYTO_STATY[selectedStat].rate;
+        let rate = MYTO_STATY[selectedStat] ? MYTO_STATY[selectedStat].rate : 8.5;
         let euroKoef = parseFloat(document.getElementById('euroNorma').value);
         let fyzickeNapravy = parseInt(document.getElementById('napravyFyzicke').value);
         let napravyKoef = MYTO_NAPRAVY_KOEF[fyzickeNapravy > 6 ? '6' : fyzickeNapravy.toString()] || 1.0;
@@ -477,6 +487,7 @@
             </div>
         `;
         list.innerHTML = rowHtml;
+        calculate();
     }
 
     function calculate() {
@@ -487,7 +498,22 @@
 
         let totalMyto = 0;
         let tollInp = document.getElementById('breakdownToll');
-        if (tollInp) {
+        let statSel = document.getElementById('breakdownStat');
+        let kmInp = document.getElementById('breakdownKm');
+
+        if (tollInp && statSel && kmInp) {
+            let code = statSel.value;
+            let km = parseFloat(kmInp.value) || 0;
+            let rate = MYTO_STATY[code] ? MYTO_STATY[code].rate : 8.5;
+            let euroKoef = parseFloat(document.getElementById('euroNorma').value);
+            let fyzickeNapravy = parseInt(document.getElementById('napravyFyzicke').value);
+            let napravyKoef = MYTO_NAPRAVY_KOEF[fyzickeNapravy > 6 ? '6' : fyzickeNapravy.toString()] || 1.0;
+            
+            // Automatický přepočet mýta při změně náprav, km nebo státu v roletce
+            let currentToll = km * 0.85 * rate * euroKoef * napravyKoef;
+            if(document.activeElement !== tollInp) {
+                tollInp.value = Math.round(currentToll);
+            }
             totalMyto = parseFloat(tollInp.value) || 0;
         }
 
