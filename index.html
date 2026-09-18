@@ -266,18 +266,14 @@
 </div>
 
 <script>
-    // ---------------------------------------------------------
-    // AKTIVNÍ NAPOJENÍ NA FIREMNÍ GOOGLE TABULKU (API)
+    // TVOJE AKTIVNÍ NAPOJENÍ
     const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbxWsYRFEsaePghTkbsDQJVsweH2rbfEZHazGLtuFilWArfv3IgWMxdxLsYDTGxmHPkj/exec";
-    // ---------------------------------------------------------
-
     const ORS_API_KEY = "EyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjMyNTAxM2VmMDkzNzQ4ZGM5NTdiNDY0NTNhMzJmNGVmIiwiaCI6Im11cm11cjY0In0=";
     const OPOTREBENI_PNEU_KOLO_KM = 0.15;
     const DPH_SAZBA = 1.21;
 
     const MYTO_STATY_ZAKLAD = { 'CZ': 4.5, 'DE': 8.5, 'AT': 11.5, 'SK': 5.0, 'PL': 3.5, 'HU': 8.0, 'MIX': 6.5 };
     const MYTO_NAPRAVY_KOEF = { '2': 0.7, '3': 0.8, '4': 1.0, '5': 1.0, '6': 1.1 };
-
     const fmt = new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: 'CZK', minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
     function setStatus(msg, type) {
@@ -287,11 +283,16 @@
     }
 
     async function getCoordinates(address) {
-        const url = `https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(address)}`;
-        const response = await fetch(url);
-        const data = await response.json();
-        if (data.features && data.features.length > 0) return data.features[0].geometry.coordinates;
-        throw new Error(`Nelze nalézt GPS pro: ${address}`);
+        try {
+            const url = `https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(address)}`;
+            const response = await fetch(url, { redirect: 'follow' });
+            if (!response.ok) throw new Error("Chyba spojení s mapovým serverem.");
+            const data = await response.json();
+            if (data.features && data.features.length > 0) return data.features[0].geometry.coordinates;
+            throw new Error(`Místo '${address}' nebylo nalezeno v mapách.`);
+        } catch (e) {
+            throw new Error(`Výpadek spojení s mapami (OpenRouteService). Není blokován ve vašem prohlížeči?`);
+        }
     }
 
     async function spocitatTrasu() {
@@ -303,34 +304,35 @@
         const routeName = `${startStr.toLowerCase()} - ${cilStr.toLowerCase()}`;
         btn.disabled = true;
 
-        // 1. KROK: DOTAZ DO GOOGLE TABULKY
-        if (GOOGLE_SHEET_API.includes("http")) {
-            setStatus("Hledám trasu ve firemní Google Tabulce...", "info");
-            try {
-                const sheetResponse = await fetch(`${GOOGLE_SHEET_API}?route=${encodeURIComponent(routeName)}`);
-                const sheetData = await sheetResponse.json();
+        // 1. KROK: DOTAZ DO GOOGLE TABULKY (PŘÍSNĚ OBCHÁZÍME CORS)
+        setStatus("Hledám trasu ve firemní Google Tabulce...", "info");
+        try {
+            const sheetResponse = await fetch(`${GOOGLE_SHEET_API}?route=${encodeURIComponent(routeName)}`, { redirect: 'follow' });
+            const sheetData = await sheetResponse.json();
 
-                if (sheetData.found) {
-                    document.getElementById('vzdalenost').value = sheetData.km;
-                    setStatus(`Načteno z Google Tabulky: ${sheetData.km} km.`, "success");
-                    spocitejInteligentniMyto();
-                    calculate();
-                    btn.disabled = false;
-                    return; 
-                }
-            } catch(e) {
-                console.error("Chyba DB", e);
+            if (sheetData.found) {
+                document.getElementById('vzdalenost').value = sheetData.km;
+                setStatus(`Načteno z Google Tabulky: ${sheetData.km} km.`, "success");
+                spocitejInteligentniMyto();
+                calculate();
+                btn.disabled = false;
+                return; 
             }
+        } catch(e) {
+            console.warn("Databáze neodpověděla nebo přístup odepřen (CORS). Zkuste zkontrolovat nasazení Google Skriptu.", e);
+            // Pokračujeme dál k mapám, nesmíme zastavit aplikaci.
         }
 
-        // 2. KROK: POKUD NENÍ V TABULCE, POČÍTÁME PŘES MAPY ORS
-        setStatus("Trasa není v DB. Počítám přes dálnice...", "info");
+        // 2. KROK: POČÍTÁME PŘES MAPY ORS
+        setStatus("Trasa není v DB. Počítám přes dálnice (Mapy)...", "info");
 
         try {
             const startCoords = await getCoordinates(startStr);
             const cilCoords = await getCoordinates(cilStr);
             const routeUrl = `https://api.openrouteservice.org/v2/directions/driving-hgv?api_key=${ORS_API_KEY}&start=${startCoords[0]},${startCoords[1]}&end=${cilCoords[0]},${cilCoords[1]}`;
-            const routeResponse = await fetch(routeUrl);
+            
+            const routeResponse = await fetch(routeUrl, { redirect: 'follow' });
+            if (!routeResponse.ok) throw new Error("Chyba výpočtu trasy na serveru ORS.");
             const routeData = await routeResponse.json();
 
             if (routeData.features && routeData.features.length > 0) {
@@ -338,21 +340,27 @@
                 document.getElementById('vzdalenost').value = distanceKm;
                 
                 spocitejInteligentniMyto(); 
-                setStatus(`Nová trasa: ${distanceKm} km. Ukládám do Google Tabulky...`, "success");
+                setStatus(`Nová trasa z map: ${distanceKm} km. Pokouším se uložit do DB...`, "success");
                 calculate();
 
-                // 3. KROK: ZÁPIS DO GOOGLE TABULKY
-                if (GOOGLE_SHEET_API.includes("http")) {
+                // 3. KROK: BEZPEČNÝ ZÁPIS DO GOOGLE TABULKY (TEXT/PLAIN)
+                try {
                     await fetch(GOOGLE_SHEET_API, {
                         method: 'POST',
-                        body: JSON.stringify({ route: routeName, km: distanceKm })
+                        body: JSON.stringify({ route: routeName, km: distanceKm }),
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        redirect: 'follow'
                     });
+                } catch(postErr) {
+                    console.warn("Trasa se spočítala, ale nešlo ji zapsat do Google tabulky.", postErr);
                 }
+
             } else {
-                throw new Error("Trasu nelze najít.");
+                throw new Error("Cestu pro kamion se nepodařilo nalézt.");
             }
         } catch (error) {
-            setStatus("Chyba: " + error.message, "error");
+            // Tohle se stane, pokud tě např. AdBlock odřízne od OpenRouteService
+            setStatus("CHYBA VÝPOČTU: " + error.message, "error");
         } finally {
             btn.disabled = false;
         }
