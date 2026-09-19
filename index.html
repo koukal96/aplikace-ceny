@@ -2163,7 +2163,7 @@
                     <option value="rest" ${act.t === 'rest' ? 'selected' : ''}>🛏️ Pauza</option>
                 </select>
                 <input type="number" step="0.25" value="${act.d}" oninput="currentActs[${i}].d=parseFloat(this.value)||0; validateAndRenderShift();" style="flex:1;"> 
-                <button class="btn-secondary" onclick="currentActs.splice(${i},1); validateAndRenderShift();" style="background:var(--cp-danger); margin:0;">✕</button>
+                <button class="btn-secondary" onclick="currentActs.splice(${i},1); validateAndRenderShift();" style="background:var(--cp-danger); margin:0; width: 40px; flex-shrink: 0; padding: 10px 0;">✕</button>
             </div>`;
         });
 
