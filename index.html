@@ -98,7 +98,9 @@
         .btn-remove-wp { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; padding: 10px; border-radius: 4px; font-weight: 800; cursor: pointer; flex-shrink:0; }
         .btn-add-wp { background: #fdf2f2; color: var(--cp-red); border: 1px dashed #f5c6c8; padding: 12px; border-radius: 4px; font-size: 12px; font-weight: 800; text-transform: uppercase; cursor: pointer; width: 100%; margin-bottom: 10px; transition: 0.2s; }
 
-        #map-container { display: none; height: 250px; border-radius: 6px; overflow: hidden; margin-top: 15px; border: 2px solid #ddd; }
+        #map-container { display: none; height: 250px; border-radius: 6px; overflow: hidden; margin-top: 15px; border: 2px solid #ddd; width: 100%; }
+        #map { width: 100%; height: 100%; z-index: 1; }
+
         .breakdown-container { background: #e3f2fd; padding: 12px; border-radius: 6px; border: 1px solid #b6d4fe; margin-top: 12px; display: none; }
         .breakdown-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); align-items: center; gap: 6px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed #b6d4fe; }
 
@@ -1486,7 +1488,7 @@
         return finalSegments;
     }
 
-    async function spocitatTrasu() {
+        async function spocitatTrasu() {
         if (!navigator.onLine) {
             setStatus("❌ Jste offline. Výpočet z OSRM není dostupný.", "error");
             return;
@@ -1497,24 +1499,31 @@
         const btn = document.getElementById('btnTrasa');
 
         if (!startStr || !cilStr) { setStatus("Vyplňte Start i Cíl.", "error"); return; }
-        btn.disabled = true; setStatus(T('prubeh') + " (Geolokace...)", "info");
+        btn.disabled = true; setStatus("Počítám trasu a mýto...", "info");
 
         try {
             let coordStrings = [];
-            let startCoords = await getCoordinates(startStr); coordStrings.push(`${startCoords[0]},${startCoords[1]}`);
+            let startCoords = await getCoordinates(startStr); 
+            coordStrings.push(`${startCoords[0]},${startCoords[1]}`);
             
             for(let wp of waypoints) { 
-                if(wp.address.trim() !== "") { 
+                if(wp.address && wp.address.trim() !== "") { 
                     let wpCoords = await getCoordinates(wp.address); 
                     coordStrings.push(`${wpCoords[0]},${wpCoords[1]}`); 
                 } 
             }
             
-            let cilCoords = await getCoordinates(cilStr); coordStrings.push(`${cilCoords[0]},${cilCoords[1]}`);
+            let cilCoords = await getCoordinates(cilStr); 
+            coordStrings.push(`${cilCoords[0]},${cilCoords[1]}`);
             
             let url = `https://router.project-osrm.org/route/v1/driving/${coordStrings.join(';')}?overview=full&geometries=geojson`;
             let res = await fetch(url);
             let data = await res.json();
+            
+            if (!data.routes || data.routes.length === 0) {
+                throw new Error("Trasa nebyla nalezena.");
+            }
+
             let route = data.routes[0];
             let distTotal = (route.distance / 1000);
             let coords = route.geometry.coordinates;
@@ -1524,10 +1533,10 @@
             globalBreakdown = finalSegments;
             
             document.getElementById('vzdalenost').value = distTotal.toFixed(1);
-            let vMulti = waypoints.length > 0 ? 1 : parseFloat(document.getElementById('typTrasy').value) || 1;
+            let vMulti = waypoints.length > 0 ? 1 : (parseFloat(document.getElementById('typTrasy').value) || 1);
             renderBreakdownSegments(globalBreakdown, vMulti);
             
-            setStatus(T('hotovo') + `: ${(distTotal * vMulti).toFixed(1)} km`, "success");
+            setStatus(`Hotovo: ${(distTotal * vMulti).toFixed(1)} km`, "success");
             
             lastRouteData = { start: startStr, cil: cilStr, wps: waypoints.map(w=>w.address), dist: distTotal.toFixed(1) };
             recalcAETR();
@@ -1537,6 +1546,7 @@
             btn.disabled = false;
         }
     }
+
 
     function renderBreakdownSegments(segments, multi) {
         const list = document.getElementById('breakdownList'); list.innerHTML = "";
