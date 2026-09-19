@@ -105,7 +105,7 @@
         .btn-whatsapp { background-color: #25D366; } .btn-whatsapp:hover { background-color: #128C7E; }
         .btn-magic { background: linear-gradient(45deg, #1565c0, #42a5f5); color: white !important; font-weight: 800; padding: 14px; width: 100%; border: none; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 14px; transition:0.3s; margin-top:10px; } 
 
-        /* PŘEPÍNAČE */
+        /* PŘEPÍNAČE (MOBILE FIX) */
         .toggle-container { display: flex; align-items: center; justify-content: space-between; background: var(--cp-dark); color: white; padding: 12px 15px; border-radius: 6px; margin-bottom: 12px; }
         .toggle-label { font-weight: 600; font-size: 13px; }
         .switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0;}
@@ -211,11 +211,8 @@
     </div>
     <div class="header-controls">
         <select id="langSelect" onchange="changeLanguage()">
-            <option value="cs">CZ</option>
-            <option value="en">EN</option>
-            <option value="de">DE</option>
-            <option value="pl">PL</option>
-            <option value="it">IT</option>
+            <option value="cs">CZ</option><option value="en">EN</option><option value="de">DE</option>
+            <option value="pl">PL</option><option value="it">IT</option>
         </select>
     </div>
 </header>
@@ -226,7 +223,7 @@
 </div>
 
 <!-- ======================================================================= -->
-<!-- APLIKACE 1: KALKULAČKA NÁKLADŮ (Logika zachována, CSS upraveno pro mobil) -->
+<!-- APLIKACE 1: KALKULAČKA NÁKLADŮ (Nedotčená, CSS opraveno pro mobil)      -->
 <!-- ======================================================================= -->
 <div id="view-calculator" class="container">
     <div class="inputs-section">
@@ -265,16 +262,11 @@
                     <label id="lblCilStat">Země určení (Garance) <span class="icon-help" onclick="showInfo(T('helpCilStat'))">i</span></label>
                     <select id="cilStat" onchange="autoSave()">
                         <option value="">-- Automaticky --</option>
-                        <option value="CZ">Česko</option>
-                        <option value="DE">Německo</option>
-                        <option value="AT">Rakousko</option>
-                        <option value="SK">Slovensko</option>
-                        <option value="PL">Polsko</option>
-                        <option value="IT">Itálie</option>
-                        <option value="HU">Maďarsko</option>
-                        <option value="RO">Rumunsko</option>
-                        <option value="ES">Španělsko</option>
-                        <option value="NL">Nizozemí</option>
+                        <option value="CZ">Česko</option><option value="DE">Německo</option>
+                        <option value="AT">Rakousko</option><option value="SK">Slovensko</option>
+                        <option value="PL">Polsko</option><option value="IT">Itálie</option>
+                        <option value="HU">Maďarsko</option><option value="RO">Rumunsko</option>
+                        <option value="ES">Španělsko</option><option value="NL">Nizozemí</option>
                         <option value="BE">Belgie</option>
                     </select>
                 </div>
@@ -282,8 +274,7 @@
                     <label id="lblMenaKurz">Měna & Kurz <span class="icon-help" onclick="showInfo(T('helpMena'))">i</span></label>
                     <div style="display: flex; gap: 4px;">
                         <select id="menaSelect" onchange="calculate(); autoSave();" style="flex:1;">
-                            <option value="CZK">CZK</option>
-                            <option value="EUR">EUR</option>
+                            <option value="CZK">CZK</option><option value="EUR">EUR</option>
                         </select>
                         <input type="number" id="kurzEuro" value="25" step="0.1" oninput="calculate(); autoSave();" style="flex:1;">
                     </div>
@@ -320,9 +311,7 @@
 
             <!-- ROZPAD MÝTA -->
             <div id="breakdownContainer" class="breakdown-container">
-                <h3 id="lblRozpadMyta" style="font-size: 12px; margin-bottom: 8px; color: #0d47a1; text-transform: uppercase;">
-                    Rozpad mýta dle států
-                </h3>
+                <h3 id="lblRozpadMyta" style="font-size: 12px; margin-bottom: 8px; color: #0d47a1; text-transform: uppercase;">Rozpad mýta dle států</h3>
                 <div id="breakdownList"></div>
             </div>
         </div>
@@ -333,19 +322,15 @@
                 <div class="input-group">
                     <label id="lblEuro">Euro Norma <span class="icon-help" onclick="showInfo(T('helpEuro'))">i</span></label>
                     <select id="euroNorma" onchange="updateAllSegmentTolls(); autoSave();">
-                        <option value="1.0">Euro VI</option>
-                        <option value="1.15">Euro V</option>
-                        <option value="1.3">Euro IV</option>
-                        <option value="1.5">Euro III a horší</option>
+                        <option value="1.0">Euro VI</option><option value="1.15">Euro V</option>
+                        <option value="1.3">Euro IV</option><option value="1.5">Euro III a horší</option>
                     </select>
                 </div>
                 <div class="input-group">
                     <label id="lblNapravy">Nápravy celkem</label>
                     <select id="napravyFyzicke" onchange="updateAllSegmentTolls(); autoSave();">
-                        <option value="5">5 náprav (2+3)</option>
-                        <option value="6">6 a více (3+3)</option>
-                        <option value="4">4 nápravy (2+2)</option>
-                        <option value="3">3 nápravy</option>
+                        <option value="5">5 náprav (2+3)</option><option value="6">6 a více (3+3)</option>
+                        <option value="4">4 nápravy (2+2)</option><option value="3">3 nápravy</option>
                     </select>
                 </div>
                 <div class="input-group">
@@ -379,7 +364,6 @@
                         <option value="2" id="opt2Ridici">Dvojosádka</option>
                     </select>
                 </div>
-
                 <div class="input-group">
                     <label id="lblTypMzdy">Odměňování řidiče</label>
                     <select id="typMzdy" onchange="calculate(); autoSave();">
@@ -412,7 +396,6 @@
                 <span class="toggle-label" id="dphStatusLabel">Zobrazit VČETNĚ DPH (21%)</span>
                 <label class="switch"><input type="checkbox" id="dphToggle" onchange="calculate()"><span class="slider"></span></label>
             </div>
-
             <div class="toggle-container" style="background: #333;">
                 <span class="toggle-label" id="lblMytoToggle" style="color: #fff;">Kalkulace ceny VČETNĚ MÝTA</span>
                 <label class="switch"><input type="checkbox" id="mytoToggle" checked onchange="calculate(); autoSave();"><span class="slider"></span></label>
@@ -487,7 +470,6 @@
 <!-- ======================================================================= -->
 <div id="view-planner" class="planner-layout" style="display:none;">
     
-    <!-- LEVÝ PANEL (ŘIDIČI) -->
     <div class="driver-list-box">
         <h3 id="lblPlanDriverTitle" style="font-size: 14px; text-transform: uppercase; margin-bottom: 15px; color: var(--cp-dark); border-bottom: 2px solid var(--cp-red); padding-bottom: 5px;">Seznam Řidičů</h3>
         <div style="display:flex; gap:5px; margin-bottom: 15px;">
@@ -497,7 +479,6 @@
         <div id="plannerDriverList"></div>
     </div>
 
-    <!-- KALENDÁŘ A TABULKA -->
     <div class="planner-grid-box">
         
         <div class="holiday-banner">
@@ -643,14 +624,8 @@
         <div id="aetrStrictWarning" style="background: #ffebee; color: #c62828; padding: 12px; border-radius: 4px; margin-bottom: 15px; font-size: 12px; font-weight: 800; display: none; border: 1px solid #ffcdd2; text-align:center;"></div>
 
         <div class="form-grid">
-            <div class="input-group">
-                <label>Začátek Směny <span class="icon-help" onclick="showInfo(T('helpShiftStart'))">i</span></label>
-                <input type="time" id="editStart" value="06:00" onchange="validateAndRenderShift()">
-            </div>
-            <div class="input-group">
-                <label>Režim</label>
-                <select id="editCrew" onchange="validateAndRenderShift()"><option value="1">1 Řidič</option><option value="2">Dvojosádka</option></select>
-            </div>
+            <div class="input-group"><label>Začátek Směny <span class="icon-help" onclick="showInfo(T('helpShiftStart'))">i</span></label><input type="time" id="editStart" value="06:00" onchange="validateAndRenderShift()"></div>
+            <div class="input-group"><label>Režim</label><select id="editCrew" onchange="validateAndRenderShift()"><option value="1">1 Řidič</option><option value="2">Dvojosádka</option></select></div>
         </div>
         <div class="input-group" style="margin-top: 10px;"><label>Poznámka k dni (Trasa)</label><input type="text" id="editNote"></div>
         
@@ -842,7 +817,7 @@
             aetrWarn2: "⚠️ 20h Lenkzeit genutzt ({e}x).",
             shareBtn: "📤 Zusammenfassung", navBtn: "🧭 Navigation",
             favBtn: "⭐ Vorlage speichern", favSel: "-- Favorit laden --",
-            helpStart: "Startpunkt", helpCil: "Endziel", helpCilStat: "Garantiert die Maut.", helpMena: "Währung umrechnen.", helpTypTrasy: "Hin & Rück deaktiviert bei Stopps.", helpDokladky: "Extrakilometer", helpEuro: "Abgasnorm", helpPrazdna: "Leerverbrauch", helpVaha: "Jede Tonne = +0.2 L",
+            helpStart: "Startpunkt", helpCil: "Endziel", helpCilStat: "Garantiert die Maut.", helpMena: "Währung umrechnen.", helpTypTrasy: "Hin & Rück deaktiviert bei Stopps.", helpDokladky: "Extrakilometer", helpEuro: "Abgasnorm", helpPrazdna: "Leerverbrauch L/100km", helpVaha: "Jede Tonne = +0.2 L",
             helpPosadka: "Doppelbesatzung ändert AETR.", helpTrvani: "Berechnet via AETR.",
             mytoVcetne: "Berechnung INKL. MAUT", mytoBez: "Berechnung EXKL. MAUT", prodejniCenaKm: "Verkaufspreis pro 1 km:", nezapocitano: "(Ausgeschlossen)",
             tab1: "1. Routenplaner", tab2: "2. Schichtplan",
