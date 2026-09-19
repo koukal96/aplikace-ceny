@@ -4,94 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#e3000f">
-    <title>Control Point - Ultimate Fleet ERP & AETR</title>
+    <title>Control Point - Ultimate Fleet ERP</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
-        /* ========================================================= */
-        /* ZÁKLADNÍ STYLY                                            */
-        /* ========================================================= */
-        :root { 
-            --cp-red: #e3000f; 
-            --cp-red-hover: #b3000b; 
-            --cp-dark: #1a1a1a; 
-            --cp-gray: #f4f4f4; 
-            --cp-border: #e0e0e0; 
-            --cp-white: #ffffff; 
-            --cp-success: #2e7d32; 
-            --cp-danger: #c62828; 
-            --cp-blue: #1565c0; 
-            --shadow: 0 4px 20px rgba(0,0,0,0.06); 
-            --transition: all 0.3s ease; 
-        }
+        :root { --cp-red: #e3000f; --cp-red-hover: #b3000b; --cp-dark: #1a1a1a; --cp-gray: #f4f4f4; --cp-border: #e0e0e0; --cp-white: #ffffff; --cp-success: #2e7d32; --cp-danger: #c62828; --cp-blue: #1565c0; --shadow: 0 4px 20px rgba(0,0,0,0.06); }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
         body { background-color: var(--cp-gray); color: var(--cp-dark); line-height: 1.5; font-size: 14px; }
 
         /* LOADING */
-        #loading-screen { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: #000 url('IMG_9552.png') no-repeat right center; background-size: cover; 
-            z-index: 99999; display: flex; align-items: center; justify-content: center; transition: opacity 0.6s ease-out; 
-        }
+        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000 url('IMG_9552.png') no-repeat right center; background-size: cover; z-index: 99999; display: flex; align-items: center; justify-content: center; transition: opacity 0.6s ease-out; }
         #loading-screen::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.85); }
-        .loader-content { position: relative; z-index: 100000; text-align: center; color: white; }
         .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--cp-red); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .loading-text { font-size: 18px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
 
-        /* HEADER */
-        header { 
-            background-color: var(--cp-dark); padding: 10px 15px; text-align: center; 
-            border-bottom: 4px solid var(--cp-red); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; 
-        }
+        /* HEADER & APP SWITCHER */
+        header { background-color: var(--cp-dark); padding: 10px 15px; text-align: center; border-bottom: 4px solid var(--cp-red); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; }
         .logo-container { display: flex; align-items: center; gap: 8px; }
-        .analysis-text { color: #aaa; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; border-left: 2px solid var(--cp-red); padding-left: 8px; }
-        
-        /* APP SWITCHER */
         .app-switcher { display: flex; max-width: 1400px; margin: 15px auto 5px auto; padding: 0 10px; gap: 10px; }
-        .app-btn { flex: 1; padding: 12px; font-size: 14px; font-weight: 800; text-transform: uppercase; border: 2px solid var(--cp-dark); border-radius: 6px; background: white; color: var(--cp-dark); cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .app-btn { flex: 1; padding: 12px; font-size: 14px; font-weight: 800; text-transform: uppercase; border: 2px solid var(--cp-dark); border-radius: 6px; background: white; color: var(--cp-dark); cursor: pointer; transition: 0.3s; }
         .app-btn.active { background: var(--cp-dark); color: white; border-color: var(--cp-dark); }
         .app-btn:hover:not(.active) { background: #e0e0e0; }
 
-        /* LAYOUT & CARDS */
-        .container { max-width: 1400px; margin: 10px auto; padding: 0 10px; display: grid; grid-template-columns: 1fr 450px; gap: 15px; }
-        .planner-layout { max-width: 1400px; margin: 10px auto; padding: 0 10px; display: grid; grid-template-columns: 280px 1fr; gap: 15px; }
-        @media (max-width: 1100px) { .container { grid-template-columns: 1fr; } }
-        @media (max-width: 900px) { .planner-layout { grid-template-columns: 1fr; } }
+        /* LAYOUTS */
+        .container, .planner-layout { max-width: 1400px; margin: 10px auto; padding: 0 10px; display: grid; gap: 15px; }
+        .container { grid-template-columns: 1fr 450px; }
+        .planner-layout { grid-template-columns: 280px 1fr; }
+        @media (max-width: 1100px) { .container, .planner-layout { grid-template-columns: 1fr; } }
         
         .card { background: var(--cp-white); border-radius: 6px; padding: 15px; box-shadow: var(--shadow); margin-bottom: 15px; border-left: 4px solid var(--cp-red); }
         .card.dashboard { border-left: 4px solid var(--cp-dark); }
         h2 { font-size: 14px; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--cp-dark); justify-content: space-between;}
         h2 span.num { color: var(--cp-red); margin-right: 5px; }
 
+        /* FORMS */
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
-        .input-group { display: flex; flex-direction: column; position: relative; margin-bottom: 10px; }
-        .input-group label { font-size: 11px; font-weight: 600; color: #555; margin-bottom: 3px; text-transform: uppercase; display: flex; align-items: center; gap: 4px; }
-        
-        input, select, textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--cp-border); border-radius: 4px; font-size: 13px; font-family: 'Roboto Mono', monospace; font-weight: 600; color: var(--cp-dark); background: #fafafa; }
-        input:focus, select:focus, textarea:focus { border-color: var(--cp-red); outline: none; background: var(--cp-white); }
+        .input-group { display: flex; flex-direction: column; margin-bottom: 10px; }
+        .input-group label { font-size: 11px; font-weight: 600; color: #555; margin-bottom: 3px; text-transform: uppercase; }
+        input, select, textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--cp-border); border-radius: 4px; font-size: 13px; font-family: 'Roboto Mono', monospace; font-weight: 600; background: #fafafa; }
+        input:focus, select:focus { border-color: var(--cp-red); outline: none; background: var(--cp-white); }
         .readonly-highlight { background: #e3f2fd !important; border-color: #90caf9 !important; color: #0d47a1 !important; font-weight: 800; }
 
-        .btn { background-color: var(--cp-red); color: var(--cp-white); border: none; padding: 12px; border-radius: 4px; font-size: 14px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: var(--transition); width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 10px; }
+        /* BUTTONS */
+        .btn { background-color: var(--cp-red); color: var(--cp-white); border: none; padding: 12px; border-radius: 4px; font-size: 14px; font-weight: 800; text-transform: uppercase; cursor: pointer; width: 100%; margin-top: 10px; }
         .btn:hover { background-color: var(--cp-red-hover); }
-        .btn-secondary { background-color: #555; margin-top: 0; font-size: 11px; padding: 8px; color: white; border:none; border-radius:4px; font-weight:800; cursor:pointer;}
+        .btn-secondary { background-color: #555; color: white; padding: 8px; font-size: 11px; font-weight: 800; border: none; border-radius: 4px; cursor: pointer; }
         .btn-secondary:hover { background-color: #333; }
-        .btn-magic { background: linear-gradient(45deg, #1565c0, #42a5f5); color: white !important; font-weight: 800; padding: 10px; width: 100%; border: none; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 12px; transition:0.3s; margin-top:10px;} 
-        .btn-magic:hover { background: linear-gradient(45deg, #0d47a1, #1e88e5); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .btn-magic { background: linear-gradient(45deg, #1565c0, #42a5f5); color: white; font-weight: 800; padding: 10px; width: 100%; border: none; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 12px; margin-top:10px; }
+        .btn-magic:hover { background: linear-gradient(45deg, #0d47a1, #1e88e5); }
 
-        /* VÝSLEDKY & DASHBOARD */
+        /* WAYPOINTS & MAP */
+        .waypoints-container { border-left: 2px dashed var(--cp-red); padding-left: 10px; margin: 10px 0; }
+        .waypoint-row { display: flex; gap: 8px; margin-bottom: 8px; background: #fff; padding: 8px; border-radius: 4px; border: 1px solid #ddd; }
+        .wp-inputs { flex-grow: 1; display: flex; flex-direction: column; gap: 5px; }
+        .btn-remove-wp { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; padding: 0 10px; border-radius: 4px; font-weight: 800; cursor: pointer; }
+        #map-container { display: none; height: 250px; border-radius: 6px; overflow: hidden; margin-top: 15px; border: 2px solid #ddd; }
+
+        /* BREAKDOWN */
+        .breakdown-container { background: #e3f2fd; padding: 12px; border-radius: 6px; border: 1px solid #b6d4fe; margin-top: 12px; display: none; }
+        .breakdown-row { display: grid; grid-template-columns: 1.3fr 0.8fr 1fr auto; gap: 6px; margin-bottom: 8px; border-bottom: 1px dashed #b6d4fe; padding-bottom: 8px; }
+        .breakdown-input-group label { font-size: 9px; font-weight: 800; color: #0d47a1; text-transform: uppercase; }
+
+        /* DASHBOARD RESULTS */
         .result-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--cp-border); }
-        .result-row:last-child { border-bottom: none; }
         .result-label { font-size: 12px; color: #666; font-weight: 600; }
-        .result-val { font-family: 'Roboto Mono', monospace; font-size: 13px; font-weight: 700; color: var(--cp-dark); text-align: right; }
+        .result-val { font-family: 'Roboto Mono', monospace; font-size: 13px; font-weight: 700; color: var(--cp-dark); }
         .dashboard .result-main { background: var(--cp-gray); padding: 10px; border-radius: 6px; margin-top: 8px; border-left: 4px solid var(--cp-red); }
         .dashboard .result-main .result-val { font-size: 18px; color: var(--cp-red); font-weight: 800; }
-        
         .toggle-container { display: flex; align-items: center; justify-content: space-between; background: var(--cp-dark); color: white; padding: 10px 12px; border-radius: 6px; margin-bottom: 12px; }
-        .toggle-label { font-weight: 600; font-size: 13px; }
+        
+        /* SWITCH */
         .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 24px; }
@@ -99,41 +84,51 @@
         input:checked + .slider { background-color: var(--cp-red); }
         input:checked + .slider:before { transform: translateX(20px); }
 
-        #map-container { display: none; height: 250px; border-radius: 6px; overflow: hidden; margin-top: 15px; border: 2px solid #ddd; }
-        
-        /* ŠICHTOVNÍK KALENDÁŘ */
+        /* PLANNER & CALENDAR */
         .driver-list-box { background: white; border-radius: 6px; padding: 15px; box-shadow: var(--shadow); border-top: 4px solid var(--cp-dark); }
-        .driver-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #f9f9f9; border: 1px solid #eee; margin-bottom: 5px; border-radius: 4px; font-weight: 600; font-size: 13px; cursor: pointer; transition:0.2s; }
+        .driver-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #f9f9f9; border: 1px solid #eee; margin-bottom: 5px; border-radius: 4px; font-weight: 600; font-size: 13px; cursor: pointer; }
         .driver-item:hover { border-color: var(--cp-red); }
         .planner-grid-box { background: white; border-radius: 6px; padding: 15px; box-shadow: var(--shadow); border-top: 4px solid var(--cp-red); overflow-x: auto; }
         .week-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: var(--cp-dark); color: white; padding: 10px; border-radius: 6px; }
         .calendar-table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        .calendar-table th { background: #f0f0f0; padding: 10px; text-align: center; border: 1px solid #ddd; font-size: 12px; text-transform: uppercase; color: #333; }
-        .calendar-table td { border: 1px solid #ddd; padding: 5px; vertical-align: top; height: 130px; width: 14.28%; transition: 0.2s; position: relative; }
+        .calendar-table th { background: #f0f0f0; padding: 10px; border: 1px solid #ddd; font-size: 12px; text-transform: uppercase; }
+        .calendar-table td { border: 1px solid #ddd; padding: 5px; vertical-align: top; height: 130px; width: 14.28%; position: relative; }
         .calendar-table td:hover { background: #f8f9fa; border-color: var(--cp-red); }
-        .driver-name-col { font-weight: 800; background: #fafafa; text-align: left !important; padding-left: 10px !important; width: 120px; vertical-align: middle !important; }
         
-        .shift-content { font-size: 10px; font-family: 'Roboto Mono', monospace; color: #333; display: flex; flex-direction: column; height: 100%; cursor: pointer;}
-        .shift-head { font-weight: 800; font-size: 11px; margin-bottom: 4px; border-bottom: 1px dashed #ccc; padding-bottom: 2px;}
-        .timeline-bar-wrap { width: 100%; height: 12px; background: #eee; border-radius: 6px; display: flex; overflow: hidden; margin-top: auto; margin-bottom: 4px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+        .shift-content { font-size: 10px; font-family: 'Roboto Mono', monospace; display: flex; flex-direction: column; height: 100%; cursor: pointer;}
+        .shift-head { font-weight: 800; font-size: 11px; border-bottom: 1px dashed #ccc; padding-bottom: 2px; margin-bottom: 4px;}
+        .timeline-bar-wrap { width: 100%; height: 12px; background: #eee; border-radius: 6px; display: flex; overflow: hidden; margin-top: auto; margin-bottom: 4px; }
         .tl-drive { background: #4caf50; } .tl-work { background: #ff9800; } .tl-wait { background: #9e9e9e; } .tl-rest { background: #2196f3; }
         .aetr-warn-badge { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; padding: 2px 4px; font-size: 9px; font-weight: 800; border-radius: 3px; margin-top: 2px; display: block; line-height: 1.1; }
-        
-        .cell-actions { position: absolute; top: 2px; right: 2px; display: flex; gap: 2px; opacity: 0.3; transition: 0.2s;}
+        .seq-error { background: #ffebee; border: 2px solid #d32f2f; }
+        .cell-actions { position: absolute; top: 2px; right: 2px; display: flex; gap: 2px; opacity: 0.3; }
         .calendar-table td:hover .cell-actions { opacity: 1; }
         .cell-btn { background: #eee; border: 1px solid #ccc; font-size: 9px; padding: 2px 4px; border-radius: 3px; cursor: pointer; }
-        .cell-btn:hover { background: var(--cp-dark); color: white; }
 
         /* MODALS */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); overflow-y: auto;}
-        .info-box { background: white; padding: 20px; border-radius: 6px; max-width: 650px; width: 100%; text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-top: 4px solid var(--cp-red); margin: auto; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100000; align-items: center; justify-content: center; padding: 20px; overflow-y: auto;}
+        .info-box { background: white; padding: 20px; border-radius: 6px; max-width: 650px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-top: 4px solid var(--cp-red); margin: auto; }
         .act-row { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; background: #f9f9f9; padding: 5px; border-radius: 4px; border: 1px solid #ddd; }
         .btn-modal-close { background: var(--cp-dark); color: white; padding: 10px; border: none; border-radius: 4px; font-weight: 800; cursor: pointer; width: 100%; text-transform: uppercase; margin-top: 10px;}
+
+        @media print {
+            header, .app-switcher, .driver-list-box, .week-controls button, .modal-overlay, .cell-actions, .btn, .btn-secondary, .btn-magic { display: none !important; }
+            body { background: white; }
+            .planner-layout { display: block; margin: 0; padding: 0;}
+            .planner-grid-box { border: none; box-shadow: none; padding: 0; }
+            .calendar-table th { background: #ddd !important; -webkit-print-color-adjust: exact; }
+            @page { size: landscape; margin: 1cm; }
+        }
     </style>
 </head>
 <body>
 
-<div id="loading-screen"><div class="loader-content"><div class="spinner"></div><div class="loading-text">Start systému...</div></div></div>
+<div id="loading-screen">
+    <div class="loader-content">
+        <div class="spinner"></div>
+        <div class="loading-text">Start systému...</div>
+    </div>
+</div>
 
 <header>
     <div class="logo-container">
@@ -154,16 +149,32 @@
     <div class="inputs-section">
         <div class="card">
             <h2><div><span class="num">01.</span> Lokace & Trasa</div></h2>
-            <div class="input-group"><label>Výchozí Start (Bod A)</label><input type="text" id="startAdresa" value="Věrovany 94"></div>
-            <div class="input-group"><label>Konečný Cíl (Bod B)</label><input type="text" id="cilAdresa" placeholder="Např. Milán"></div>
+            
+            <div class="input-group">
+                <label>Výchozí Start (Bod A)</label>
+                <input type="text" id="startAdresa" value="Věrovany 94">
+            </div>
+            
+            <div id="waypointsContainer" class="waypoints-container"></div>
+            <button class="btn-secondary" style="width:100%; margin-bottom:10px;" onclick="addWaypoint()">+ Přidat zastávku (Načítku/Vykládku)</button>
+            
+            <div class="input-group">
+                <label>Konečný Cíl (Bod B)</label>
+                <input type="text" id="cilAdresa" placeholder="Např. Madrid">
+            </div>
             
             <div class="form-grid">
                 <div class="input-group">
-                    <label>Země určení (Garance)</label>
+                    <label>Země určení (Garance pro mýto)</label>
                     <select id="cilStat">
-                        <option value="">-- Automaticky --</option><option value="CZ">Česko</option><option value="DE">Německo</option>
-                        <option value="AT">Rakousko</option><option value="IT">Itálie</option><option value="FR">Francie</option>
-                        <option value="ES">Španělsko</option><option value="PL">Polsko</option><option value="SK">Slovensko</option>
+                        <option value="">-- Automaticky --</option>
+                        <option value="CZ">Česko</option><option value="DE">Německo</option>
+                        <option value="AT">Rakousko</option><option value="IT">Itálie</option>
+                        <option value="FR">Francie</option><option value="ES">Španělsko</option>
+                        <option value="PL">Polsko</option><option value="SK">Slovensko</option>
+                        <option value="HU">Maďarsko</option><option value="RO">Rumunsko</option>
+                        <option value="NL">Nizozemí</option><option value="BE">Belgie</option>
+                        <option value="CH">Švýcarsko</option>
                     </select>
                 </div>
                 <div class="input-group">
@@ -199,6 +210,22 @@
                 <div class="input-group"><label>Nafta / L (Kč)</label><input type="number" id="cenaNafty" value="36.50" oninput="calculate()"></div>
             </div>
         </div>
+
+        <div class="card">
+            <h2><span class="num">03.</span> Mzda a Fixní Náklady pro trasu</h2>
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>Typ Mzdy</label>
+                    <select id="typMzdy" onchange="calculate()">
+                        <option value="denni">Zaměstnanec (Odměna x Dny)</option>
+                        <option value="fixni">Brigádník (Paušál za točku)</option>
+                    </select>
+                </div>
+                <div class="input-group"><label>Odměna / Den</label><input type="number" id="mzdaHodnota" value="3000" oninput="calculate()"></div>
+                <div class="input-group" id="dnyContainer"><label>Trvání (Dny)</label><input type="number" id="dny" value="1" step="0.5" oninput="calculate()"></div>
+                <div class="input-group"><label>Fix auto/den</label><input type="number" id="nakladyAutoDen" value="2500" oninput="calculate()"></div>
+            </div>
+        </div>
     </div>
 
     <!-- DASHBOARD VÝSLEDKŮ KALKULAČKY -->
@@ -230,19 +257,23 @@
     <!-- LEVÝ PANEL -->
     <div class="driver-list-box">
         <h3 style="font-size: 13px; text-transform: uppercase; margin-bottom: 10px; border-bottom: 2px solid var(--cp-red); padding-bottom: 5px;">Seznam Řidičů</h3>
-        <div style="display:flex; gap:5px; margin-bottom: 15px;"><input type="text" id="newDriverName" placeholder="Nové jméno..."><button class="btn" style="margin: 0; width: auto;" onclick="addPlannerDriver()">+</button></div>
+        <div style="display:flex; gap:5px; margin-bottom: 15px;">
+            <input type="text" id="newDriverName" placeholder="Nové jméno...">
+            <button class="btn" style="margin: 0; width: auto;" onclick="addPlannerDriver()">+</button>
+        </div>
         <div id="plannerDriverList"></div>
     </div>
 
     <!-- KALENDÁŘ A TABULKA -->
     <div class="planner-grid-box">
         
-        <!-- AUTO-PLÁNOVAČ -->
+        <!-- AUTO-PLÁNOVAČ TRAS A DIET -->
         <div style="background: #e3f2fd; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 2px solid #1565c0;">
             <h3 style="font-size: 14px; margin-bottom: 10px; color: #0d47a1; text-transform: uppercase; display:flex; justify-content:space-between; align-items:center;">
                 🤖 Auto-Plánovač Trasy (AETR generátor)
                 <button class="btn-secondary" style="background:#0d47a1; margin:0;" onclick="importRouteFromCalc()">⬇️ Vložit trasu ze Záložky 1</button>
             </h3>
+            
             <div class="form-grid">
                 <div class="input-group"><label>Odkud</label><input type="text" id="planStartRoute" placeholder="Např. Praha"></div>
                 <div class="input-group"><label>Kam</label><input type="text" id="planEndRoute" placeholder="Např. Madrid"></div>
@@ -250,11 +281,34 @@
                 <div class="input-group"><label>Den Startu</label><select id="planDaySelect"><option value="0">Pondělí</option><option value="1">Úterý</option><option value="2">Středa</option><option value="3">Čtvrtek</option><option value="4">Pátek</option><option value="5">Sobota</option><option value="6">Neděle</option></select></div>
                 <div class="input-group"><label>Čas Startu</label><input type="time" id="planTimeSelect" value="06:00"></div>
                 <div class="input-group"><label>Režim</label><select id="planCrewSelect"><option value="1">1 Řidič (Max 15h)</option><option value="2">Dvojosádka (Max 21h)</option></select></div>
+                
+                <!-- ZEMĚ PRO DIETY (Start a Cíl) -->
+                <div class="input-group">
+                    <label>Země (Nakládka)</label>
+                    <select id="planLoadStat">
+                        <option value="CZ">Česko</option><option value="DE">Německo</option>
+                        <option value="AT">Rakousko</option><option value="IT">Itálie</option>
+                        <option value="FR">Francie</option><option value="ES">Španělsko</option>
+                        <option value="PL">Polsko</option><option value="SK">Slovensko</option>
+                    </select>
+                </div>
+                <div class="input-group"><label>Čas Nakládky (h)</label><input type="number" id="planLoad" value="1.5" step="0.5"></div>
+                
+                <div class="input-group">
+                    <label>Země (Vykládka)</label>
+                    <select id="planUnloadStat">
+                        <option value="ES">Španělsko</option><option value="IT">Itálie</option>
+                        <option value="DE">Německo</option><option value="AT">Rakousko</option>
+                        <option value="FR">Francie</option><option value="CZ">Česko</option>
+                        <option value="PL">Polsko</option><option value="SK">Slovensko</option>
+                    </select>
+                </div>
+                <div class="input-group"><label>Čas Vykládky (h)</label><input type="number" id="planUnload" value="2.0" step="0.5"></div>
             </div>
             
-            <h4 style="font-size:11px; margin-top:10px; color:#555;">Zastávky na trase (Zdržení)</h4>
+            <h4 style="font-size:11px; margin-top:10px; color:#555;">Mezizastávky na trase (Země a Zdržení)</h4>
             <div id="planWpContainer" style="margin-bottom:10px;"></div>
-            <button class="btn-secondary" onclick="addPlanWaypoint()" style="margin-bottom:10px;">+ Přidat Nakládku/Vykládku na trase</button>
+            <button class="btn-secondary" onclick="addPlanWaypoint()" style="margin-bottom:10px;">+ Přidat Zastávku na trase</button>
 
             <button class="btn-magic" onclick="executeAutoPlan()">🚀 Vypočítat trasu a rozepsat do Kalendáře!</button>
             <div id="planStatus" style="font-size:11px; font-weight:800; color:var(--cp-danger); margin-top:5px; display:none;"></div>
@@ -280,12 +334,12 @@
     <div class="info-box" style="max-width: 450px;">
         <h3 id="shiftModalTitle">Úprava Dne</h3>
         <div class="form-grid">
-            <div class="input-group"><label>Začátek</label><input type="time" id="editStart" onchange="renderShiftPreview()"></div>
+            <div class="input-group"><label>Začátek</label><input type="time" id="editStart" value="06:00" onchange="renderShiftPreview()"></div>
             <div class="input-group"><label>Režim</label><select id="editCrew" onchange="renderShiftPreview()"><option value="1">1 Řidič</option><option value="2">Dvojosádka</option></select></div>
         </div>
         <div class="input-group" style="margin-top: 5px;"><label>Poznámka</label><input type="text" id="editNote"></div>
         
-        <h4 style="font-size:11px; margin: 10px 0 5px 0; border-bottom: 1px solid #eee;">Bloky (Zde můžeš smazat pauzu na rampě)</h4>
+        <h4 style="font-size:11px; margin: 10px 0 5px 0; border-bottom: 1px solid #eee;">Bloky (Lze smazat pauzu na rampě)</h4>
         <div id="editActContainer" style="max-height: 150px; overflow-y: auto;"></div>
         <button class="btn-secondary" onclick="addActivity()" style="margin-top:5px;">+ Přidat blok</button>
 
@@ -315,8 +369,8 @@
         </div>
 
         <div style="background: #e3f2fd; padding: 10px; border-radius: 4px; margin-bottom: 10px; border: 1px solid #b6d4fe;">
-            <h4 style="font-size: 11px; margin-bottom: 8px; color: #0d47a1;">2. ZAHRANIČNÍ DIETY</h4>
-            <div style="font-size:9px; color:#555; margin-bottom:10px;">(Při generování přes Auto-Plánovač se státy a hodiny doplní samy).</div>
+            <h4 style="font-size: 11px; margin-bottom: 8px; color: #0d47a1;">2. ZAHRANIČNÍ DIETY (Legislativa CZ)</h4>
+            <div style="font-size:9px; color:#555; margin-bottom:10px;">(Vygenerováno z Auto-Plánovače trasy podle strávených hodin). 1-12h = 1/3, 12-18h = 2/3, >18h = plná.</div>
             <div id="dietsListContainer" style="max-height:150px; overflow-y:auto; margin-bottom:5px;"></div>
             <button class="btn-secondary" onclick="addDietRow()" style="margin:0;">+ Přidat zemi manuálně</button>
             <div class="input-group" style="margin-top:10px; margin-bottom:0;"><label>Diety mezisoučet (Kč)</label><input type="number" id="payDiets" value="0" readonly style="background:#eee;"></div>
@@ -331,28 +385,28 @@
         <button class="btn-modal-close" onclick="closePayroll()">Zavřít a Uložit</button>
     </div>
 </div>
-<script>
-    // =========================================================================================
-    // JAVASCRIPT: LOGIKA, API, OSRM, AETR, MZDY
-    // =========================================================================================
 
-    // --- 1. PŘEPÍNAČ APLIKACÍ ---
+<!-- ========================================================================================= -->
+<!-- JAVASCRIPT: PROFESIONÁLNĚ FORMÁTOVANÁ LOGIKA                                              -->
+<!-- ========================================================================================= -->
+<script>
     function switchApp(app) {
         document.getElementById('btnAppCalc').className = 'app-btn' + (app === 'calc' ? ' active' : '');
         document.getElementById('btnAppPlan').className = 'app-btn' + (app === 'plan' ? ' active' : '');
         document.getElementById('view-calculator').style.display = app === 'calc' ? 'grid' : 'none';
         document.getElementById('view-planner').style.display = app === 'plan' ? 'grid' : 'none';
-        if(app === 'plan') { 
-            plannerLoadState(); 
-            renderPlanner(); 
+        if (app === 'plan') {
+            plannerLoadState();
+            renderPlanner();
         }
     }
 
-    // --- 2. ZÁKLADNÍ FUNKCE, MAPA A PROMĚNNÉ ---
-    let map, routeLayer, markerGroup;
+    let map = null;
+    let routeLayer = null;
+    let markerGroup = null;
     
     function initMap() { 
-        if(!map) { 
+        if (!map) { 
             document.getElementById('map-container').style.display = 'block'; 
             map = L.map('map').setView([49.5, 17.2], 5); 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); 
@@ -362,14 +416,13 @@
     
     function drawMap(coordsGeoJson) { 
         initMap(); 
-        if(routeLayer) map.removeLayer(routeLayer); 
+        if (routeLayer) map.removeLayer(routeLayer);
         markerGroup.clearLayers(); 
         let latlngs = coordsGeoJson.map(c => [c[1], c[0]]); 
         routeLayer = L.polyline(latlngs, {color: '#e3000f', weight: 4}).addTo(map); 
         map.fitBounds(routeLayer.getBounds(), {padding: [20,20]}); 
     }
 
-    // Databáze států a mýta
     const MYTO_STATY = { 
         'CZ': { name: 'Česko', rate: 4.5 }, 'SK': { name: 'Slovensko', rate: 5.0 }, 
         'DE': { name: 'Německo', rate: 8.5 }, 'AT': { name: 'Rakousko', rate: 11.5 }, 
@@ -380,7 +433,6 @@
         'FR': { name: 'Francie', rate: 6.5 } 
     };
     
-    // Databáze sazeb diet pro automatický výpočet mezd
     const DIET_RATES = { 
         'CZ': { rate: 300, curr: 'CZK' }, 'DE': { rate: 45, curr: 'EUR' }, 
         'AT': { rate: 45, curr: 'EUR' }, 'IT': { rate: 50, curr: 'EUR' }, 
@@ -390,18 +442,13 @@
         'BE': { rate: 50, curr: 'EUR' }, 'CH': { rate: 50, curr: 'EUR' }, 
         'FR': { rate: 50, curr: 'EUR' }, 'OSTATNÍ': { rate: 45, curr: 'EUR' } 
     };
-    
-    const OPOTREBENI_PNEU_KOLO_KM = 0.15; 
-    const SPOTREBA_NA_TUNU = 0.20; 
-    const DPH_SAZBA = 1.21;
 
-    // Formátování měny a času
     function formatMoney(amount) { return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: 'CZK', minimumFractionDigits: 0 }).format(amount); }
-    function parseTime(t) { let p = t.split(":"); return parseInt(p[0]) + (parseInt(p[1])/60); }
+    function parseTime(t) { let p = t.split(":"); return parseInt(p[0]) + (parseInt(p[1]) / 60); }
     function formatTime(hDec) { 
         let h = Math.floor(hDec); 
         let m = Math.round((hDec - h) * 60); 
-        if(m === 60) { h++; m = 0; } 
+        if (m === 60) { h++; m = 0; } 
         return (h % 24).toString().padStart(2, '0') + ":" + m.toString().padStart(2, '0'); 
     }
 
@@ -409,37 +456,37 @@
     let waypoints = []; 
     let wpCounter = 0; 
     let lastRouteData = null; 
-    let excludedCountries = [];
 
     // =========================================================================================
-    // 3. KALKULAČKA NÁKLADŮ (Záložka 1)
+    // KALKULAČKA NÁKLADŮ (Záložka 1)
     // =========================================================================================
     
-    // Získání souřadnic přes Photon API (Zdarma, spolehlivé)
     async function getCoordinates(address) {
-        if(!address) return null; 
+        if (!address) return null; 
         let gpsMatch = address.match(/^([-+]?\d{1,2}\.\d+)[,\s]+([-+]?\d{1,3}\.\d+)$/); 
-        if(gpsMatch) return [parseFloat(gpsMatch[2]), parseFloat(gpsMatch[1])];
-        
+        if (gpsMatch) return [parseFloat(gpsMatch[2]), parseFloat(gpsMatch[1])];
         try { 
-            let res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(address)}&limit=1`); 
-            let data = await res.json(); 
-            if(data.features.length > 0) return data.features[0].geometry.coordinates; 
+            let response = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(address)}&limit=1`); 
+            let data = await response.json(); 
+            if (data.features.length > 0) return data.features[0].geometry.coordinates; 
         } catch(e) {}
-        
+        try { 
+            let response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`); 
+            let data = await response.json(); 
+            if (data.length > 0) return [parseFloat(data[0].lon), parseFloat(data[0].lat)]; 
+        } catch(e) {}
         throw new Error(`Adresa nenalezena: ${address}`);
     }
 
     async function getCountryCodeFromCoordsFast(lon, lat) { 
         try { 
-            let res = await fetch(`https://photon.komoot.io/reverse?lon=${lon}&lat=${lat}`); 
-            let data = await res.json(); 
-            if(data.features.length > 0) return data.features[0].properties.countrycode.toUpperCase(); 
+            let response = await fetch(`https://photon.komoot.io/reverse?lon=${lon}&lat=${lat}`); 
+            let data = await response.json(); 
+            if (data.features.length > 0) return data.features[0].properties.countrycode.toUpperCase(); 
         } catch(e) {} 
         return null; 
     }
     
-    // Matematická funkce pro případ výpadku OSRM
     function haversine(lon1, lat1, lon2, lat2) { 
         const R = 6371; 
         const dLat = (lat2 - lat1) * Math.PI / 180; 
@@ -448,14 +495,13 @@
         return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))); 
     }
 
-    // Získání přesné trasy
     async function fetchOSRMRoute(startStr, cilStr, wps) {
         let coordStrings = []; 
         const startCoords = await getCoordinates(startStr); 
         coordStrings.push(`${startCoords[0]},${startCoords[1]}`);
         
-        for(let wp of wps) { 
-            if(wp.address && wp.address.trim() !== "") { 
+        for (let wp of wps) { 
+            if (wp.address && wp.address.trim() !== "") { 
                 let wpCoords = await getCoordinates(wp.address); 
                 coordStrings.push(`${wpCoords[0]},${wpCoords[1]}`); 
             } 
@@ -463,31 +509,41 @@
         const cilCoords = await getCoordinates(cilStr); 
         coordStrings.push(`${cilCoords[0]},${cilCoords[1]}`);
         
-        let res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordStrings.join(';')}?overview=full&geometries=geojson`);
-        if(!res.ok) throw new Error("OSRM Server je přetížen."); 
-        let data = await res.json(); 
-        if(!data.routes || data.routes.length === 0) throw new Error("Trasu se nepodařilo nalézt.");
+        let url = `https://router.project-osrm.org/route/v1/driving/${coordStrings.join(';')}?overview=full&geometries=geojson`;
+        let response = await fetch(url);
+        if (!response.ok) throw new Error("OSRM Server je přetížen."); 
+        
+        let data = await response.json(); 
+        if (!data.routes || data.routes.length === 0) throw new Error("Trasu se nepodařilo nalézt.");
         return data.routes[0];
     }
 
-    // Geolokační detektor mýta (Seká trasu na státy)
     async function processRouteSegments(coords, distTotal, manualTarget) {
-        let pointsToCheck = []; let distAccumulator = 0; let distances = [0]; 
-        for(let i=1; i<coords.length; i++) { 
+        let pointsToCheck = []; 
+        let distAccumulator = 0; 
+        let distances = [0]; 
+        
+        for (let i = 1; i < coords.length; i++) { 
             let d = haversine(coords[i-1][0], coords[i-1][1], coords[i][0], coords[i][1]); 
             distances.push(d); 
             distAccumulator += d; 
-            if(distAccumulator >= 25) { 
+            if (distAccumulator >= 25) { 
                 pointsToCheck.push({ index: i, coord: coords[i] }); 
                 distAccumulator = 0; 
             } 
         }
-        for(let p of pointsToCheck) { p.cc = await getCountryCodeFromCoordsFast(p.coord[0], p.coord[1]); }
+        
+        for (let p of pointsToCheck) { 
+            p.cc = await getCountryCodeFromCoordsFast(p.coord[0], p.coord[1]); 
+        }
+        
         let startCountry = await getCountryCodeFromCoordsFast(coords[0][0], coords[0][1]) || 'CZ'; 
         let currentCountry = MYTO_STATY[startCountry] ? startCountry : 'CZ';
-        let currentSegKm = 0; let rawSegments = []; let checkIdx = 0;
+        let currentSegKm = 0; 
+        let rawSegments = []; 
+        let checkIdx = 0;
 
-        for(let i=1; i<coords.length; i++) {
+        for (let i = 1; i < coords.length; i++) {
             currentSegKm += distances[i];
             if (checkIdx < pointsToCheck.length && pointsToCheck[checkIdx].index === i) { 
                 let cc = pointsToCheck[checkIdx].cc; 
@@ -500,35 +556,43 @@
             }
         }
         rawSegments.push({ code: currentCountry, km: currentSegKm });
-        if(manualTarget && MYTO_STATY[manualTarget] && manualTarget !== rawSegments[rawSegments.length-1].code) { 
+        
+        if (manualTarget && MYTO_STATY[manualTarget] && manualTarget !== rawSegments[rawSegments.length-1].code) { 
             rawSegments[rawSegments.length-1].code = manualTarget; 
         }
         
         let finalSegments = [];
-        for(let s of rawSegments) { 
-            if(finalSegments.length > 0 && finalSegments[finalSegments.length-1].code === s.code) { 
+        for (let s of rawSegments) { 
+            if (finalSegments.length > 0 && finalSegments[finalSegments.length-1].code === s.code) { 
                 finalSegments[finalSegments.length-1].km += s.km; 
-            } else { finalSegments.push(s); } 
+            } else { 
+                finalSegments.push(s); 
+            } 
         }
+        
         let hTotal = finalSegments.reduce((sum, s) => sum + s.km, 0); 
-        if(hTotal > 0) { 
+        if (hTotal > 0) { 
             let ratio = distTotal / hTotal; 
             finalSegments.forEach(s => s.km = s.km * ratio); 
         }
         return finalSegments;
     }
 
-    // HLAVNÍ TLAČÍTKO - Výpočet Trasy
     async function spocitatTrasu() {
-        let s = document.getElementById('startAdresa').value; 
-        let c = document.getElementById('cilAdresa').value; 
-        document.getElementById('btnTrasa').disabled = true;
-        document.getElementById('apiStatus').innerText = "Stahuji data o trase...";
-        document.getElementById('apiStatus').style.display = "block";
+        let startInput = document.getElementById('startAdresa').value; 
+        let cilInput = document.getElementById('cilAdresa').value; 
+        let btn = document.getElementById('btnTrasa');
+        let statusBox = document.getElementById('apiStatus');
+
+        btn.disabled = true;
+        statusBox.innerText = "Stahuji data o trase z OSRM serveru...";
+        statusBox.style.display = "block";
+        statusBox.style.color = "var(--cp-blue)";
 
         try {
-            let route = await fetchOSRMRoute(s, c, waypoints); 
+            let route = await fetchOSRMRoute(startInput, cilInput, waypoints); 
             drawMap(route.geometry.coordinates);
+            
             let distTotal = route.distance / 1000; 
             document.getElementById('vzdalenost').value = distTotal.toFixed(1);
             
@@ -536,234 +600,246 @@
             
             let html = ""; 
             globalBreakdown.forEach((seg, i) => {
-                let estToll = seg.km * 0.85 * MYTO_STATY[seg.code].rate * parseFloat(document.getElementById('euroNorma').value);
-                html += `<div class="breakdown-row"><div class="breakdown-input-group"><label>Stát</label><input type="text" value="${MYTO_STATY[seg.code].name}" readonly></div><div class="breakdown-input-group"><label>Km</label><input type="number" class="seg-km" value="${seg.km.toFixed(0)}" oninput="calculate()"></div><div class="breakdown-input-group"><label>Kč Mýto</label><input type="number" class="seg-toll" value="${Math.round(estToll)}" oninput="calculate()"></div></div>`;
+                let euroKoef = parseFloat(document.getElementById('euroNorma').value);
+                let estToll = seg.km * 0.85 * MYTO_STATY[seg.code].rate * euroKoef;
+                html += `
+                <div class="breakdown-row">
+                    <div class="breakdown-input-group"><label>Stát</label><input type="text" value="${MYTO_STATY[seg.code].name}" readonly></div>
+                    <div class="breakdown-input-group"><label>Km</label><input type="number" class="seg-km" value="${seg.km.toFixed(0)}" oninput="calculate()"></div>
+                    <div class="breakdown-input-group"><label>Kč Mýto</label><input type="number" class="seg-toll" value="${Math.round(estToll)}" oninput="calculate()"></div>
+                </div>`;
             });
+            
             document.getElementById('breakdownList').innerHTML = html; 
             document.getElementById('breakdownContainer').style.display = 'block';
-            
-            lastRouteData = { start: s, cil: c, dist: distTotal.toFixed(1) }; 
-            document.getElementById('apiStatus').innerText = "Hotovo!";
+            lastRouteData = { start: startInput, cil: cilInput, dist: distTotal.toFixed(1) }; 
+            statusBox.innerText = "Výpočet dokončen!";
+            statusBox.style.color = "var(--cp-success)";
             calculate();
         } catch(e) { 
-            document.getElementById('apiStatus').innerText = "CHYBA: " + e.message; 
-            document.getElementById('apiStatus').style.color = "red";
+            statusBox.innerText = "CHYBA: " + e.message; 
+            statusBox.style.color = "var(--cp-danger)";
         } finally { 
-            document.getElementById('btnTrasa').disabled = false; 
+            btn.disabled = false; 
             autoSave(); 
         }
     }
 
-    // HLAVNÍ FINANČNÍ KALKULÁTOR
     function calculate() {
         let totalMyto = 0; 
-        document.querySelectorAll('.seg-toll').forEach(i => totalMyto += parseFloat(i.value)||0);
-        let dist = parseFloat(document.getElementById('vzdalenost').value)||0; 
-        let cons = parseFloat(document.getElementById('spotrebaPrazdne').value)||25;
-        let fuelCst = (dist/100) * cons * (parseFloat(document.getElementById('cenaNafty').value)||36.5);
-        let wage = document.getElementById('typMzdy').value === 'fixni' ? parseFloat(document.getElementById('mzdaHodnota').value)||0 : (parseFloat(document.getElementById('mzdaHodnota').value)||0)*(parseFloat(document.getElementById('dny').value)||1);
+        document.querySelectorAll('.seg-toll').forEach(inp => { totalMyto += parseFloat(inp.value) || 0; });
         
-        let costs = fuelCst + wage + (document.getElementById('mytoToggle').checked ? totalMyto : 0); 
-        let dph = document.getElementById('dphToggle').checked ? 1.21 : 1;
+        let dist = parseFloat(document.getElementById('vzdalenost').value) || 0; 
+        let cons = parseFloat(document.getElementById('spotrebaPrazdne').value) || 25;
+        let naftaCena = parseFloat(document.getElementById('cenaNafty').value) || 36.5;
+        let fuelCst = (dist / 100) * cons * naftaCena;
         
-        document.getElementById('resNafta').innerText = formatMoney(fuelCst*dph); 
-        document.getElementById('resMyto').innerText = formatMoney(totalMyto*dph) + (document.getElementById('mytoToggle').checked ? "" : " (Nezapočítáno)");
-        document.getElementById('resNakladyCelkem').innerText = formatMoney(costs*dph); 
+        let wageTyp = document.getElementById('typMzdy').value;
+        let wageVal = parseFloat(document.getElementById('mzdaHodnota').value) || 0;
+        let wageDays = parseFloat(document.getElementById('dny').value) || 1;
+        let wage = wageTyp === 'fixni' ? wageVal : (wageVal * wageDays);
         
-        let marze = parseFloat(document.getElementById('marze').value)||15;
-        let finalPrice = costs * (1 + (marze/100)) * dph;
+        let dphToggle = document.getElementById('dphToggle').checked;
+        let mytoToggle = document.getElementById('mytoToggle').checked;
+        let dph = dphToggle ? 1.21 : 1;
+        let costs = fuelCst + wage + (mytoToggle ? totalMyto : 0); 
+        
+        document.getElementById('resNafta').innerText = formatMoney(fuelCst * dph); 
+        document.getElementById('resMyto').innerText = formatMoney(totalMyto * dph) + (mytoToggle ? "" : " (Nezapočítáno)");
+        document.getElementById('resNakladyCelkem').innerText = formatMoney(costs * dph); 
+        
+        let marze = parseFloat(document.getElementById('marze').value) || 15;
+        let finalPrice = costs * (1 + (marze / 100)) * dph;
         
         document.getElementById('resProdejniCena').innerText = formatMoney(finalPrice);
-        document.getElementById('resProdejniCenaKm').innerText = formatMoney(finalPrice / dist) + " / km";
+        document.getElementById('resProdejniCenaKm').innerText = dist > 0 ? formatMoney(finalPrice / dist) + " / km" : "0 Kč / km";
     }
 
-    // PAMĚŤ - LocalStorage
     function autoSave() { 
-        let d = { start: document.getElementById('startAdresa').value, cil: document.getElementById('cilAdresa').value, wps: waypoints }; 
-        localStorage.setItem('cpDraft', JSON.stringify(d)); 
+        let dataToSave = { start: document.getElementById('startAdresa').value, cil: document.getElementById('cilAdresa').value, wps: waypoints }; 
+        localStorage.setItem('cpDraft', JSON.stringify(dataToSave)); 
     }
     
     function loadAutoSave() { 
-        let d = JSON.parse(localStorage.getItem('cpDraft')); 
-        if(d) { 
-            document.getElementById('startAdresa').value = d.start||""; 
-            document.getElementById('cilAdresa').value = d.cil||""; 
-            waypoints = d.wps||[]; 
-            wpCounter = waypoints.length; 
-            renderWaypoints(); 
+        let savedData = JSON.parse(localStorage.getItem('cpDraft')); 
+        if (savedData) { 
+            document.getElementById('startAdresa').value = savedData.start || ""; 
+            document.getElementById('cilAdresa').value = savedData.cil || ""; 
+            waypoints = savedData.wps || []; wpCounter = waypoints.length; 
         } 
     }
     
     window.addEventListener('load', () => { 
         setTimeout(() => { document.getElementById('loading-screen').style.display = 'none'; }, 800); 
-        loadAutoSave(); 
-        plannerLoadState(); 
+        loadAutoSave(); plannerLoadState(); 
     });
 
 
     // =========================================================================================
-    // 4. ŠICHTOVNÍK & AETR PLANNER
+    // 4. ŠICHTOVNÍK & AETR PLANNER (Záložka 2)
     // =========================================================================================
 
     let plannerState = { drivers: [], shifts: {}, payrolls: {}, currentWeek: 1, currentYear: new Date().getFullYear() };
     let editShiftContext = null; 
     let copiedShift = null; 
-    let planWaypoints = []; // Středové zastávky pro Auto-Plánovač
+    let planWaypoints = []; 
 
     function getISOWeek(date) { 
         let d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())); 
         let dayNum = d.getUTCDay() || 7; d.setUTCDate(d.getUTCDate() + 4 - dayNum); 
-        let yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); 
-        return Math.ceil((((d - yearStart) / 86400000) + 1)/7); 
+        let yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); 
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7); 
     }
     
     function plannerLoadState() { 
-        let s = localStorage.getItem('cpPlannerState'); 
-        if(s) plannerState = JSON.parse(s); 
-        else plannerState.currentWeek = getISOWeek(new Date()); 
+        let savedState = localStorage.getItem('cpPlannerState'); 
+        if (savedState) plannerState = JSON.parse(savedState);
+        else plannerState.currentWeek = getISOWeek(new Date());
         updateDriverSelects(); 
     }
     
-    function plannerSaveState() { 
-        localStorage.setItem('cpPlannerState', JSON.stringify(plannerState)); 
-        updateDriverSelects(); 
-    }
+    function plannerSaveState() { localStorage.setItem('cpPlannerState', JSON.stringify(plannerState)); updateDriverSelects(); }
     
     function addPlannerDriver() { 
-        let n = document.getElementById('newDriverName').value; 
-        if(n) { 
-            let id = plannerState.drivers.length>0 ? Math.max(...plannerState.drivers.map(d=>d.id))+1 : 1; 
-            plannerState.drivers.push({id:id, name:n}); 
-            plannerSaveState(); renderPlanner(); 
-            document.getElementById('newDriverName').value=""; 
+        let nameInput = document.getElementById('newDriverName').value; 
+        if (nameInput) { 
+            let nextId = plannerState.drivers.length > 0 ? Math.max(...plannerState.drivers.map(d => d.id)) + 1 : 1; 
+            plannerState.drivers.push({id: nextId, name: nameInput}); 
+            plannerSaveState(); renderPlanner(); document.getElementById('newDriverName').value = ""; 
         } 
     }
     
     function updateDriverSelects() { 
-        let s = document.getElementById('planDriverSelect'); s.innerHTML=""; 
-        plannerState.drivers.forEach(d => s.innerHTML+=`<option value="${d.id}">${d.name}</option>`); 
+        let selectEl = document.getElementById('planDriverSelect'); selectEl.innerHTML = ""; 
+        plannerState.drivers.forEach(d => { selectEl.innerHTML += `<option value="${d.id}">${d.name}</option>`; }); 
     }
     
-    function changeWeek(d) { plannerState.currentWeek+=d; renderPlanner(); }
+    function changeWeek(delta) { plannerState.currentWeek += delta; renderPlanner(); }
 
-    // --- AETR ANALÝZA (Základní mozek) ---
     function analyzeWeekForDriver(driverId, week) {
-        let a = { drive:0, span:0, t10:0, t15:0 };
-        for(let day=0; day<7; day++) {
-            let s = plannerState.shifts[`${driverId}_${week}_${day}`];
-            if(s && s.acts) {
-                let d=0, sp=0; 
-                s.acts.forEach(x=>{
-                    if(x.t==='drive') d += parseFloat(x.d); 
-                    sp += parseFloat(x.d);
+        let analysis = { drive: 0, span: 0, t10: 0, t15: 0 };
+        for (let day = 0; day < 7; day++) {
+            let shift = plannerState.shifts[`${driverId}_${week}_${day}`];
+            if (shift && shift.acts) {
+                let d = 0; let sp = 0; 
+                shift.acts.forEach(act => {
+                    if (act.t === 'drive') d += parseFloat(act.d); 
+                    sp += parseFloat(act.d);
                 });
-                a.drive += d; a.span += sp; 
-                let double = s.crew === "2";
-                if(!double && d>9) a.t10++; 
-                if(double && d>18) a.t10++;
-                if(!double && sp>13) a.t15++;
+                analysis.drive += d; analysis.span += sp; 
+                let isDouble = shift.crew === "2";
+                if (!isDouble && d > 9) analysis.t10++; if (isDouble && d > 18) analysis.t10++;
+                if (!isDouble && sp > 13) analysis.t15++;
             }
-        } 
-        return a;
+        } return analysis;
     }
 
-    // --- VYKRESLENÍ KALENDÁŘE (Vizuál a varování) ---
     function renderPlanner() {
         document.getElementById('plannerWeekLabel').innerText = `Týden ${plannerState.currentWeek} / ${plannerState.currentYear}`;
-        let dList = document.getElementById('plannerDriverList'); dList.innerHTML = "";
+        let driverListEl = document.getElementById('plannerDriverList'); driverListEl.innerHTML = "";
         
         plannerState.drivers.forEach(d => { 
-            dList.innerHTML += `<div class="driver-item"><span>${d.name}</span> <div><button class="btn-secondary" style="background:var(--cp-blue); padding:4px;" onclick="openPayroll(${d.id})">💶 Mzdy</button></div></div>`; 
+            driverListEl.innerHTML += `
+            <div class="driver-item"><span>${d.name}</span> 
+                <div><button class="btn-secondary" style="background:var(--cp-blue); padding:4px;" onclick="openPayroll(${d.id})">💶 Mzdy</button></div>
+            </div>`; 
         });
 
         let tbody = document.getElementById('plannerBody'); tbody.innerHTML = "";
         
-        plannerState.drivers.forEach(d => {
-            let tr = document.createElement('tr'); 
-            tr.innerHTML = `<td class="driver-name-col">${d.name}</td>`;
-            let wA = analyzeWeekForDriver(d.id, plannerState.currentWeek);
-            let nextStart = null;
+        plannerState.drivers.forEach(driver => {
+            let tr = document.createElement('tr'); tr.innerHTML = `<td class="driver-name-col">${driver.name}</td>`;
+            let weekAnalysis = analyzeWeekForDriver(driver.id, plannerState.currentWeek);
+            let nextAvailableStart = null;
 
-            for(let day=0; day<7; day++) {
-                let sKey = `${d.id}_${plannerState.currentWeek}_${day}`; 
-                let s = plannerState.shifts[sKey];
+            for (let day = 0; day < 7; day++) {
+                let shiftKey = `${driver.id}_${plannerState.currentWeek}_${day}`; 
+                let shift = plannerState.shifts[shiftKey];
                 let td = document.createElement('td'); 
                 let html = "";
                 
-                if(s && s.acts) {
-                    let dDur=0, sDur=0, cont=0, w=[]; 
-                    s.acts.forEach(x => { 
-                        let val=parseFloat(x.d); sDur+=val; 
-                        if(x.t==='drive'){ dDur+=val; cont+=val; if(cont>4.5)w.push("⚠️ Jízda >4.5h");} 
-                        else if(x.t==='rest' && val>=0.75) cont=0; 
+                if (shift && shift.acts) {
+                    let dDur = 0; let sDur = 0; let cont = 0; let warnings = []; 
+                    
+                    shift.acts.forEach(act => { 
+                        let val = parseFloat(act.d); sDur += val; 
+                        if (act.t === 'drive') { dDur += val; cont += val; if (cont > 4.5) warnings.push("⚠️ Jízda >4.5h"); } 
+                        else if (act.t === 'rest' && val >= 0.75) { cont = 0; }
                     });
                     
-                    let st = parseTime(s.start); let end = st+sDur;
+                    let startTime = parseTime(shift.start); let endTime = startTime + sDur;
                     
-                    // Kontroly AETR
-                    if(s.crew==="1"){ 
-                        if(dDur>10) w.push("⚠️ Jízda >10h"); else if(dDur>9&&wA.t10>2) w.push("⚠️ 10h jízda (max 2x)"); 
-                        if(sDur>15) w.push("⚠️ Výkon >15h"); else if(sDur>13&&wA.t15>3) w.push("⚠️ 15h výkon (max 3x)"); 
+                    if (shift.crew === "1") { 
+                        if (dDur > 10) warnings.push("⚠️ Jízda >10h"); else if (dDur > 9 && weekAnalysis.t10 > 2) warnings.push("⚠️ 10h jízda (max 2x)"); 
+                        if (sDur > 15) warnings.push("⚠️ Výkon >15h"); else if (sDur > 13 && weekAnalysis.t15 > 3) warnings.push("⚠️ 15h výkon (max 3x)"); 
                     } else { 
-                        if(dDur>20) w.push("⚠️ Jízda >20h"); 
-                        if(sDur>21) w.push("⚠️ Výkon >21h"); 
+                        if (dDur > 20) warnings.push("⚠️ Jízda >20h"); if (sDur > 21) warnings.push("⚠️ Výkon >21h"); 
                     }
                     
-                    // Návaznosti z předchozího dne
                     let seqErr = ""; 
-                    if(nextStart!==null && st < nextStart) seqErr = `<span class="aetr-warn-badge seq-error">🚨 Začal dřív než v ${formatTime(nextStart)}!</span>`;
+                    if (nextAvailableStart !== null && startTime < nextAvailableStart) {
+                        seqErr = `<span class="aetr-warn-badge seq-error">🚨 Začal dřív než v ${formatTime(nextAvailableStart)}!</span>`;
+                    }
                     
-                    // Reset na víkend nebo po konci směny
-                    nextStart = (end + (s.crew==="2" ? 9 : (sDur>13 ? 9 : 11))) % 24; 
-                    if(day===5 || day===6) nextStart=null;
+                    nextAvailableStart = (endTime + (shift.crew === "2" ? 9 : (sDur > 13 ? 9 : 11))) % 24; 
+                    if (day === 5 || day === 6) nextAvailableStart = null;
 
-                    html += `<div class="shift-content" onclick="openShiftModal(${d.id}, ${day})"><div class="shift-head">${s.start} - ${formatTime(end)}</div><div>🚛 ${dDur.toFixed(1)}h | ⚒️ ${(sDur-dDur).toFixed(1)}h</div>`;
-                    if(s.note) html += `<div style="font-size:9px; color:#666;">📝 ${s.note}</div>`;
-                    html += seqErr; 
-                    w.forEach(x => html+=`<span class="aetr-warn-badge">${x}</span>`);
-                    if(wA.drive > 56 && day===6) html += `<span class="aetr-warn-badge">⚠️ >56h jízdy v týdnu!</span>`;
+                    html += `
+                    <div class="shift-content" onclick="openShiftModal(${driver.id}, ${day})">
+                        <div class="shift-head">${shift.start} - ${formatTime(endTime)}</div>
+                        <div>🚛 ${dDur.toFixed(1)}h | ⚒️ ${(sDur - dDur).toFixed(1)}h</div>`;
                     
-                    // Barevný Gantt
+                    if (shift.note) html += `<div style="font-size:9px; color:#666;">📝 ${shift.note}</div>`;
+                    html += seqErr; 
+                    warnings.forEach(w => html += `<span class="aetr-warn-badge">${w}</span>`);
+                    if (weekAnalysis.drive > 56 && day === 6) html += `<span class="aetr-warn-badge">⚠️ >56h jízdy v týdnu!</span>`;
+                    
                     let tHtml = `<div class="timeline-bar-wrap">`; 
-                    s.acts.forEach(x => { 
-                        let p=(parseFloat(x.d)/sDur)*100; let c='tl-drive'; 
-                        if(x.t==='work')c='tl-work'; if(x.t==='rest')c='tl-rest'; 
-                        tHtml+=`<div class="${c}" style="width:${p}%"></div>`; 
+                    shift.acts.forEach(act => { 
+                        let pct = (parseFloat(act.d) / sDur) * 100; let cssClass = 'tl-drive'; 
+                        if (act.t === 'work') cssClass = 'tl-work'; if (act.t === 'rest') cssClass = 'tl-rest'; 
+                        tHtml += `<div class="${cssClass}" style="width:${pct}%"></div>`; 
                     });
-                    html += tHtml + `</div></div>`; 
-                    td.style.background = "#fff9e6";
+                    
+                    html += tHtml + `</div></div>`; td.style.background = "#fff9e6";
                 } else { 
-                    nextStart = null; 
-                    html = `<div class="shift-content" style="justify-content:center; color:#ccc;" onclick="openShiftModal(${d.id}, ${day})">Volno</div>`; 
+                    nextAvailableStart = null; 
+                    html = `<div class="shift-content" style="justify-content:center; color:#ccc;" onclick="openShiftModal(${driver.id}, ${day})">Volno</div>`; 
                 }
                 
-                // Copy & Paste tlačítka
                 let actsHTML = `<div class="cell-actions">`;
-                if(s) { actsHTML += `<button class="cell-btn" onclick="event.stopPropagation(); copiedShift=JSON.parse(JSON.stringify(plannerState.shifts['${sKey}'])); alert('Zkopírováno');">C</button>`; }
-                if(copiedShift) { actsHTML += `<button class="cell-btn" onclick="event.stopPropagation(); plannerState.shifts['${sKey}']=JSON.parse(JSON.stringify(copiedShift)); plannerSaveState(); renderPlanner();">P</button>`; }
-                td.innerHTML = html + actsHTML + `</div>`; 
-                tr.appendChild(td);
+                if (shift) actsHTML += `<button class="cell-btn" onclick="event.stopPropagation(); copiedShift=JSON.parse(JSON.stringify(plannerState.shifts['${shiftKey}'])); alert('Zkopírováno');">C</button>`;
+                if (copiedShift) actsHTML += `<button class="cell-btn" onclick="event.stopPropagation(); plannerState.shifts['${shiftKey}']=JSON.parse(JSON.stringify(copiedShift)); plannerSaveState(); renderPlanner();">P</button>`;
+                
+                td.innerHTML = html + actsHTML + `</div>`; tr.appendChild(td);
             }
             tbody.appendChild(tr);
         });
     }
 
-    // --- AUTO-GENERÁTOR TRAS VE ŠICHTOVNÍKU (Nekonečný cyklus) ---
+    // --- AUTO-GENERÁTOR TRAS ---
     function importRouteFromCalc() { 
         document.getElementById('planStartRoute').value = document.getElementById('startAdresa').value; 
         document.getElementById('planEndRoute').value = document.getElementById('cilAdresa').value; 
     }
     
-    // Pridavani stredovych zastavek do Autoplanovace
     function addPlanWaypoint() {
-        planWaypoints.push({address:"", time: 2});
+        planWaypoints.push({address: "", time: 2, cc: "DE"});
         renderPlanWaypoints();
     }
     
     function renderPlanWaypoints() {
         let c = document.getElementById('planWpContainer'); c.innerHTML = "";
+        let opts = ""; for(let k in MYTO_STATY) { opts += `<option value="${k}">${MYTO_STATY[k].name}</option>`; }
+
         planWaypoints.forEach((w, i) => {
-            c.innerHTML += `<div class="form-grid" style="margin-bottom:5px; background:white; padding:5px; border:1px solid #ccc; border-radius:4px;"><input type="text" placeholder="Zastávka (Město)" oninput="planWaypoints[${i}].address=this.value" value="${w.address}"><input type="number" placeholder="Zdržení v h" oninput="planWaypoints[${i}].time=parseFloat(this.value)||0" value="${w.time}"><button class="btn-secondary" onclick="planWaypoints.splice(${i},1); renderPlanWaypoints()">✕</button></div>`;
+            c.innerHTML += `
+            <div class="form-grid" style="margin-bottom:5px; background:white; padding:5px; border:1px solid #ccc; border-radius:4px;">
+                <input type="text" placeholder="Zastávka (Město)" oninput="planWaypoints[${i}].address=this.value" value="${w.address}">
+                <select onchange="planWaypoints[${i}].cc=this.value"><option value="${w.cc}" selected>${w.cc}</option>${opts}</select>
+                <input type="number" placeholder="Zdržení v h" oninput="planWaypoints[${i}].time=parseFloat(this.value)||0" value="${w.time}">
+                <button class="btn-secondary" onclick="planWaypoints.splice(${i},1); renderPlanWaypoints()">✕</button>
+            </div>`;
         });
     }
 
@@ -774,75 +850,103 @@
         let eR = document.getElementById('planEndRoute').value;
         let stat = document.getElementById('planStatus');
         
-        if(!drv || !sR || !eR) { stat.innerText = "Vyplňte Odkud, Kam a Řidiče!"; stat.style.display="block"; return; }
-        stat.style.color = "var(--cp-blue)"; stat.innerText = "Stahuji trasu ze satelitu OSRM (Může to chvíli trvat)..."; stat.style.display="block";
+        if (!drv || !sR || !eR) { stat.innerText = "Vyplňte Odkud, Kam a Řidiče!"; stat.style.display = "block"; return; }
+        stat.style.color = "var(--cp-blue)"; stat.innerText = "Stahuji trasu z OSRM (Vydržte prosím)..."; stat.style.display = "block";
 
         try {
-            // Bezpecnostni fallback, pokud OSRM selze na prilis dlouhou trasu
             let dist = 0; let routeCoords = [];
+            
             try {
                 let route = await fetchOSRMRoute(sR, eR, planWaypoints);
                 dist = route.distance / 1000;
                 routeCoords = route.geometry.coordinates;
             } catch(osrmError) {
-                // FALLBACK: Haversine distance
                 console.warn("OSRM selhalo, pouzivam prime souradnice.");
                 let startCoords = await getCoordinates(sR);
                 let endCoords = await getCoordinates(eR);
-                dist = haversine(startCoords[0], startCoords[1], endCoords[0], endCoords[1]) * 1.25; // 25% penalizace na dálnice
+                dist = haversine(startCoords[0], startCoords[1], endCoords[0], endCoords[1]) * 1.25; 
                 routeCoords = [startCoords, endCoords];
             }
 
-            // AETR Rozstřel do dní
-            let remD = dist / 70; // 70 km/h průměr pro kamiony
+            // Geolokační detekce států pro DIETY
+            let segments = await processRouteSegments(routeCoords, dist, document.getElementById('planCilStat').value);
+            
+            // Sloučení jízd a zastávek pro diety
+            let countryHours = {};
+            segments.forEach(seg => {
+                let h = seg.km / 70;
+                countryHours[seg.code] = (countryHours[seg.code] || 0) + h;
+            });
+            
+            let wL = parseFloat(document.getElementById('planLoad').value) || 0; 
+            let lStat = document.getElementById('planLoadStat').value;
+            if(wL > 0 && lStat) countryHours[lStat] = (countryHours[lStat] || 0) + wL;
+            
+            let wU = parseFloat(document.getElementById('planUnload').value) || 0; 
+            let uStat = document.getElementById('planUnloadStat').value;
+            if(wU > 0 && uStat) countryHours[uStat] = (countryHours[uStat] || 0) + wU;
+            
+            planWaypoints.forEach(wp => {
+                if(wp.time > 0 && wp.cc) countryHours[wp.cc] = (countryHours[wp.cc] || 0) + wp.time;
+            });
+
+            let dRows = [];
+            for(let cc in countryHours) {
+                let h = countryHours[cc];
+                if ((cc === 'CZ' && h >= 5) || (cc !== 'CZ' && h > 1)) {
+                    dRows.push({cc: (DIET_RATES[cc] ? cc : 'OSTATNÍ'), hours: h.toFixed(1)});
+                }
+            }
+
+            // Rozstřel směn
+            let remD = dist / 70; 
             let crew = document.getElementById('planCrewSelect').value; 
-            let limit = crew==="2" ? 18 : 9;
+            let limit = crew === "2" ? 18 : 9;
             let cTime = parseTime(document.getElementById('planTimeSelect').value); 
             let cDay = sDay;
             let acts = []; let dD = 0; let dS = 0;
-            let currentWeekSave = plannerState.currentWeek; // Pro prechod do dalsiho tydne
+            let currentWeekSave = plannerState.currentWeek; 
 
-            let wL = parseFloat(document.getElementById('planLoad').value)||0; 
-            if(wL>0){ acts.push({t:'work',d:wL}); dS+=wL; }
+            if (wL > 0) { acts.push({t: 'work', d: wL}); dS += wL; }
 
-            // Zpracování jízdy
-            while(remD > 0) {
+            while (remD > 0) {
                 let chunk = Math.min(remD, 4.5, limit - dD);
-                if(chunk>0) { 
-                    acts.push({t:'drive',d:chunk}); 
-                    dD+=chunk; dS+=chunk; remD-=chunk; 
+                if (chunk > 0) { 
+                    acts.push({t: 'drive', d: chunk}); dD += chunk; dS += chunk; remD -= chunk; 
                 }
                 
-                // Pokud zbyva jizda
-                if(remD > 0) {
-                    if(dD >= limit) {
+                if (remD > 0) {
+                    if (dD >= limit) {
                         plannerState.shifts[`${drv}_${currentWeekSave}_${cDay}`] = { start: formatTime(cTime), crew: crew, note: `Trasa: ${sR} -> ${eR}`, acts: JSON.parse(JSON.stringify(acts)) };
                         cDay++; 
-                        
-                        // Průchod víkendem
-                        if(cDay > 6) { 
-                            cDay = 0; currentWeekSave++; 
-                        }
-                        
-                        // Začátek další směny po pauze
-                        cTime = (cTime + dS + (crew==="2"?9:11)) % 24; 
-                        dD=0; dS=0; acts=[];
+                        if (cDay > 6) { cDay = 0; currentWeekSave++; }
+                        cTime = (cTime + dS + (crew === "2" ? 9 : 11)) % 24; 
+                        dD = 0; dS = 0; acts = [];
                     } else { 
-                        // Bezna 45 minut pauza
-                        acts.push({t:'rest',d:0.75}); dS+=0.75; 
+                        acts.push({t: 'rest', d: 0.75}); dS += 0.75; 
                     }
                 }
             }
             
-            // Pridame praci na vykladce
-            let wU = parseFloat(document.getElementById('planUnload').value)||0; 
-            if(wU>0){ acts.push({t:'work',d:wU}); dS+=wU; }
-            if(acts.length>0) { 
+            // Vlozeni casu mezizastavek do casove osy
+            planWaypoints.forEach(wp => {
+                if(wp.time > 0) { acts.push({t: 'work', d: wp.time}); dS += wp.time; }
+            });
+
+            if (wU > 0) { acts.push({t: 'work', d: wU}); dS += wU; }
+            
+            if (acts.length > 0) { 
                 plannerState.shifts[`${drv}_${currentWeekSave}_${cDay}`] = { start: formatTime(cTime), crew: crew, note: `Cíl: ${eR}`, acts: JSON.parse(JSON.stringify(acts)) }; 
             }
             
+            // Uložení mezd
+            if (!plannerState.payrolls[`${drv}_${currentWeekSave}`]) {
+                plannerState.payrolls[`${drv}_${currentWeekSave}`] = { base:0, diets:0, bonus:0, dietRows:[] };
+            }
+            plannerState.payrolls[`${drv}_${currentWeekSave}`].dietRows = dRows;
+
             plannerSaveState(); renderPlanner(); 
-            stat.style.color = "var(--cp-success)"; stat.innerText = "Úspěšně rozplánováno! Mzdy a diety aktualizovány.";
+            stat.style.color = "var(--cp-success)"; stat.innerText = "Úspěšně rozplánováno! Mzdy a diety vypočítány.";
             planWaypoints = []; renderPlanWaypoints();
         } catch(e) { 
             stat.style.color = "var(--cp-danger)"; stat.innerText = "Kritická chyba: " + e.message; 
@@ -854,38 +958,51 @@
     
     function openShiftModal(dId, day) {
         editShiftContext = { dId: dId, day: day }; 
-        let s = plannerState.shifts[`${dId}_${plannerState.currentWeek}_${day}`];
+        let shift = plannerState.shifts[`${dId}_${plannerState.currentWeek}_${day}`];
         document.getElementById('shiftModalTitle').innerText = "Úprava Dne";
         
-        if(s) { 
-            document.getElementById('editStart').value = s.start; 
-            document.getElementById('editCrew').value = s.crew; 
-            document.getElementById('editNote').value = s.note; 
-            currentActs = JSON.parse(JSON.stringify(s.acts)); 
+        if (shift) { 
+            document.getElementById('editStart').value = shift.start; 
+            document.getElementById('editCrew').value = shift.crew; 
+            document.getElementById('editNote').value = shift.note || ""; 
+            currentActs = JSON.parse(JSON.stringify(shift.acts)); 
         } else { 
             document.getElementById('editStart').value = "06:00"; 
-            currentActs = [{t:'drive',d:4.5},{t:'rest',d:0.75},{t:'drive',d:4.5}]; 
+            currentActs = [{t: 'drive', d: 4.5}, {t: 'rest', d: 0.75}, {t: 'drive', d: 4.5}]; 
         }
         
-        document.getElementById('shiftModal').style.display='flex'; 
+        document.getElementById('shiftModal').style.display = 'flex'; 
         renderEditActs();
     }
     
-    function closeShiftModal() { document.getElementById('shiftModal').style.display='none'; }
-    function addActivity() { currentActs.push({t:'work',d:1}); renderEditActs(); }
+    function closeShiftModal() { document.getElementById('shiftModal').style.display = 'none'; }
+    function addActivity() { currentActs.push({t: 'work', d: 1}); renderEditActs(); }
     
     function renderEditActs() {
-        let c = document.getElementById('editActContainer'); c.innerHTML = "";
-        currentActs.forEach((a, i) => {
-            c.innerHTML += `<div class="act-row"><select onchange="currentActs[${i}].t=this.value; renderEditActs();"><option value="drive" ${a.t==='drive'?'selected':''}>🚛 Jízda</option><option value="work" ${a.t==='work'?'selected':''}>⚒️ Práce</option><option value="rest" ${a.t==='rest'?'selected':''}>🛏️ Pauza</option></select><input type="number" step="0.25" value="${a.d}" oninput="currentActs[${i}].d=parseFloat(this.value)||0; renderEditActs();"> <button class="btn-secondary" onclick="currentActs.splice(${i},1); renderEditActs();">✕</button></div>`;
+        let container = document.getElementById('editActContainer'); 
+        container.innerHTML = "";
+        
+        currentActs.forEach((act, i) => {
+            container.innerHTML += `
+            <div class="act-row">
+                <select onchange="currentActs[${i}].t=this.value; renderEditActs();">
+                    <option value="drive" ${act.t === 'drive' ? 'selected' : ''}>🚛 Jízda</option>
+                    <option value="work" ${act.t === 'work' ? 'selected' : ''}>⚒️ Práce</option>
+                    <option value="rest" ${act.t === 'rest' ? 'selected' : ''}>🛏️ Pauza</option>
+                </select>
+                <input type="number" step="0.25" value="${act.d}" oninput="currentActs[${i}].d=parseFloat(this.value)||0; renderEditActs();"> 
+                <button class="btn-secondary" onclick="currentActs.splice(${i},1); renderEditActs();">✕</button>
+            </div>`;
         });
-        let tDrive=0, span=0; 
-        currentActs.forEach(a=>{ span+=a.d; if(a.t==='drive') tDrive+=a.d; });
+        
+        let tDrive = 0; let span = 0; 
+        currentActs.forEach(a => { span += a.d; if (a.t === 'drive') tDrive += a.d; });
         document.getElementById('shiftPreviewBox').innerHTML = `Výkon: ${span}h | Jízda: ${tDrive}h`;
     }
     
     function saveShiftModal() {
-        plannerState.shifts[`${editShiftContext.dId}_${plannerState.currentWeek}_${editShiftContext.day}`] = { 
+        let shiftKey = `${editShiftContext.dId}_${plannerState.currentWeek}_${editShiftContext.day}`;
+        plannerState.shifts[shiftKey] = { 
             start: document.getElementById('editStart').value, 
             crew: document.getElementById('editCrew').value, 
             note: document.getElementById('editNote').value, 
@@ -895,7 +1012,8 @@
     }
     
     function deleteShift() { 
-        delete plannerState.shifts[`${editShiftContext.dId}_${plannerState.currentWeek}_${editShiftContext.day}`]; 
+        let shiftKey = `${editShiftContext.dId}_${plannerState.currentWeek}_${editShiftContext.day}`;
+        delete plannerState.shifts[shiftKey]; 
         plannerSaveState(); closeShiftModal(); renderPlanner(); 
     }
 
@@ -904,104 +1022,103 @@
     
     function openPayroll(dId) {
         currentPayCtx = { dId: dId, w: plannerState.currentWeek };
-        let p = plannerState.payrolls[`${dId}_${plannerState.currentWeek}`] || { base:0, diets:0, bonus:0, dietRows:[] };
+        let payroll = plannerState.payrolls[`${dId}_${plannerState.currentWeek}`] || { base: 0, diets: 0, bonus: 0, dietRows: [] };
         
-        document.getElementById('payDailyRate').value = p.dailyRate || 1000; 
-        document.getElementById('payBase').value = p.base; 
-        document.getElementById('payBonus').value = p.bonus; 
-        dietRows = p.dietRows || [];
+        document.getElementById('payDailyRate').value = payroll.dailyRate || 1000; 
+        document.getElementById('payBase').value = payroll.base; 
+        document.getElementById('payBonus').value = payroll.bonus; 
+        dietRows = payroll.dietRows || [];
         
         let sCnt = 0; 
-        for(let i=0; i<7; i++) { 
-            if(plannerState.shifts[`${dId}_${plannerState.currentWeek}_${i}`]) sCnt++; 
-        }
+        for (let i = 0; i < 7; i++) { if (plannerState.shifts[`${dId}_${plannerState.currentWeek}_${i}`]) sCnt++; }
         document.getElementById('payShiftsCount').value = sCnt;
         
-        document.getElementById('payrollModal').style.display='flex'; 
-        renderDietRows(); 
-        calcPayroll();
+        document.getElementById('payrollModal').style.display = 'flex'; 
+        renderDietRows(); calcPayroll();
     }
     
-    function closePayroll() { document.getElementById('payrollModal').style.display='none'; }
-    function addDietRow() { dietRows.push({cc:'DE', hours:24}); renderDietRows(); calcPayroll(); }
+    function closePayroll() { document.getElementById('payrollModal').style.display = 'none'; }
+    function addDietRow() { dietRows.push({cc: 'DE', hours: 24}); renderDietRows(); calcPayroll(); }
     
     function renderDietRows() {
-        let c = document.getElementById('dietsListContainer'); c.innerHTML = "";
+        let container = document.getElementById('dietsListContainer'); 
+        container.innerHTML = "";
         let kurz = parseFloat(document.getElementById('kurzEuro').value) || 25;
+        
         dietRows.forEach((r, i) => {
             let opts = ""; 
-            for(let k in DIET_RATES) opts += `<option value="${k}" ${r.cc===k?'selected':''}>${k} (${DIET_RATES[k].rate} ${DIET_RATES[k].curr})</option>`;
-            c.innerHTML += `<div class="act-row"><select onchange="dietRows[${i}].cc=this.value; calcPayroll(); renderDietRows();" style="width:40%;">${opts}</select><input type="number" value="${r.hours}" oninput="dietRows[${i}].hours=parseFloat(this.value)||0; calcPayroll(); renderDietRows();" style="width:20%;">h <span style="font-size:11px; width:20%; font-weight:800; color:var(--cp-red); text-align:right;"></span><button class="btn-secondary" onclick="dietRows.splice(${i},1); renderDietRows(); calcPayroll();" style="width:10%;">✕</button></div>`;
+            for(let k in DIET_RATES) { opts += `<option value="${k}" ${r.cc === k ? 'selected' : ''}>${k} (${DIET_RATES[k].rate} ${DIET_RATES[k].curr})</option>`; }
+            
+            let h = parseFloat(r.hours) || 0; 
+            let dData = DIET_RATES[r.cc] || DIET_RATES['OSTATNÍ']; 
+            let fraction = 0;
+            
+            if (r.cc === 'CZ') { 
+                if (h >= 5 && h <= 12) fraction = 1/3; else if (h > 12 && h <= 18) fraction = 2/3; else if (h > 18) fraction = 1; 
+            } else { 
+                if (h > 1 && h <= 12) fraction = 1/3; else if (h > 12 && h <= 18) fraction = 2/3; else if (h > 18) fraction = 1; 
+            }
+            
+            let subtotal = dData.rate * fraction; 
+            if (dData.curr === 'EUR') subtotal *= kurz;
+
+            container.innerHTML += `
+            <div class="act-row" style="flex-wrap:wrap;">
+                <select onchange="dietRows[${i}].cc=this.value; calcPayroll(); renderDietRows();" style="width:40%;">${opts}</select>
+                <input type="number" value="${r.hours}" oninput="dietRows[${i}].hours=parseFloat(this.value)||0; calcPayroll(); renderDietRows();" style="width:25%;">
+                <span style="font-size:11px; width:20%; text-align:right; font-weight:800; color:var(--cp-red);">${Math.round(subtotal)} Kč</span>
+                <button class="btn-secondary" onclick="dietRows.splice(${i},1); renderDietRows(); calcPayroll();" style="width:10%;">✕</button>
+            </div>`;
         });
     }
 
     function autoFillDiets() {
-        if(!globalBreakdown || globalBreakdown.length === 0) return alert("Nejprve spočítejte trasu v Kalkulačce (Záložka 1)!");
+        if (!globalBreakdown || globalBreakdown.length === 0) return alert("Nejprve spočítejte trasu v hlavní kalkulačce!");
         dietRows = [];
         globalBreakdown.forEach(seg => {
             let h = seg.km / 70; 
-            if(h > 1 || (seg.code === 'CZ' && h >= 5)) { 
+            if (h > 1 || (seg.code === 'CZ' && h >= 5)) { 
                 let cc = DIET_RATES[seg.code] ? seg.code : 'OSTATNÍ'; 
                 dietRows.push({ cc: cc, hours: h.toFixed(1) }); 
             }
         });
-        renderDietRows(); calcPayroll(); alert("Diety načteny z Kalkulačky tras!");
+        renderDietRows(); calcPayroll(); alert("Diety načteny z Kalkulačky!");
     }
 
     function calcAutoBase() { 
-        document.getElementById('payBase').value = (parseFloat(document.getElementById('payDailyRate').value)||0) * (parseInt(document.getElementById('payShiftsCount').value)||0); 
+        document.getElementById('payBase').value = (parseFloat(document.getElementById('payDailyRate').value) || 0) * (parseInt(document.getElementById('payShiftsCount').value) || 0); 
         calcPayroll(); 
     }
     
     function calcPayroll() {
-        let tDiets = 0; let k = parseFloat(document.getElementById('kurzEuro').value) || 25;
+        let tDiets = 0; let kurz = parseFloat(document.getElementById('kurzEuro').value) || 25;
+        
         dietRows.forEach(r => {
-            let h = r.hours; if(h<=0) return; 
-            let dr = DIET_RATES[r.cc]||DIET_RATES['OSTATNÍ']; let f = 0;
-            if(r.cc==='CZ'){ if(h>=5&&h<=12)f=1/3; else if(h>12&&h<=18)f=2/3; else if(h>18)f=1; } 
-            else { if(h>1&&h<=12)f=1/3; else if(h>12&&h<=18)f=2/3; else if(h>18)f=1; }
-            tDiets += (dr.rate * f) * (dr.curr==='EUR'?k:1);
+            let h = parseFloat(r.hours) || 0; if (h <= 0) return; 
+            let dData = DIET_RATES[r.cc] || DIET_RATES['OSTATNÍ']; let fraction = 0;
+            
+            if (r.cc === 'CZ') { 
+                if (h >= 5 && h <= 12) fraction = 1/3; else if (h > 12 && h <= 18) fraction = 2/3; else if (h > 18) fraction = 1; 
+            } else { 
+                if (h > 1 && h <= 12) fraction = 1/3; else if (h > 12 && h <= 18) fraction = 2/3; else if (h > 18) fraction = 1; 
+            }
+            
+            let val = dData.rate * fraction; if (dData.curr === 'EUR') val *= kurz; tDiets += val;
         });
+        
         document.getElementById('payDiets').value = Math.round(tDiets);
-        let tot = (parseFloat(document.getElementById('payBase').value)||0) + tDiets + (parseFloat(document.getElementById('payBonus').value)||0);
+        let basePay = parseFloat(document.getElementById('payBase').value) || 0;
+        let bonusPay = parseFloat(document.getElementById('payBonus').value) || 0;
+        let tot = basePay + tDiets + bonusPay;
+        
         document.getElementById('payTotal').innerText = formatMoney(tot);
         
-        if(currentPayCtx) { 
+        if (currentPayCtx) { 
             plannerState.payrolls[`${currentPayCtx.dId}_${currentPayCtx.w}`] = { 
-                base: parseFloat(document.getElementById('payBase').value)||0, 
-                diets: Math.round(tDiets), 
-                bonus: parseFloat(document.getElementById('payBonus').value)||0, 
-                dailyRate: parseFloat(document.getElementById('payDailyRate').value)||0, 
-                dietRows: dietRows 
+                base: basePay, diets: Math.round(tDiets), bonus: bonusPay, dailyRate: parseFloat(document.getElementById('payDailyRate').value) || 0, dietRows: dietRows 
             }; 
             plannerSaveState(); 
         }
-    }
-
-    function exportToCSV() {
-        let csv = "Ridic,Den,Zacatek,Konec,Jizda_h,Prace_h,Pauza_h,Rezime,Poznamka\n"; 
-        let days = ["Pondeli", "Utery", "Streda", "Ctvrtek", "Patek", "Sobota", "Nedele"];
-        plannerState.drivers.forEach(d => {
-            for(let i=0; i<7; i++) {
-                let s = plannerState.shifts[`${d.id}_${plannerState.currentWeek}_${i}`];
-                if(s && s.acts) {
-                    let drive=0, work=0, rest=0, span=0;
-                    s.acts.forEach(a => { 
-                        let dur = parseFloat(a.d); span += dur; 
-                        if(a.t==='drive') drive+=dur; 
-                        else if(a.t==='rest') rest+=dur; 
-                        else work+=dur; 
-                    });
-                    let endT = formatTime(parseTime(s.start) + span);
-                    csv += `${d.name},${days[i]},${s.start},${endT},${drive},${work},${rest},${s.crew==="2"?"Dvojosadka":"1 Ridic"},"${s.note||''}"\n`;
-                }
-            }
-        });
-        let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); 
-        let url = URL.createObjectURL(blob); 
-        let a = document.createElement("a"); 
-        a.href = url; a.download = `Sichtovnik_Tyden_${plannerState.currentWeek}.csv`; 
-        a.click();
     }
 
 </script>
