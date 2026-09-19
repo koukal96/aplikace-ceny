@@ -22,6 +22,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
         body { background-color: var(--cp-gray); color: var(--cp-dark); line-height: 1.5; font-size: 14px; }
 
+        /* Offline PWA Banner */
         #offlineBanner { display: none; background: #c62828; color: white; text-align: center; padding: 6px; font-size: 12px; font-weight: 800; text-transform: uppercase; position: sticky; top: 0; z-index: 1000000; letter-spacing: 1px; }
         .is-offline #offlineBanner { display: block; }
         .is-offline header { top: 27px; }
@@ -33,10 +34,7 @@
             z-index: 99999; display: flex; align-items: center; justify-content: center; 
             transition: opacity 0.6s ease-out; 
         }
-        #loading-screen::before {
-            content: ""; position: absolute; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.6);
-        }
+        #loading-screen::before { content: ""; position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); }
         .loader-content { position: relative; z-index: 100000; text-align: center; color: white; }
         .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid var(--cp-red); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -44,7 +42,7 @@
         header { background-color: var(--cp-dark); padding: 10px 15px; text-align: center; border-bottom: 4px solid var(--cp-red); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:10px; transition: 0.3s;}
         .logo-container { display: flex; align-items: center; gap: 8px; }
         .analysis-text { color: #aaa; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; border-left: 2px solid var(--cp-red); padding-left: 8px; }
-        .header-controls { display: flex; gap: 10px; align-items: center; }
+        .header-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap;}
         .header-controls select { padding: 6px 10px; font-size: 12px; background: #222; color: white; border: 1px solid #444; border-radius: 4px; font-weight: 600; cursor: pointer; }
 
         .app-switcher { display: flex; max-width: 1400px; margin: 15px auto 5px auto; padding: 0 10px; gap: 10px; flex-wrap: wrap; }
@@ -64,9 +62,9 @@
         h2 span.num { color: var(--cp-red); margin-right: 5px; }
         .analysis h2 { color: white; }
 
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
-        .input-group { display: flex; flex-direction: column; position: relative; margin-bottom: 8px; }
-        .input-group label { font-size: 11px; font-weight: 600; color: #555; margin-bottom: 4px; text-transform: uppercase; display: flex; align-items: center; gap: 4px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+        .input-group { display: flex; flex-direction: column; position: relative; margin-bottom: 8px; flex: 1; min-width: 0; }
+        .input-group label { font-size: 11px; font-weight: 600; color: #555; margin-bottom: 4px; text-transform: uppercase; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
         .analysis .input-group label { color: #aaa; }
         .icon-help { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; background-color: #888; color: white; border-radius: 50%; font-size: 11px; font-weight: 800; cursor: pointer; flex-shrink: 0; }
         .icon-help:hover { background-color: var(--cp-red); }
@@ -452,7 +450,6 @@
         </div>
     </div>
 </div>
-
 <!-- APLIKACE 2: ŠICHTOVNÍK & MZDY -->
 <div id="view-planner" class="planner-layout" style="display:none;">
     
@@ -470,7 +467,7 @@
         <div class="holiday-banner">
             <div>ℹ️</div>
             <div id="lblPlanHolidayInfo">
-                <strong>Upozornění na zákazy:</strong> Během letních prázdnin a svátků platí v ČR, DE, AT a PL víkendové zákazy jízd (Pá 17-21, So 7-13, Ne 13-22) pro vozidla nad 7,5t.
+                <strong>Upozornění na zákazy:</strong> Během letních prázdnin a svátků platí v ČR, DE, AT a PL víkendové zákazy jízd pro vozidla nad 7,5t.
             </div>
         </div>
 
@@ -745,7 +742,6 @@
             alert("Pro instalaci na iOS klepněte dole na ikonu Sdílet a zvolte 'Přidat na plochu'.\nNa Androidu otevřete menu prohlížeče a zvolte 'Přidat na plochu'.");
         }
     }
-
     // =======================================================================
     // 1. JAZYKOVÁ LOKALIZACE A PŘEKLADY
     // =======================================================================
