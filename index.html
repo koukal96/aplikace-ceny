@@ -64,9 +64,10 @@
 
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; width: 100%; max-width: 100%; }
         .input-group { display: flex; flex-direction: column; position: relative; margin-bottom: 8px; width: 100%; max-width: 100%; box-sizing: border-box; }
-        .input-group label { font-size: 11px; font-weight: 600; color: #555; margin-bottom: 4px; text-transform: uppercase; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+        .input-group label { font-size: 11px; font-weight: 600; color: #555; margin-bottom: 4px; text-transform: uppercase; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
         .analysis .input-group label { color: #aaa; }
-        .icon-help { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; background-color: #888; color: white; border-radius: 50%; font-size: 11px; font-weight: 800; cursor: pointer; flex-shrink: 0; }
+        .icon-help { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; background-color: #888; color: white; border-radius: 50%; font-size: 11px; font-weight: 800; cursor: pointer; flex-shrink: 0; margin-left: auto; }
+
         .icon-help:hover { background-color: var(--cp-red); }
 
         input, select { width: 100%; max-width: 100%; padding: 10px; border: 1px solid var(--cp-border); border-radius: 4px; font-size: 14px; font-family: 'Roboto Mono', monospace; font-weight: 600; color: var(--cp-dark); background: #fafafa; box-sizing: border-box; margin: 0; }
@@ -1670,8 +1671,12 @@
         let stat = document.getElementById('planStatus');
         
         if (!sDateStr) { stat.innerText = "❌ Vyberte přesné datum startu!"; stat.style.display="block"; return; }
-        let sDate = new Date(sDateStr);
-        let sDay = (sDate.getDay() + 6) % 7; // Převod, Pondělí = 0
+        
+        // Pevné načtení data bez vlivu časových pásem
+        let parts = sDateStr.split('-');
+        let sDate = new Date(parts[0], parts[1] - 1, parts[2]); 
+        let sDay = (sDate.getDay() + 6) % 7; 
+
         
         let sR = document.getElementById('planStartRoute').value; 
         let eR = document.getElementById('planEndRoute').value;
@@ -2195,6 +2200,54 @@
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
         document.getElementById('pdfExportModal').style.display='none';
     }
+        // =======================================================================
+    // OFFLINE DETEKCE A PWA INSTALACE NA PLOCHU
+    // =======================================================================
+    function updateOnlineStatus() {
+        if (!navigator.onLine) {
+            document.body.classList.add('is-offline');
+            document.getElementById('offlineBanner').style.display = 'block';
+        } else {
+            document.body.classList.remove('is-offline');
+            document.getElementById('offlineBanner').style.display = 'none';
+        }
+    }
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    updateOnlineStatus(); // Spustit rovnou po zapnutí
+
+    // Povinný Service Worker, bez kterého mobil neumožní instalaci na plochu
+    if ('serviceWorker' in navigator) {
+        const swCode = `
+            self.addEventListener('install', e => { self.skipWaiting(); });
+            self.addEventListener('activate', e => { e.waitUntil(clients.claim()); });
+            self.addEventListener('fetch', e => {
+                e.respondWith(fetch(e.request).catch(() => new Response('Aplikace je offline.')));
+            });
+        `;
+        const blob = new Blob([swCode], {type: 'application/javascript'});
+        navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(console.error);
+    }
+
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('btnInstallApp').style.display = 'inline-block'; // Ukáže tlačítko v hlavičce
+    });
+    
+    function installApp() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') { document.getElementById('btnInstallApp').style.display = 'none'; }
+                deferredPrompt = null;
+            });
+        } else {
+            alert("Upozornění:\n\n📱 Na iOS: Klepněte dole na tlačítko Sdílet (čtvereček se šipkou) a zvolte 'Přidat na plochu'.\n🤖 Na Androidu: Otevřete menu prohlížeče (tři tečky vpravo nahoře) a zvolte 'Přidat na plochu'.");
+        }
+    }
+
 </script>
 </body>
 </html>
