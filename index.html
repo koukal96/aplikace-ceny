@@ -20,12 +20,11 @@
             --cp-blue: #1565c0; --shadow: 0 4px 20px rgba(0,0,0,0.06); --transition: all 0.3s ease; 
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
-        body { background-color: var(--cp-gray); color: var(--cp-dark); line-height: 1.5; font-size: 14px; }
+        html, body { max-width: 100vw; overflow-x: hidden; background-color: var(--cp-gray); color: var(--cp-dark); line-height: 1.5; font-size: 14px; }
 
         /* Offline PWA Banner */
-        #offlineBanner { display: none; background: #c62828; color: white; text-align: center; padding: 6px; font-size: 12px; font-weight: 800; text-transform: uppercase; position: sticky; top: 0; z-index: 1000000; letter-spacing: 1px; }
+        #offlineBanner { display: none; background: #c62828; color: white; text-align: center; padding: 8px; font-size: 12px; font-weight: 800; text-transform: uppercase; position: sticky; top: 0; z-index: 1000000; letter-spacing: 1px; width: 100%; box-sizing: border-box;}
         .is-offline #offlineBanner { display: block; }
-        .is-offline header { top: 27px; }
 
         #loading-screen { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -39,37 +38,38 @@
         .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid var(--cp-red); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        header { background-color: var(--cp-dark); padding: 10px 15px; text-align: center; border-bottom: 4px solid var(--cp-red); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:10px; transition: 0.3s;}
+        header { background-color: var(--cp-dark); padding: 10px 15px; text-align: center; border-bottom: 4px solid var(--cp-red); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:10px; transition: 0.3s; width: 100%;}
+        .is-offline header { top: 31px; }
         .logo-container { display: flex; align-items: center; gap: 8px; }
         .analysis-text { color: #aaa; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; border-left: 2px solid var(--cp-red); padding-left: 8px; }
-        .header-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap;}
+        .header-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .header-controls select { padding: 6px 10px; font-size: 12px; background: #222; color: white; border: 1px solid #444; border-radius: 4px; font-weight: 600; cursor: pointer; }
 
-        .app-switcher { display: flex; max-width: 1400px; margin: 15px auto 5px auto; padding: 0 10px; gap: 10px; flex-wrap: wrap; }
+        .app-switcher { display: flex; max-width: 1400px; margin: 15px auto 5px auto; padding: 0 10px; gap: 10px; flex-wrap: wrap; width: 100%; }
         .app-btn { flex: 1; padding: 12px; font-size: 14px; font-weight: 800; text-transform: uppercase; border: 2px solid var(--cp-dark); border-radius: 6px; background: white; color: var(--cp-dark); cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 250px;}
         .app-btn.active { background: var(--cp-dark); color: white; border-color: var(--cp-dark); }
 
-        .container, .planner-layout { max-width: 1400px; margin: 10px auto; padding: 0 10px; display: grid; gap: 15px; }
+        .container, .planner-layout { max-width: 1400px; margin: 10px auto; padding: 0 10px; display: grid; gap: 15px; width: 100%; }
         .container { grid-template-columns: 1fr 450px; }
         .planner-layout { grid-template-columns: 280px 1fr; }
         @media (max-width: 1100px) { .container { grid-template-columns: 1fr; } }
         @media (max-width: 900px) { .planner-layout { grid-template-columns: 1fr; } }
 
-        .card { background: var(--cp-white); border-radius: 6px; padding: 15px; box-shadow: var(--shadow); margin-bottom: 15px; border-left: 4px solid var(--cp-red); }
+        .card { background: var(--cp-white); border-radius: 6px; padding: 15px; box-shadow: var(--shadow); margin-bottom: 15px; border-left: 4px solid var(--cp-red); width: 100%; overflow: hidden;}
         .card.dashboard { border-left: 4px solid var(--cp-dark); }
         .card.analysis { border-left: 4px solid var(--cp-red); background: #1a1a1a; color: white; }
         h2 { font-size: 14px; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--cp-dark); justify-content: space-between; flex-wrap: wrap;}
         h2 span.num { color: var(--cp-red); margin-right: 5px; }
         .analysis h2 { color: white; }
 
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
-        .input-group { display: flex; flex-direction: column; position: relative; margin-bottom: 8px; flex: 1; min-width: 0; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; width: 100%; max-width: 100%; }
+        .input-group { display: flex; flex-direction: column; position: relative; margin-bottom: 8px; width: 100%; max-width: 100%; box-sizing: border-box; }
         .input-group label { font-size: 11px; font-weight: 600; color: #555; margin-bottom: 4px; text-transform: uppercase; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
         .analysis .input-group label { color: #aaa; }
         .icon-help { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; background-color: #888; color: white; border-radius: 50%; font-size: 11px; font-weight: 800; cursor: pointer; flex-shrink: 0; }
         .icon-help:hover { background-color: var(--cp-red); }
 
-        input, select { width: 100%; padding: 10px; border: 1px solid var(--cp-border); border-radius: 4px; font-size: 14px; font-family: 'Roboto Mono', monospace; font-weight: 600; color: var(--cp-dark); background: #fafafa; box-sizing: border-box; }
+        input, select { width: 100%; max-width: 100%; padding: 10px; border: 1px solid var(--cp-border); border-radius: 4px; font-size: 14px; font-family: 'Roboto Mono', monospace; font-weight: 600; color: var(--cp-dark); background: #fafafa; box-sizing: border-box; margin: 0; }
         input:focus, select:focus { border-color: var(--cp-red); outline: none; background: var(--cp-white); }
         .analysis input, .analysis select { background: #333; border-color: #555; color: #fff; font-size: 16px; }
         .readonly-highlight { background: #e3f2fd !important; border-color: #90caf9 !important; color: #0d47a1 !important; font-weight: 800; }
@@ -77,12 +77,12 @@
         .btn { background-color: var(--cp-red); color: var(--cp-white); border: none; padding: 14px; border-radius: 4px; font-size: 14px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: var(--transition); width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 10px; }
         .btn:hover { background-color: var(--cp-red-hover); }
         .btn:disabled { background-color: #ccc; cursor: not-allowed; opacity: 0.7; }
-        .btn-secondary { background-color: #555; margin-top: 0; font-size: 13px; padding: 12px; color:white; border:none; border-radius:4px; font-weight:800; cursor:pointer; text-align:center; display: flex; justify-content: center; align-items: center; gap: 5px;}
+        .btn-secondary { background-color: #555; margin-top: 0; font-size: 13px; padding: 12px; color:white; border:none; border-radius:4px; font-weight:800; cursor:pointer; text-align:center; display: flex; justify-content: center; align-items: center; gap: 5px; width: 100%; box-sizing: border-box; }
         .btn-secondary:hover { background-color: #333; }
         .btn-magic { background: linear-gradient(45deg, #1565c0, #42a5f5); color: white !important; font-weight: 800; padding: 14px; width: 100%; border: none; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 14px; transition:0.3s; margin-top:10px; } 
         .btn-magic:disabled { background: #ccc; cursor: not-allowed; color: #666 !important;}
 
-        .toggle-container { display: flex; align-items: center; justify-content: space-between; background: var(--cp-dark); color: white; padding: 12px 15px; border-radius: 6px; margin-bottom: 12px; }
+        .toggle-container { display: flex; align-items: center; justify-content: space-between; background: var(--cp-dark); color: white; padding: 12px 15px; border-radius: 6px; margin-bottom: 12px; width: 100%; box-sizing: border-box; }
         .toggle-label { font-weight: 600; font-size: 13px; }
         .switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0;}
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -127,7 +127,7 @@
         .aetr-warn { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
         .aetr-err { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
-        .planner-grid-box { background: white; border-radius: 6px; padding: 15px; box-shadow: var(--shadow); border-top: 4px solid var(--cp-red); overflow-x: auto; }
+        .planner-grid-box { background: white; border-radius: 6px; padding: 15px; box-shadow: var(--shadow); border-top: 4px solid var(--cp-red); overflow-x: auto; width: 100%;}
         .week-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: var(--cp-dark); color: white; padding: 10px; border-radius: 6px; gap: 10px; flex-wrap:wrap;}
         .calendar-table { width: 100%; border-collapse: collapse; min-width: 800px; }
         .calendar-table th { background: #f0f0f0; padding: 10px; text-align: center; border: 1px solid #ddd; font-size: 12px; text-transform: uppercase; color: #333; }
@@ -159,7 +159,7 @@
 </head>
 <body>
 
-<div id="offlineBanner">⚠️ Jste Offline - OSRM Trasování je vypnuté</div>
+<div id="offlineBanner">⚠️ Jste Offline - OSRM Trasování a Geolokace jsou vypnuté</div>
 
 <div id="loading-screen">
     <div class="loader-content">
@@ -181,7 +181,7 @@
         <span class="analysis-text" id="lblHeaderAnalytik">ANALÝZA</span>
     </div>
     <div class="header-controls">
-        <button id="btnInstallApp" class="btn-secondary" style="display:none; background:#107c41; margin:0; padding:6px 12px; font-size:12px;" onclick="installApp()">📱 Uložit na plochu</button>
+        <button id="btnInstallApp" class="btn-secondary" style="display:none; background:#107c41; margin:0; padding:6px 12px; font-size:12px; width:auto;" onclick="installApp()">📱 Uložit na plochu</button>
         <select id="langSelect" onchange="changeLanguage()">
             <option value="cs">CZ</option><option value="en">EN</option><option value="de">DE</option>
             <option value="pl">PL</option><option value="it">IT</option>
@@ -208,7 +208,7 @@
                 <select id="favSelect" onchange="loadFavorite()" style="flex-grow:1; min-width:200px;">
                     <option value="" id="lblSelFav">-- Načíst oblíbenou trasu --</option>
                 </select>
-                <button class="btn-remove-wp" onclick="removeFavorite()" style="padding: 12px;" title="Smazat">🗑️</button>
+                <button class="btn-remove-wp" style="width: auto; padding: 12px;" onclick="removeFavorite()" title="Smazat">🗑️</button>
             </div>
             
             <div id="avoidListContainer"></div>
@@ -345,7 +345,7 @@
                     <input type="number" id="mzdaHodnota" value="3000" oninput="calculate(); autoSave();">
                 </div>
                 <div class="input-group" id="dnyContainer">
-                    <label id="lblTrvani">Trvání (Dny) <span class="icon-help" onclick="showInfo(T('helpTrvani'))">i</span></label>
+                    <label id="lblTrvani">Trvání (Dny z AETR) <span class="icon-help" onclick="showInfo(T('helpTrvani'))">i</span></label>
                     <input type="number" id="dny" value="1" step="0.5" oninput="calculate(); autoSave();" class="readonly-highlight">
                     <div id="aetrInfo" style="font-size: 11px; color: #155724; background: #d4edda; padding: 8px; border-radius: 4px; margin-top: 6px; display: none; font-weight: 600; text-align: center; border: 1px solid #c3e6cb; line-height: 1.4;"></div>
                 </div>
@@ -450,6 +450,7 @@
         </div>
     </div>
 </div>
+
 <!-- APLIKACE 2: ŠICHTOVNÍK & MZDY -->
 <div id="view-planner" class="planner-layout" style="display:none;">
     
@@ -467,7 +468,7 @@
         <div class="holiday-banner">
             <div>ℹ️</div>
             <div id="lblPlanHolidayInfo">
-                <strong>Upozornění na zákazy:</strong> Během letních prázdnin a svátků platí v ČR, DE, AT a PL víkendové zákazy jízd pro vozidla nad 7,5t.
+                <strong>Upozornění na zákazy:</strong> Během letních prázdnin a svátků platí v ČR, DE, AT a PL víkendové zákazy jízd (Pá 17-21, So 7-13, Ne 13-22) pro vozidla nad 7,5t.
             </div>
         </div>
 
@@ -542,11 +543,11 @@
             </div>
             
             <div class="input-group" style="flex-direction:row; align-items:center; gap:10px; background:#e8f5e9; padding:15px; border-radius:4px; border:1px solid #c8e6c9; margin-bottom:15px;">
-                <input type="checkbox" id="planKoleckoToggle" style="width:24px; height:24px;">
+                <input type="checkbox" id="planKoleckoToggle" style="width:24px; height:24px; margin:0;">
                 <label style="margin:0; font-size:14px; color:#2e7d32; font-weight:800;" id="lblPlanKolecko">Zpáteční trasa (Kolečko) <span class="icon-help" onclick="showInfo(T('helpPlanKolecko'))">i</span></label>
             </div>
 
-            <!-- ROZPAD V PLANNERU (Odhad km, času, diet) -->
+            <!-- ROZPAD V PLANNERU -->
             <div id="planBreakdownContainer" style="display:none; background:white; padding:15px; border-radius:4px; margin-bottom:15px; border: 2px dashed var(--cp-blue);">
                 <h4 style="font-size:14px; color:#0d47a1; margin-bottom:10px; text-transform:uppercase;" id="lblPlanBreakTitle">Rozpad trasy a odhad diet</h4>
                 <div style="font-size:13px; margin-bottom:10px;"><b>Odhadovaná vzdálenost:</b> <span id="planEstKm" style="color:var(--cp-dark); font-weight:800;">0 km</span></div>
@@ -557,7 +558,7 @@
                 </div>
             </div>
 
-            <button class="btn-magic" onclick="executeAutoPlan()" id="btnPlanGen" style="font-size:15px; padding:15px;">🚀 Vypočítat, odhadnout Diety a Zapsat do Kalendáře!</button>
+            <button class="btn-magic" onclick="executeAutoPlan()" id="btnPlanGen" style="font-size:15px; padding:15px;">🚀 Vypočítat a Zapsat do Kalendáře!</button>
             <div id="planStatus" style="font-size:13px; font-weight:800; color:var(--cp-danger); margin-top:10px; display:none; padding:10px; background:white; border-radius:4px;"></div>
         </div>
 
@@ -581,55 +582,18 @@
         </div>
         
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:10px;" class="pdf-hide">
-            <button class="btn-secondary" style="background:#107c41; width:auto; padding:10px 20px;" onclick="openPdfExportModal()">🖨️ Exporty Knihy Jízd a Mezd</button>
+            <button class="btn-secondary" style="background:#107c41; width:auto; padding:10px 20px;" onclick="openPdfExportModal()">🖨️ Exporty Knihy a Mezd</button>
         </div>
 
         <div style="overflow-x: auto; clear:both; background:white;" id="tablePdfContainer">
             <table class="calendar-table" id="plannerTable">
-                <thead><tr><th style="width: 120px;">Řidič</th><th>Pondělí</th><th>Úterý</th><th>Středa</th><th>Čtvrtek</th><th>Pátek</th><th>Sobota</th><th>Neděle</th></tr></thead>
+                <thead><tr><th style="width: 120px;">Řidič</th><th>Po</th><th>Út</th><th>St</th><th>Čt</th><th>Pá</th><th>So</th><th>Ne</th></tr></thead>
                 <tbody id="plannerBody"></tbody>
             </table>
         </div>
     </div>
 </div>
-
-<!-- MODAL: PDF EXPORT VÝBĚR -->
-<div id="pdfExportModal" class="modal-overlay">
-    <div class="info-box" style="max-width: 450px; text-align:center;">
-        <h3 style="margin-bottom:15px; color:var(--cp-dark);">Export Data (Kniha / Mzdy)</h3>
-        <div class="input-group">
-            <label>Vyberte Řidiče</label>
-            <select id="pdfDriverSelect"></select>
-        </div>
-        <div class="input-group">
-            <label>Období Exportu</label>
-            <select id="pdfPeriodSelect">
-                <option value="week">Aktuální zobrazený týden</option>
-                <option value="month">Aktuální vybraný měsíc</option>
-                <option value="year">Celý vybraný rok</option>
-            </select>
-        </div>
-        
-        <div class="input-group" style="margin-bottom:20px;">
-            <label>Typ Exportu (Co se má vygenerovat)</label>
-            <select id="pdfTypeSelect">
-                <option value="both">Kompletní přehled (Kniha jízd + Mzdy)</option>
-                <option value="kniha">Pouze Kniha jízd (Bez financí)</option>
-                <option value="mzdy">Pouze Mzdový výměr (Bez rozpisu tras)</option>
-            </select>
-        </div>
-        
-        <div style="display:flex; gap:10px; margin-bottom:15px; flex-direction:column;">
-            <button class="btn-secondary" style="background:#107c41; padding:15px; font-size:15px;" onclick="exportKnihaPrint()">📄 Vytisknout / Uložit do PDF</button>
-            <button class="btn-secondary" style="background:#1565c0; padding:12px;" onclick="exportKnihaCSV()">📊 Stáhnout data do Excelu (CSV)</button>
-            <button class="btn-secondary" style="background:#25D366; padding:12px;" onclick="exportDriverWA()">💬 Odeslat přehled na WhatsApp</button>
-        </div>
-        
-        <button class="btn-modal-close" style="background:#ccc; color:#333;" onclick="document.getElementById('pdfExportModal').style.display='none'">Zrušit</button>
-    </div>
-</div>
-
-<!-- MODAL: MANUÁLNÍ ÚPRAVA DNE AETR -->
+    <!-- MODAL: MANUÁLNÍ ÚPRAVA DNE AETR -->
 <div id="shiftModal" class="modal-overlay">
     <div class="info-box" style="max-width: 500px;">
         <h3 id="shiftModalTitle" style="border-bottom:2px solid var(--cp-red); padding-bottom:10px; margin-bottom:15px;">Úprava Směny</h3>
@@ -646,7 +610,7 @@
         <div id="editActContainer" style="max-height: 250px; overflow-y: auto; padding-right:5px;"></div>
         <button class="btn-secondary" onclick="addActivity()" style="margin-top:10px; width:100%; font-size:13px; padding:12px;">+ Přidat blok (Jízda / Práce / Pauza)</button>
 
-        <div id="shiftPreviewBox" style="background:#f4f4f4; padding:12px; border-radius:4px; margin-top:15px; font-size:13px; border:1px solid #ddd; text-align:center;"></div>
+        <div id="shiftPreviewBox" style="background:#f4f4f4; padding:12px; border-radius:4px; margin-top:15px; font-size:13px; border:1px solid #ddd; text-align:center; display:none;"></div>
 
         <button class="btn-secondary btn-whatsapp" id="btnNavShift" style="width:100%; background:var(--cp-blue); border:none; margin-top:10px; display:none; padding: 15px;">🧭 Navigovat trasu směny v Mapách</button>
 
@@ -703,6 +667,42 @@
     </div>
 </div>
 
+<!-- MODAL: PDF EXPORT VÝBĚR -->
+<div id="pdfExportModal" class="modal-overlay">
+    <div class="info-box" style="max-width: 450px; text-align:center;">
+        <h3 style="margin-bottom:15px; color:var(--cp-dark);">Export Data (Kniha / Mzdy)</h3>
+        <div class="input-group">
+            <label>Vyberte Řidiče</label>
+            <select id="pdfDriverSelect"></select>
+        </div>
+        <div class="input-group">
+            <label>Období Exportu</label>
+            <select id="pdfPeriodSelect">
+                <option value="week">Aktuální zobrazený týden</option>
+                <option value="month">Aktuální vybraný měsíc</option>
+                <option value="year">Celý vybraný rok</option>
+            </select>
+        </div>
+        
+        <div class="input-group" style="margin-bottom:20px;">
+            <label>Typ Exportu (Co se má vygenerovat)</label>
+            <select id="pdfTypeSelect">
+                <option value="both">Kompletní přehled (Kniha jízd + Mzdy)</option>
+                <option value="kniha">Pouze Kniha jízd (Bez financí)</option>
+                <option value="mzdy">Pouze Mzdový výměr (Bez rozpisu tras)</option>
+            </select>
+        </div>
+        
+        <div style="display:flex; gap:10px; margin-bottom:15px; flex-direction:column;">
+            <button class="btn-secondary" style="background:#107c41; padding:15px; font-size:15px;" onclick="exportKnihaPrint()">📄 Vytisknout / Uložit do PDF</button>
+            <button class="btn-secondary" style="background:#1565c0; padding:12px;" onclick="exportKnihaCSV()">📊 Stáhnout data do Excelu (CSV)</button>
+            <button class="btn-secondary" style="background:#25D366; padding:12px;" onclick="exportDriverWA()">💬 Odeslat přehled na WhatsApp</button>
+        </div>
+        
+        <button class="btn-modal-close" style="background:#ccc; color:#333;" onclick="document.getElementById('pdfExportModal').style.display='none'">Zrušit</button>
+    </div>
+</div>
+
 <script>
     // =======================================================================
     // 0. OFFLINE DETEKCE A PWA
@@ -719,7 +719,7 @@
     
     // Registrace Pseudo Service Workeru pro PWA Instalaci
     if ('serviceWorker' in navigator) {
-        const swCode = `self.addEventListener('fetch', function(event) { event.respondWith(fetch(event.request)); });`;
+        const swCode = `self.addEventListener('fetch', function(event) { event.respondWith(fetch(event.request).catch(function() { return new Response('Aplikace je v offline režimu.'); })); });`;
         const blob = new Blob([swCode], {type: 'application/javascript'});
         navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(err => console.log('SW init error', err));
     }
@@ -742,6 +742,7 @@
             alert("Pro instalaci na iOS klepněte dole na ikonu Sdílet a zvolte 'Přidat na plochu'.\nNa Androidu otevřete menu prohlížeče a zvolte 'Přidat na plochu'.");
         }
     }
+
     // =======================================================================
     // 1. JAZYKOVÁ LOKALIZACE A PŘEKLADY
     // =======================================================================
@@ -785,13 +786,57 @@
             
             tab1: "1. Kalkulačka Trasy", tab2: "2. Šichtovník & Mzdy",
             planDriverTitle: "Seznam Řidičů", planGenTitle: "🤖 Auto-Plánovač Trasy a Diet", planDriver: "Řidič", planStart: "1. Start (Odkud)", planEnd: "2. Cíl (Kam)",
-            planDay: "Den Startu", planTime: "Čas Startu", planCrew: "Režim", planKolecko: "Zpáteční trasa (Kolečko)",
+            planDay: "Datum Startu", planTime: "Čas Startu", planCrew: "Režim", planKolecko: "Zpáteční trasa (Kolečko)",
             planWpTitle: "Zastávky a body na trase (Pro výpočet diet a pauz)", btnPlanAddWpBefore: "+ Přidat Zastávku PŘED cílem", btnPlanAddWpAfter: "+ Přidat Zastávku ZA cílem",
             planBreakTitle: "Rozpad trasy a odhad diet", btnPlanGen: "🚀 Vypočítat, odhadnout Diety a Zapsat do Kalendáře!",
             helpPlanDriver: "Přiřadí vygenerovanou trasu vybraným řidičům.", helpPlanStart: "Počáteční bod trasy.",
             helpPlanEnd: "Konečný cíl, kde končí hlavní zakázka.", helpPlanTime: "Čas výjezdu. Systém kontroluje pauzu z předchozího dne.",
             helpPlanCrew: "Ovlivňuje časy AETR - dvojosádka může jet déle (21h výkon).", helpPlanKolecko: "Automaticky zrcadlově otočí trasu a spočítá nájezdy pro cestu zpět.",
             helpShiftStart: "Čas zahájení výkonu. Pokud systém hlásí chybu, nebyl dodržen odpočinek.", helpPayType: "U fixní denní sazby jsou diety zahrnuty."
+        },
+        en: {
+            analytik: "ANALYSIS", start: "Start (Point A)", cil: "Destination (Point B)", cilStat: "Target Country", menaKurz: "Currency & Rate",
+            btnTrasa: "Calculate Route & Toll", celkemKm: "Total km", typTrasy: "Route Type", prejezdyKm: "Empty Runs (km)",
+            naprimo: "Direct", kolecko: "Roundtrip", dokladky: "Extra km",
+            rozpad: "Toll Breakdown", technika: "Vehicle Tech",
+            euro: "Euro Standard", naprazy: "Total Axles", zvedle: "Lifted Axles",
+            spotreba: "Empty Fuel Cons.", naklad: "Initial Cargo (t)", nafta: "Fuel Price / L",
+            nakladyRidic: "Costs & Driver", typMzdy: "Driver Payout",
+            zamestnanec: "Daily w. per diem", brigadnik: "Flat fee",
+            odmena: "TOTAL Reward", trvani: "Duration (Days)", fixAuto: "Fix cost/day",
+            posadka: "Crew Setup", opt1Ridic: "1 Driver", opt2Ridici: "Double Crew",
+            dphVcetne: "Show WITH VAT (21%)", dphBez: "Show WITHOUT VAT",
+            ceník: "Price Calculation", spotrebaVcDph: "Avg. Route Consumption:",
+            resNafta: "Total Fuel:", resMzda: "Crew Reward:", resFix: "Fixed Costs & Tires:",
+            resMyto: "Total Toll:", resNakladyCelkem: "Total Costs:",
+            kmBezMyta: "Cost per 1 km (excl. toll):", kmVcMyta: "Cost per 1 km (incl. toll):",
+            marze: "Required Margin (%)", prodejniCena: "List Price:",
+            analytikaReality: "Reality Analysis", sjednanaCena: "Agreed Transport Price",
+            realTrzba: "Real Revenue per 1 km:", cekamZadani: "Waiting for price input",
+            objit: "AVOID", zakaz: "Transit Bans (Detour Active):", povolit: "Allow",
+            chybaAdresa: "Address not found.", prubeh: "Calculating route...", hotovo: "Done",
+            wpAdd: "+ Add Stop / Empty Run", wpPlaceholder: "Waypoint address",
+            wpTypeTransit: "Transit (Keep load)", wpTypeEmpty: "Unload (Empty hereafter)",
+            wpTypePrejezd: "Empty Run", wpTypeHalf: "Partial Unload (Half load)", wpTypeFull: "New Load (Full load)",
+            alertAvoidFail: "Warning: Cannot avoid automatically.",
+            aetrText: "AETR Est: {h}h drive, min. {d} shift(s)", 
+            aetrWarn1: "⚠️ Extended 10h drive used ({e}x). Max 2x a week.",
+            aetrWarn2: "⚠️ Extended 20h crew drive used ({e}x). Max 2x a week.",
+            shareBtn: "📤 Copy Summary", navBtn: "🧭 Open Navigation",
+            favBtn: "⭐ Save Template", favSel: "-- Load Saved Route --",
+            helpStart: "Starting location.", helpCil: "Final destination.", helpCilStat: "Toll calculation.",
+            helpMena: "Converts all outputs.", helpTypTrasy: "Roundtrip is disabled if waypoints are added.",
+            helpDokladky: "Extra km.", helpEuro: "Worse emissions = higher toll.", helpPrazdna: "Base fuel consumption empty.", helpVaha: "Every ton adds 0.2 L / 100 km.",
+            helpPosadka: "Double crew changes AETR rules.", helpTrvani: "Auto-calculated via AETR.",
+            mytoVcetne: "Calculate INCLUDING TOLL", mytoBez: "Calculate EXCLUDING TOLL", prodejniCenaKm: "Selling Price per 1 km:", nezapocitano: "(Excluded)",
+            tab1: "1. Route Calculator", tab2: "2. Planner & Payroll",
+            planDriverTitle: "Driver List", planGenTitle: "🤖 Auto-Planner & Diets", planDriver: "Driver", planStart: "1. Start", planEnd: "2. End",
+            planDay: "Start Date", planTime: "Start Time", planCrew: "Crew", planKolecko: "Roundtrip",
+            planWpTitle: "Waypoints", btnPlanAddWpBefore: "+ Add Stop BEFORE End", btnPlanAddWpAfter: "+ Add Stop AFTER End",
+            planBreakTitle: "Route Breakdown", btnPlanGen: "🚀 Calculate & Add to Calendar!",
+            helpPlanDriver: "Assign route to selected drivers.", helpPlanStart: "Starting point.", helpPlanEnd: "Destination.",
+            helpPlanTime: "Start time. System checks for required rests.", helpPlanCrew: "Affects AETR times.", helpPlanKolecko: "Automatically adds return trip.",
+            helpShiftStart: "Start of shift. Errors mean missed rest.", helpPayType: "Fixed rate includes diets, excl. calculates diets separately."
         }
     };
 
@@ -1009,7 +1054,6 @@
         }
         calculate();
     }
-
     // =======================================================================
     // 3. KALKULAČKA TRAS A OSRM GEOLOKACE
     // =======================================================================
@@ -2154,3 +2198,4 @@
 </script>
 </body>
 </html>
+
