@@ -6,6 +6,9 @@
     <meta name="theme-color" content="#e3000f">
     <title>Control Point - Transport Analytics & ERP</title>
     
+    <!-- PWA Manifest pro instalaci na plochu -->
+    <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Control%20Point%22%2C%22short_name%22%3A%22CP%20Analytics%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f4f4f4%22%2C%22theme_color%22%3A%22%23e3000f%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII%3D%22%2C%22sizes%22%3A%221x1%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D'>
+
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -18,6 +21,10 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
         body { background-color: var(--cp-gray); color: var(--cp-dark); line-height: 1.5; font-size: 14px; }
+
+        #offlineBanner { display: none; background: #c62828; color: white; text-align: center; padding: 6px; font-size: 12px; font-weight: 800; text-transform: uppercase; position: sticky; top: 0; z-index: 1000000; letter-spacing: 1px; }
+        .is-offline #offlineBanner { display: block; }
+        .is-offline header { top: 27px; }
 
         #loading-screen { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -34,9 +41,10 @@
         .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid var(--cp-red); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        header { background-color: var(--cp-dark); padding: 10px 15px; text-align: center; border-bottom: 4px solid var(--cp-red); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:10px; }
+        header { background-color: var(--cp-dark); padding: 10px 15px; text-align: center; border-bottom: 4px solid var(--cp-red); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:10px; transition: 0.3s;}
         .logo-container { display: flex; align-items: center; gap: 8px; }
         .analysis-text { color: #aaa; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; border-left: 2px solid var(--cp-red); padding-left: 8px; }
+        .header-controls { display: flex; gap: 10px; align-items: center; }
         .header-controls select { padding: 6px 10px; font-size: 12px; background: #222; color: white; border: 1px solid #444; border-radius: 4px; font-weight: 600; cursor: pointer; }
 
         .app-switcher { display: flex; max-width: 1400px; margin: 15px auto 5px auto; padding: 0 10px; gap: 10px; flex-wrap: wrap; }
@@ -56,14 +64,14 @@
         h2 span.num { color: var(--cp-red); margin-right: 5px; }
         .analysis h2 { color: white; }
 
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
         .input-group { display: flex; flex-direction: column; position: relative; margin-bottom: 8px; }
         .input-group label { font-size: 11px; font-weight: 600; color: #555; margin-bottom: 4px; text-transform: uppercase; display: flex; align-items: center; gap: 4px; }
         .analysis .input-group label { color: #aaa; }
         .icon-help { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; background-color: #888; color: white; border-radius: 50%; font-size: 11px; font-weight: 800; cursor: pointer; flex-shrink: 0; }
         .icon-help:hover { background-color: var(--cp-red); }
 
-        input, select { width: 100%; padding: 10px; border: 1px solid var(--cp-border); border-radius: 4px; font-size: 14px; font-family: 'Roboto Mono', monospace; font-weight: 600; color: var(--cp-dark); background: #fafafa; }
+        input, select { width: 100%; padding: 10px; border: 1px solid var(--cp-border); border-radius: 4px; font-size: 14px; font-family: 'Roboto Mono', monospace; font-weight: 600; color: var(--cp-dark); background: #fafafa; box-sizing: border-box; }
         input:focus, select:focus { border-color: var(--cp-red); outline: none; background: var(--cp-white); }
         .analysis input, .analysis select { background: #333; border-color: #555; color: #fff; font-size: 16px; }
         .readonly-highlight { background: #e3f2fd !important; border-color: #90caf9 !important; color: #0d47a1 !important; font-weight: 800; }
@@ -74,6 +82,7 @@
         .btn-secondary { background-color: #555; margin-top: 0; font-size: 13px; padding: 12px; color:white; border:none; border-radius:4px; font-weight:800; cursor:pointer; text-align:center; display: flex; justify-content: center; align-items: center; gap: 5px;}
         .btn-secondary:hover { background-color: #333; }
         .btn-magic { background: linear-gradient(45deg, #1565c0, #42a5f5); color: white !important; font-weight: 800; padding: 14px; width: 100%; border: none; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 14px; transition:0.3s; margin-top:10px; } 
+        .btn-magic:disabled { background: #ccc; cursor: not-allowed; color: #666 !important;}
 
         .toggle-container { display: flex; align-items: center; justify-content: space-between; background: var(--cp-dark); color: white; padding: 12px 15px; border-radius: 6px; margin-bottom: 12px; }
         .toggle-label { font-weight: 600; font-size: 13px; }
@@ -152,6 +161,8 @@
 </head>
 <body>
 
+<div id="offlineBanner">⚠️ Jste Offline - OSRM Trasování je vypnuté</div>
+
 <div id="loading-screen">
     <div class="loader-content">
         <div class="spinner"></div>
@@ -172,6 +183,7 @@
         <span class="analysis-text" id="lblHeaderAnalytik">ANALÝZA</span>
     </div>
     <div class="header-controls">
+        <button id="btnInstallApp" class="btn-secondary" style="display:none; background:#107c41; margin:0; padding:6px 12px; font-size:12px;" onclick="installApp()">📱 Uložit na plochu</button>
         <select id="langSelect" onchange="changeLanguage()">
             <option value="cs">CZ</option><option value="en">EN</option><option value="de">DE</option>
             <option value="pl">PL</option><option value="it">IT</option>
@@ -484,47 +496,47 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label id="lblPlanSpeed">Prům. rychlost (km/h) <span class="icon-help" onclick="showInfo('Odhadovaná rychlost pro výpočet času. Na dálnice 80, okresky 65.')">i</span></label>
+                    <label id="lblPlanSpeed">Prům. rychlost (km/h)</label>
                     <input type="number" id="planSpeed" value="70">
                 </div>
                 <div class="input-group">
-                    <label id="lblPlanDay">Den Startu</label>
-                    <select id="planDaySelect">
-                        <option value="0">Pondělí</option><option value="1">Úterý</option><option value="2">Středa</option>
-                        <option value="3">Čtvrtek</option><option value="4">Pátek</option><option value="5">Sobota</option>
-                        <option value="6">Neděle</option>
-                    </select>
+                    <label id="lblPlanDay">Datum Startu (Přesný den) <span class="icon-help" onclick="showInfo('Vyberte přesné datum, aplikace sama určí týden a rok.')">i</span></label>
+                    <input type="date" id="planDateSelect">
                 </div>
                 <div class="input-group">
-                    <label id="lblPlanTime">Čas Startu <span class="icon-help" onclick="showInfo(T('helpPlanTime'))">i</span></label>
+                    <label id="lblPlanTime">Čas Startu</label>
                     <input type="time" id="planTimeSelect" value="06:00">
                 </div>
             </div>
 
             <div style="border:1px solid #b6d4fe; background:white; padding:15px; border-radius:6px; margin-bottom:15px;">
                 
-                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px; margin-bottom:15px;">
-                    <div class="input-group" style="margin:0;">
-                        <label id="lblPlanStart" style="font-size:13px; color:var(--cp-blue);">1. Start (Odkud) <span class="icon-help" onclick="showInfo(T('helpPlanStart'))">i</span></label>
+                <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap: wrap;">
+                    <div class="input-group" style="margin:0; flex: 2; min-width: 150px;">
+                        <label id="lblPlanStart" style="font-size:13px; color:var(--cp-blue);">1. Start (Odkud)</label>
                         <input type="text" id="planStartRoute" placeholder="Např. Praha" style="border:2px solid var(--cp-blue);">
                     </div>
-                    <div class="input-group" style="margin:0;">
+                    <div class="input-group" style="margin:0; flex: 1; min-width: 80px;">
                         <label>Stát</label>
-                        <select id="planStartStat"><option value="">-- Automaticky --</option><option value="CZ">CZ</option><option value="DE">DE</option><option value="AT">AT</option><option value="PL">PL</option><option value="SK">SK</option><option value="IT">IT</option><option value="FR">FR</option><option value="ES">ES</option></select>
+                        <select id="planStartStat"><option value="">-- Auto --</option><option value="CZ">CZ</option><option value="DE">DE</option><option value="AT">AT</option><option value="PL">PL</option><option value="SK">SK</option><option value="IT">IT</option></select>
                     </div>
                 </div>
 
                 <div id="planWpBeforeContainer" style="margin-bottom:10px; margin-left:15px; border-left:2px solid #ccc; padding-left:10px;"></div>
                 <button class="btn-secondary" onclick="addPlanWaypoint('before')" id="btnPlanAddWpBefore" style="margin-left:15px; margin-bottom:15px; width:auto; padding:10px 15px;">+ Přidat Zastávku PŘED cílem (Nakládka/Vykládka)</button>
 
-                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px; margin-bottom:15px;">
-                    <div class="input-group" style="margin:0;">
-                        <label id="lblPlanEnd" style="font-size:13px; color:var(--cp-danger);">2. Cíl (Kam) <span class="icon-help" onclick="showInfo(T('helpPlanEnd'))">i</span></label>
+                <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap: wrap;">
+                    <div class="input-group" style="margin:0; flex: 2; min-width: 150px;">
+                        <label id="lblPlanEnd" style="font-size:13px; color:var(--cp-danger);">2. Cíl (Kam)</label>
                         <input type="text" id="planEndRoute" placeholder="Např. Madrid" style="border:2px solid var(--cp-danger);">
                     </div>
-                    <div class="input-group" style="margin:0;">
+                    <div class="input-group" style="margin:0; flex: 1; min-width: 80px;">
                         <label>Stát</label>
-                        <select id="planEndStat"><option value="">-- Automaticky --</option><option value="CZ">CZ</option><option value="DE">DE</option><option value="AT">AT</option><option value="PL">PL</option><option value="SK">SK</option><option value="IT">IT</option><option value="FR">FR</option><option value="ES">ES</option></select>
+                        <select id="planEndStat"><option value="">-- Auto --</option><option value="CZ">CZ</option><option value="DE">DE</option><option value="AT">AT</option><option value="PL">PL</option><option value="SK">SK</option><option value="IT">IT</option></select>
+                    </div>
+                    <div class="input-group" style="margin:0; flex: 1; min-width: 80px;">
+                        <label>Zdržení v Cíli (h) <span class="icon-help" onclick="showInfo('Doba vykládky. Pokud je 0.75 a více, počítá se i jako pauza.')">i</span></label>
+                        <input type="number" id="planEndDelay" step="0.25" value="1.5">
                     </div>
                 </div>
 
@@ -695,6 +707,45 @@
 </div>
 
 <script>
+    // =======================================================================
+    // 0. OFFLINE DETEKCE A PWA
+    // =======================================================================
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    function updateOnlineStatus() {
+        if (!navigator.onLine) {
+            document.body.classList.add('is-offline');
+        } else {
+            document.body.classList.remove('is-offline');
+        }
+    }
+    
+    // Registrace Pseudo Service Workeru pro PWA Instalaci
+    if ('serviceWorker' in navigator) {
+        const swCode = `self.addEventListener('fetch', function(event) { event.respondWith(fetch(event.request)); });`;
+        const blob = new Blob([swCode], {type: 'application/javascript'});
+        navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(err => console.log('SW init error', err));
+    }
+
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('btnInstallApp').style.display = 'block';
+    });
+    
+    function installApp() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') { document.getElementById('btnInstallApp').style.display = 'none'; }
+                deferredPrompt = null;
+            });
+        } else {
+            alert("Pro instalaci na iOS klepněte dole na ikonu Sdílet a zvolte 'Přidat na plochu'.\nNa Androidu otevřete menu prohlížeče a zvolte 'Přidat na plochu'.");
+        }
+    }
+
     // =======================================================================
     // 1. JAZYKOVÁ LOKALIZACE A PŘEKLADY
     // =======================================================================
@@ -888,6 +939,9 @@
     }
 
     window.addEventListener('load', () => {
+        updateOnlineStatus();
+        document.getElementById('planDateSelect').valueAsDate = new Date(); // Nastavení dnešního data do plánovače
+
         setTimeout(() => {
             const loader = document.getElementById('loading-screen');
             if(loader) { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 600); }
@@ -1157,6 +1211,11 @@
     }
 
     async function spocitatTrasu() {
+        if (!navigator.onLine) {
+            setStatus("❌ Jste offline. Výpočet z OSRM není dostupný.", "error");
+            return;
+        }
+
         let startStr = document.getElementById('startAdresa').value.trim();
         let cilStr = document.getElementById('cilAdresa').value.trim();
         const btn = document.getElementById('btnTrasa');
@@ -1209,7 +1268,6 @@
         document.getElementById('breakdownContainer').style.display = 'block';
 
         let euroKoef = parseFloat(document.getElementById('euroNorma').value);
-        // Osa zvednuta nema vliv na MYTO, to se plati dle celkovych naprav
         let fyzickeNapravy = parseInt(document.getElementById('napravyFyzicke').value);
         let napravyKoef = MYTO_NAPRAVY_KOEF[fyzickeNapravy > 6 ? '6' : fyzickeNapravy.toString()] || 1.0;
 
@@ -1259,19 +1317,17 @@
 
         let celkoveKm = ((parseFloat(document.getElementById('vzdalenost').value) || 0) * typTrasyMulti) + (parseFloat(document.getElementById('dokladky').value) || 0);
         
-        // Zvedlé nápravy šetří spotřebu a pneu, ale ne mýto
         let zvedle = parseInt(document.getElementById('zvedleNapravy').value) || 0;
         let baseCons = (parseFloat(document.getElementById('spotrebaPrazdne').value) || 25);
         let weightCons = ((parseFloat(document.getElementById('vahaNakladu').value) || 0) * SPOTREBA_NA_TUNU);
         let avgCons = baseCons + weightCons;
-        avgCons -= (zvedle * 0.3); // Nepatrná úspora paliva (např. 0.3 L na zvednutou nápravu)
+        avgCons -= (zvedle * 0.3); 
         document.getElementById('resSpotrebaDynamicka').innerText = avgCons.toFixed(1) + " L / 100 km";
 
         let dny = parseFloat(document.getElementById('dny').value) || 0;
         let nakladMzda = (document.getElementById('typMzdy').value === 'fixni') ? parseFloat(document.getElementById('mzdaHodnota').value) || 0 : (parseFloat(document.getElementById('mzdaHodnota').value) || 0) * dny;
         let nakladFixAuto = (parseFloat(document.getElementById('nakladyAutoDen').value) || 0) * dny;
         
-        // Úspora na pneu dle zvedlých náprav (při 10 kolech na nápravách např. 15% úspora za každou nápravu navrchu)
         let opotrebeniKoef = 1 - (zvedle * 0.15);
         let nakladPneu = celkoveKm * (10 * OPOTREBENI_PNEU_KOLO_KM) * opotrebeniKoef; 
         
@@ -1559,14 +1615,27 @@
     }
 
     async function executeAutoPlan() {
+        if (!navigator.onLine) {
+            let stat = document.getElementById('planStatus');
+            stat.innerText = "❌ Jste offline. Výpočet trasy přes OSRM nelze provést.";
+            stat.style.display = "block";
+            return;
+        }
+
         let drv1 = document.getElementById('planDriverSelect').value; 
         let drv2 = document.getElementById('planDriverSelect2').value;
         let crew = document.getElementById('planCrewSelect').value;
-        let sDay = parseInt(document.getElementById('planDaySelect').value);
+        
+        let sDateStr = document.getElementById('planDateSelect').value;
+        let stat = document.getElementById('planStatus');
+        
+        if (!sDateStr) { stat.innerText = "❌ Vyberte přesné datum startu!"; stat.style.display="block"; return; }
+        let sDate = new Date(sDateStr);
+        let sDay = (sDate.getDay() + 6) % 7; // Převod, Pondělí = 0
+        
         let sR = document.getElementById('planStartRoute').value; 
         let eR = document.getElementById('planEndRoute').value;
         let speed = parseFloat(document.getElementById('planSpeed').value) || 70;
-        let stat = document.getElementById('planStatus');
         let isKolecko = document.getElementById('planKoleckoToggle').checked;
         
         // POKA-YOKE 1: Striktní ověření dvojosádky
@@ -1576,6 +1645,12 @@
             if (drv1 === drv2) { stat.innerText = "❌ Chyba: Zvolili jste stejného řidiče dvakrát pro dvojosádku!"; stat.style.display = "block"; return; }
         }
         if (!sR || !eR) { stat.innerText = "❌ Vyplňte Start a Cíl!"; stat.style.display = "block"; return; }
+        
+        // Skok do týdne, který vybral uživatel
+        plannerState.currentYear = sDate.getFullYear();
+        plannerState.currentMonth = sDate.getMonth();
+        plannerState.currentWeek = getISOWeek(sDate);
+        document.getElementById('yearSelect').value = plannerState.currentYear;
         
         let driversToSave = crew === '2' ? [drv1, drv2] : [drv1];
         let cTime = parseTime(document.getElementById('planTimeSelect').value); 
@@ -1603,8 +1678,7 @@
 
         try {
             // Sestavení bodů trasy
-            let taskQueue = []; // Struktura: {action: 'drive'/'work', time: h, cc: 'stat', note: '...'}
-            
+            let taskQueue = []; 
             planWaypointsBefore.forEach(wp => taskQueue.push({action: 'work', time: wp.time, note: wp.address}));
 
             // OSRM Jízdní segmenty
@@ -1620,13 +1694,15 @@
             let segments = await extractSegmentsFromCoords(rData.routes[0].geometry.coordinates, distTotal);
             segments.forEach(seg => { taskQueue.push({action: 'drive', cc: seg.code, time: seg.km / speed}); });
 
-            taskQueue.push({action: 'work', time: 1.5, note: 'Vykládka v cíli'});
+            let endDelay = parseFloat(document.getElementById('planEndDelay').value) || 1.5;
+            taskQueue.push({action: 'work', time: endDelay, note: 'Vykládka v cíli'});
+            
             planWaypointsAfter.forEach(wp => taskQueue.push({action: 'work', time: wp.time, note: wp.address}));
 
             if (isKolecko) {
                 let revQueue = [];
                 [...segments].reverse().forEach(seg => { revQueue.push({action: 'drive', cc: seg.code, time: seg.km / speed}); });
-                revQueue.push({action: 'work', time: 1.5, note: 'Vykládka v cíli zpět'});
+                revQueue.push({action: 'work', time: endDelay, note: 'Nakládka v cíli pro cestu zpět'});
                 taskQueue = taskQueue.concat(revQueue);
                 document.getElementById('planEstKm').innerText = (distTotal * 2).toFixed(1) + " km";
             } else {
@@ -1648,8 +1724,7 @@
             for (let task of taskQueue) {
                 if (task.action === 'drive') {
                     let remTime = task.time;
-                    while (remTime > 0.01) { // 0.01 tolerance for floating point math
-                        // Z kolika hodin se můžu maximálně pohnout?
+                    while (remTime > 0.01) { 
                         let chunk = Math.min(remTime, 4.5 - contDrive, limit - dD);
                         
                         if (chunk > 0) {
@@ -1659,7 +1734,6 @@
                             dS += chunk;
                             remTime -= chunk;
                             
-                            // Diety log
                             let calDayIndex = Math.floor(absoluteTimeCounter / 24);
                             if (!dailyDietTracker[calDayIndex]) dailyDietTracker[calDayIndex] = {};
                             dailyDietTracker[calDayIndex][task.cc] = (dailyDietTracker[calDayIndex][task.cc] || 0) + chunk;
@@ -1680,7 +1754,7 @@
                             totalElapsedHours += reqRest; absoluteTimeCounter += reqRest;
                             dD = 0; dS = 0; contDrive = 0; acts = [];
                         } 
-                        // Zastávka kvůli 4,5h limitu v kuse (a stále máme denní limit)
+                        // Zastávka kvůli 4,5h limitu v kuse
                         else if (contDrive >= 4.49 && remTime > 0) { 
                             acts.push({t: 'rest', d: 0.75}); // PŘESNĚ 45 minut!
                             dS += 0.75; 
@@ -1703,8 +1777,6 @@
                         contDrive = 0; // Vykládka > 45 min nahrazuje pauzu!
                     }
 
-                    // Diet track - for work we assume current country (simplified, using CZ or last known if missing)
-                    // For perfect tracking, we should know country of WP, but let's use last cc.
                     let calDayIndex = Math.floor(absoluteTimeCounter / 24);
                     if (!dailyDietTracker[calDayIndex]) dailyDietTracker[calDayIndex] = {};
                     dailyDietTracker[calDayIndex]['CZ'] = (dailyDietTracker[calDayIndex]['CZ'] || 0) + task.time;
@@ -1713,15 +1785,14 @@
 
             if (acts.length > 0) generatedShifts.push({ w: currentWeekSave, d: cDay, shift: { start: formatTime(cTime), crew: crew, note: `Dojetí do cíle (${sR}-${eR})`, acts: JSON.parse(JSON.stringify(acts)) } }); 
             
-            // Textové doplnění času konce
-            let endDayNum = Math.floor(absoluteTimeCounter / 24) % 7;
-            let endDayStr = document.getElementById('planDaySelect').options[endDayNum].text;
-            document.getElementById('planArrivalText').innerText = `${endDayStr} v ${formatTime(absoluteTimeCounter % 24)}`;
+            // Textové doplnění času konce - výpočet přesného data
+            let endAbsoluteDate = new Date(sDate.getTime() + (totalElapsedHours * 60 * 60 * 1000));
+            let dniVMesici = ["Neděle", "Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek", "Sobota"];
+            document.getElementById('planArrivalText').innerText = `${dniVMesici[endAbsoluteDate.getDay()]} v ${formatTime(absoluteTimeCounter % 24)}`;
 
             let cleanTime = absoluteTimeCounter + reqRest;
-            let cleanDayNum = Math.floor(cleanTime / 24) % 7;
-            let cleanDayStr = document.getElementById('planDaySelect').options[cleanDayNum].text;
-            document.getElementById('planCleanText').innerText = `${cleanDayStr} v ${formatTime(cleanTime % 24)}`;
+            let cleanAbsoluteDate = new Date(sDate.getTime() + ((totalElapsedHours + reqRest) * 60 * 60 * 1000));
+            document.getElementById('planCleanText').innerText = `${dniVMesici[cleanAbsoluteDate.getDay()]} v ${formatTime(cleanTime % 24)}`;
 
             // Vyčíslení tranzitních diet (rozpad do řádků)
             let countryHoursCombined = {}; let totalDietsEst = 0; let kurz = parseFloat(document.getElementById('kurzEuro').value) || 25;
@@ -1812,9 +1883,8 @@
             let currentStartAbs = parseTime(document.getElementById('editStart').value);
             let prevEndToday = prevShiftData.end % 24;
             
-            // Kolik hodin uplynulo od konce včerejška do teď?
             let actualGap = currentStartAbs - prevEndToday;
-            if(actualGap < 0) actualGap += 24; // Přechod přes půlnoc
+            if(actualGap < 0) actualGap += 24; 
             
             let crewType = document.getElementById('editCrew').value;
             let reqRest = crewType === '2' ? 9 : 11;
