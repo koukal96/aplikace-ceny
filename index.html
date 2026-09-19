@@ -744,121 +744,356 @@
         }
     }
 
+        // =======================================================================
+    // 1. JAZYKOVÁ LOKALIZACE A PŘEKLADY (VYLEPŠENO PRO CELOU APLIKACI)
     // =======================================================================
-    // 1. JAZYKOVÁ LOKALIZACE A PŘEKLADY
-    // =======================================================================
+    let originalTexts = new Map(); // Pamatuje si české texty pro přepínání zpět
+
     const TRANSLATIONS = {
-        cs: {
-            analytik: "ANALÝZA", start: "Výchozí Start (Bod A)", cil: "Konečný Cíl (Bod B)", cilStat: "Země určení (Garance)", menaKurz: "Měna & Kurz",
-            btnTrasa: "Spočítat trasu a mýto", celkemKm: "Celkem km", typTrasy: "Typ trasy", prejezdyKm: "Z toho Přejezdy (km)",
-            naprimo: "Napřímo", kolecko: "Kolečko (Tam i zpět)", dokladky: "Dokládky km",
-            rozpad: "Rozpad mýta dle států", technika: "Technika vozidla",
-            euro: "Euro Norma", naprazy: "Nápravy celkem", zvedle: "Zvednuté nápravy",
-            spotreba: "Spotřeba prázdné", naklad: "Start. Náklad (t)", nafta: "Cena nafty / L",
-            nakladyRidic: "Náklady & Řidič", typMzdy: "Odměňování řidiče",
-            zamestnanec: "Denní mzda (vč. diet)", brigadnik: "Paušál (za točku)",
-            odmena: "Odměna CELKEM (Posádka)", trvani: "Trvání (Dny)", fixAuto: "Fix auto/den",
-            posadka: "Složení posádky", opt1Ridic: "1 Řidič", opt2Ridici: "Dvojosádka",
-            dphVcetne: "Zobrazit VČETNĚ DPH (21%)", dphBez: "Zobrazit BEZ DPH",
-            ceník: "Ceníková Kalkulace", spotrebaVcDph: "Prům. spotřeba trasy:",
-            resNafta: "Nafta celkem:", resMzda: "Odměna posádky:", resFix: "Fixní náklady & Pneu:",
-            resMyto: "Mýto celkem:", resNakladyCelkem: "Náklady celkem:",
-            kmBezMyta: "Náklad na 1 km (bez mýta):", kmVcMyta: "Náklad na 1 km (vč. mýta):",
-            marze: "Požadovaná marže (%)", prodejniCena: "Ceníková prodejní cena:",
-            analytikaReality: "Analýza reality", sjednanaCena: "Sjednaná cena za přepravu",
-            realTrzba: "Reálná tržba na 1 km:", cekamZadani: "Čekám na zadání ceny",
-            objit: "OBJET", zakaz: "Zákazy tranzitu (Objížďka aktivní):", povolit: "Povolit",
-            chybaAdresa: "Adresa nebyla nalezena.", prubeh: "Počítám trasu a AETR...", hotovo: "Hotovo",
-            wpAdd: "+ Přidat zastávku / Přejezd", wpPlaceholder: "Adresa zastávky",
-            wpTypeTransit: "Průjezd (Náklad beze změny)", wpTypeEmpty: "Vykládka (Dále jede prázdný / Přejezd)",
-            wpTypePrejezd: "Přejezd (Prázdný přesun)", wpTypeHalf: "Částečná (Dále s 1/2 nákladu)", wpTypeFull: "Nová nakládka (Dále plný)",
-            alertAvoidFail: "Pozor: Zvolený stát nelze matematicky objet přes OSRM. Trasa byla vrácena.",
-            aetrText: "AETR Odhad: {h}h jízdy, min. {d} směn(y)", 
-            aetrWarn1: "⚠️ Využita výjimka jízdy 10h ({e}x). Max výkon 15h! Lze jen 2x týdně.",
-            aetrWarn2: "⚠️ Využita výjimka jízdy 20h ({e}x). Max výkon 21h! Lze jen 2x týdně.",
-            shareBtn: "📤 Kopírovat Souhrn", navBtn: "🧭 Otevřít Navigaci",
-            favBtn: "⭐ Uložit šablonu", favSel: "-- Načíst oblíbenou trasu --",
-            helpStart: "Odkud přesně vyjíždíte.", helpCil: "Kde trasa končí.", helpCilStat: "Garantuje výpočet pro zemi, i když ji GPS špatně detekuje.",
-            helpMena: "Přepočítá veškeré hodnoty.", helpTypTrasy: "Kolečko je zablokováno, pokud přidáte zastávku.",
-            helpDokladky: "Extra ujeté km mimo trasu.", helpEuro: "Horší emisní třída prodraží sazby mýta.", 
-            helpPrazdna: "Kolik bere tahač, když jede zcela prázdný.", helpVaha: "Každá tuna nákladu zvedne spotřebu o 0.2 L / 100 km v daném úseku.",
-            helpPosadka: "Dvojosádka umožňuje až 18h jízdy na směnu.", helpTrvani: "Automaticky spočítáno z AETR.",
-            mytoVcetne: "Kalkulace ceny VČETNĚ MÝTA", mytoBez: "Kalkulace ceny BEZ MÝTA", prodejniCenaKm: "Prodejní cena na 1 km:", nezapocitano: "(Nezapočítáno)",
-            
-            tab1: "1. Kalkulačka Trasy", tab2: "2. Šichtovník & Mzdy",
-            planDriverTitle: "Seznam Řidičů", planGenTitle: "🤖 Auto-Plánovač Trasy a Diet", planDriver: "Řidič", planStart: "1. Start (Odkud)", planEnd: "2. Cíl (Kam)",
-            planDay: "Datum Startu", planTime: "Čas Startu", planCrew: "Režim", planKolecko: "Zpáteční trasa (Kolečko)",
-            planWpTitle: "Zastávky a body na trase (Pro výpočet diet a pauz)", btnPlanAddWpBefore: "+ Přidat Zastávku PŘED cílem", btnPlanAddWpAfter: "+ Přidat Zastávku ZA cílem",
-            planBreakTitle: "Rozpad trasy a odhad diet", btnPlanGen: "🚀 Vypočítat, odhadnout Diety a Zapsat do Kalendáře!",
-            helpPlanDriver: "Přiřadí vygenerovanou trasu vybraným řidičům.", helpPlanStart: "Počáteční bod trasy.",
-            helpPlanEnd: "Konečný cíl, kde končí hlavní zakázka.", helpPlanTime: "Čas výjezdu. Systém kontroluje pauzu z předchozího dne.",
-            helpPlanCrew: "Ovlivňuje časy AETR - dvojosádka může jet déle (21h výkon).", helpPlanKolecko: "Automaticky zrcadlově otočí trasu a spočítá nájezdy pro cestu zpět.",
-            helpShiftStart: "Čas zahájení výkonu. Pokud systém hlásí chybu, nebyl dodržen odpočinek.", helpPayType: "U fixní denní sazby jsou diety zahrnuty."
-        },
         en: {
-            analytik: "ANALYSIS", start: "Start (Point A)", cil: "Destination (Point B)", cilStat: "Target Country", menaKurz: "Currency & Rate",
-            btnTrasa: "Calculate Route & Toll", celkemKm: "Total km", typTrasy: "Route Type", prejezdyKm: "Empty Runs (km)",
-            naprimo: "Direct", kolecko: "Roundtrip", dokladky: "Extra km",
-            rozpad: "Toll Breakdown", technika: "Vehicle Tech",
-            euro: "Euro Standard", naprazy: "Total Axles", zvedle: "Lifted Axles",
-            spotreba: "Empty Fuel Cons.", naklad: "Initial Cargo (t)", nafta: "Fuel Price / L",
-            nakladyRidic: "Costs & Driver", typMzdy: "Driver Payout",
-            zamestnanec: "Daily w. per diem", brigadnik: "Flat fee",
-            odmena: "TOTAL Reward", trvani: "Duration (Days)", fixAuto: "Fix cost/day",
-            posadka: "Crew Setup", opt1Ridic: "1 Driver", opt2Ridici: "Double Crew",
-            dphVcetne: "Show WITH VAT (21%)", dphBez: "Show WITHOUT VAT",
-            ceník: "Price Calculation", spotrebaVcDph: "Avg. Route Consumption:",
-            resNafta: "Total Fuel:", resMzda: "Crew Reward:", resFix: "Fixed Costs & Tires:",
-            resMyto: "Total Toll:", resNakladyCelkem: "Total Costs:",
-            kmBezMyta: "Cost per 1 km (excl. toll):", kmVcMyta: "Cost per 1 km (incl. toll):",
-            marze: "Required Margin (%)", prodejniCena: "List Price:",
-            analytikaReality: "Reality Analysis", sjednanaCena: "Agreed Transport Price",
-            realTrzba: "Real Revenue per 1 km:", cekamZadani: "Waiting for price input",
-            objit: "AVOID", zakaz: "Transit Bans (Detour Active):", povolit: "Allow",
-            chybaAdresa: "Address not found.", prubeh: "Calculating route...", hotovo: "Done",
-            wpAdd: "+ Add Stop / Empty Run", wpPlaceholder: "Waypoint address",
-            wpTypeTransit: "Transit (Keep load)", wpTypeEmpty: "Unload (Empty hereafter)",
-            wpTypePrejezd: "Empty Run", wpTypeHalf: "Partial Unload (Half load)", wpTypeFull: "New Load (Full load)",
-            alertAvoidFail: "Warning: Cannot avoid automatically.",
-            aetrText: "AETR Est: {h}h drive, min. {d} shift(s)", 
-            aetrWarn1: "⚠️ Extended 10h drive used ({e}x). Max 2x a week.",
-            aetrWarn2: "⚠️ Extended 20h crew drive used ({e}x). Max 2x a week.",
-            shareBtn: "📤 Copy Summary", navBtn: "🧭 Open Navigation",
-            favBtn: "⭐ Save Template", favSel: "-- Load Saved Route --",
-            helpStart: "Starting location.", helpCil: "Final destination.", helpCilStat: "Toll calculation.",
-            helpMena: "Converts all outputs.", helpTypTrasy: "Roundtrip is disabled if waypoints are added.",
-            helpDokladky: "Extra km.", helpEuro: "Worse emissions = higher toll.", helpPrazdna: "Base fuel consumption empty.", helpVaha: "Every ton adds 0.2 L / 100 km.",
-            helpPosadka: "Double crew changes AETR rules.", helpTrvani: "Auto-calculated via AETR.",
-            mytoVcetne: "Calculate INCLUDING TOLL", mytoBez: "Calculate EXCLUDING TOLL", prodejniCenaKm: "Selling Price per 1 km:", nezapocitano: "(Excluded)",
-            tab1: "1. Route Calculator", tab2: "2. Planner & Payroll",
-            planDriverTitle: "Driver List", planGenTitle: "🤖 Auto-Planner & Diets", planDriver: "Driver", planStart: "1. Start", planEnd: "2. End",
-            planDay: "Start Date", planTime: "Start Time", planCrew: "Crew", planKolecko: "Roundtrip",
-            planWpTitle: "Waypoints", btnPlanAddWpBefore: "+ Add Stop BEFORE End", btnPlanAddWpAfter: "+ Add Stop AFTER End",
-            planBreakTitle: "Route Breakdown", btnPlanGen: "🚀 Calculate & Add to Calendar!",
-            helpPlanDriver: "Assign route to selected drivers.", helpPlanStart: "Starting point.", helpPlanEnd: "Destination.",
-            helpPlanTime: "Start time. System checks for required rests.", helpPlanCrew: "Affects AETR times.", helpPlanKolecko: "Automatically adds return trip.",
-            helpShiftStart: "Start of shift. Errors mean missed rest.", helpPayType: "Fixed rate includes diets, excl. calculates diets separately."
+            "ANALÝZA": "ANALYSIS",
+            "1. Kalkulačka Trasy": "1. Route Calculator",
+            "2. Šichtovník & Mzdy": "2. Planner & Payroll",
+            "01. Lokace & Trasa": "01. Location & Route",
+            "⭐ Uložit šablonu": "⭐ Save template",
+            "Výchozí Start (Bod A)": "Start Point (A)",
+            "Konečný Cíl (Bod B)": "Destination (B)",
+            "Země určení (Garance)": "Target Country",
+            "Měna & Kurz": "Currency & Rate",
+            "Spočítat trasu a mýto": "Calculate route & toll",
+            "Celkem km": "Total km",
+            "Z toho Přejezdy (km)": "Empty runs (km)",
+            "Typ trasy": "Route type",
+            "Dokládky km": "Extra km",
+            "Rozpad mýta dle států": "Toll breakdown by country",
+            "02. Technika vozidla": "02. Vehicle specs",
+            "Euro Norma": "Euro Standard",
+            "Nápravy celkem": "Total Axles",
+            "Zvednuté nápravy": "Lifted Axles",
+            "Spotřeba prázdné": "Empty Consumption",
+            "Start. Náklad (t)": "Initial Cargo (t)",
+            "Cena nafty / L": "Fuel price / L",
+            "03. Náklady & Řidič": "03. Costs & Driver",
+            "Složení posádky": "Crew setup",
+            "Odměňování řidiče": "Driver payment",
+            "Odměna CELKEM": "TOTAL Reward",
+            "Trvání (Dny z AETR)": "Duration (AETR Days)",
+            "Fix auto/den": "Fix cost/day",
+            "Zobrazit VČETNĚ DPH (21%)": "Show INCL. VAT (21%)",
+            "Kalkulace ceny VČETNĚ MÝTA": "Calc INCL. TOLL",
+            "Ceníková Kalkulace": "Price Calculation",
+            "Prům. spotřeba trasy:": "Avg. consumption:",
+            "Nafta celkem:": "Total Fuel:",
+            "Odměna posádky:": "Crew reward:",
+            "Fixní náklady & Pneu:": "Fixed costs & Tires:",
+            "Mýto celkem:": "Total Toll:",
+            "Náklady celkem:": "Total Costs:",
+            "Náklad na 1 km (bez mýta):": "Cost per km (no toll):",
+            "Náklad na 1 km (vč. mýta):": "Cost per km (incl. toll):",
+            "Požadovaná marže (%)": "Target margin (%)",
+            "Ceníková prodejní cena:": "Selling price:",
+            "Prodejní cena na 1 km:": "Selling price per km:",
+            "04. Analýza reality": "04. Reality Analysis",
+            "Typ zadání ceny": "Price input type",
+            "Měna sjednané ceny": "Agreed price currency",
+            "Sjednaná cena (bez DPH)": "Agreed price (excl. VAT)",
+            "Reálná tržba na 1 km (CZK):": "Real revenue per km:",
+            "Seznam Řidičů": "Driver List",
+            "🤖 Auto-Plánovač Trasy a Diet": "🤖 Auto-Planner & Diets",
+            "1. Řidič (Hlavní)": "1. Driver (Main)",
+            "2. Řidič (Dvojosádka)": "2. Driver (Crew)",
+            "Režim Osádky": "Crew Mode",
+            "Prům. rychlost (km/h)": "Avg. speed (km/h)",
+            "Datum Startu (Přesný den)": "Start Date",
+            "Čas Startu": "Start Time",
+            "1. Start (Odkud)": "1. Start (From)",
+            "2. Cíl (Kam)": "2. Destination (To)",
+            "Zdržení v Cíli (h)": "Delay at Dest. (h)",
+            "Zpáteční trasa (Kolečko)": "Return Trip (Roundtrip)",
+            "Rozpad trasy a odhad diet": "Route Breakdown & Diets",
+            "🚀 Vypočítat a Zapsat do Kalendáře!": "🚀 Calculate & Save to Calendar!",
+            "Stát": "Country",
+            "Km": "Km",
+            "Kč Mýto": "Toll",
+            "Za celou trasu": "Per total route",
+            "Za 1 km": "Per 1 km",
+            "Napřímo": "Direct",
+            "Kolečko": "Roundtrip",
+            "Denní sazba (VČETNĚ diet)": "Daily rate (INCL. diets)",
+            "Základ (BEZ diet) + Diety": "Base (EXCL. diets) + Diets",
+            "Paušál (za točku)": "Flat fee (per trip)"
+        },
+        de: {
+            "ANALÝZA": "ANALYSE",
+            "1. Kalkulačka Trasy": "1. Routenrechner",
+            "2. Šichtovník & Mzdy": "2. Schichtplan & Lohn",
+            "01. Lokace & Trasa": "01. Ort & Route",
+            "⭐ Uložit šablonu": "⭐ Vorlage speichern",
+            "Výchozí Start (Bod A)": "Startpunkt (A)",
+            "Konečný Cíl (Bod B)": "Zielpunkt (B)",
+            "Země určení (Garance)": "Zielland",
+            "Měna & Kurz": "Währung & Kurs",
+            "Spočítat trasu a mýto": "Route & Maut berechnen",
+            "Celkem km": "Gesamt km",
+            "Z toho Přejezdy (km)": "Leerfahrten (km)",
+            "Typ trasy": "Routentyp",
+            "Dokládky km": "Zusätzliche km",
+            "Rozpad mýta dle států": "Mautaufschlüsselung nach Land",
+            "02. Technika vozidla": "02. Fahrzeugtechnik",
+            "Euro Norma": "Euro Norm",
+            "Nápravy celkem": "Achsen gesamt",
+            "Zvednuté nápravy": "Liftachsen",
+            "Spotřeba prázdné": "Verbrauch leer",
+            "Start. Náklad (t)": "Ladung (t)",
+            "Cena nafty / L": "Spritpreis / L",
+            "03. Náklady & Řidič": "03. Kosten & Fahrer",
+            "Složení posádky": "Besatzung",
+            "Odměňování řidiče": "Fahrerlohn",
+            "Odměna CELKEM": "Gesamtlohn",
+            "Trvání (Dny z AETR)": "Dauer (AETR Tage)",
+            "Fix auto/den": "Fixkosten/Tag",
+            "Zobrazit VČETNĚ DPH (21%)": "Inkl. MwSt. (21%)",
+            "Kalkulace ceny VČETNĚ MÝTA": "Kalkulation INKL. MAUT",
+            "Ceníková Kalkulace": "Preiskalkulation",
+            "Prům. spotřeba trasy:": "Ø Verbrauch:",
+            "Nafta celkem:": "Sprit gesamt:",
+            "Odměna posádky:": "Lohn Besatzung:",
+            "Fixní náklady & Pneu:": "Fixkosten & Reifen:",
+            "Mýto celkem:": "Maut gesamt:",
+            "Náklady celkem:": "Gesamtkosten:",
+            "Náklad na 1 km (bez mýta):": "Kosten pro km (ohne Maut):",
+            "Náklad na 1 km (vč. mýta):": "Kosten pro km (inkl. Maut):",
+            "Požadovaná marže (%)": "Zielmarge (%)",
+            "Ceníková prodejní cena:": "Verkaufspreis:",
+            "Prodejní cena na 1 km:": "Verkaufspreis pro km:",
+            "04. Analýza reality": "04. Realitätsanalyse",
+            "Typ zadání ceny": "Preisangabetyp",
+            "Měna sjednané ceny": "Währung des Preises",
+            "Sjednaná cena (bez DPH)": "Vereinbarter Preis (netto)",
+            "Reálná tržba na 1 km (CZK):": "Realer Umsatz pro km:",
+            "Seznam Řidičů": "Fahrerliste",
+            "🤖 Auto-Plánovač Trasy a Diet": "🤖 Auto-Planer & Spesen",
+            "1. Řidič (Hlavní)": "1. Fahrer (Haupt)",
+            "2. Řidič (Dvojosádka)": "2. Fahrer (Besatzung)",
+            "Režim Osádky": "Besatzungsmodus",
+            "Prům. rychlost (km/h)": "Ø Geschw. (km/h)",
+            "Datum Startu (Přesný den)": "Startdatum",
+            "Čas Startu": "Startzeit",
+            "1. Start (Odkud)": "1. Start (Von)",
+            "2. Cíl (Kam)": "2. Ziel (Nach)",
+            "Zdržení v Cíli (h)": "Aufenthalt am Ziel (h)",
+            "Zpáteční trasa (Kolečko)": "Rückfahrt (Rundtrip)",
+            "Rozpad trasy a odhad diet": "Routenaufschlüsselung & Spesen",
+            "🚀 Vypočítat a Zapsat do Kalendáře!": "🚀 Berechnen & Speichern!",
+            "Stát": "Land",
+            "Km": "Km",
+            "Kč Mýto": "Maut",
+            "Za celou trasu": "Pro Gesamtroute",
+            "Za 1 km": "Pro 1 km",
+            "Napřímo": "Direkt",
+            "Kolečko": "Rundfahrt",
+            "Denní sazba (VČETNĚ diet)": "Tagessatz (INKL. Spesen)",
+            "Základ (BEZ diet) + Diety": "Basis (OHNE Spesen) + Spesen",
+            "Paušál (za točku)": "Pauschale (pro Fahrt)"
+        },
+        pl: {
+            "ANALÝZA": "ANALIZA",
+            "1. Kalkulačka Trasy": "1. Kalkulator Trasy",
+            "2. Šichtovník & Mzdy": "2. Harmonogram i Płace",
+            "01. Lokace & Trasa": "01. Lokalizacja i Trasa",
+            "⭐ Uložit šablonu": "⭐ Zapisz szablon",
+            "Výchozí Start (Bod A)": "Punkt Startowy (A)",
+            "Konečný Cíl (Bod B)": "Cel (B)",
+            "Země určení (Garance)": "Kraj Docelowy",
+            "Měna & Kurz": "Waluta i Kurs",
+            "Spočítat trasu a mýto": "Oblicz trasę i myto",
+            "Celkem km": "Razem km",
+            "Z toho Přejezdy (km)": "Przejazdy na pusto (km)",
+            "Typ trasy": "Typ trasy",
+            "Dokládky km": "Dodatkowe km",
+            "Rozpad mýta dle států": "Podział opłat według krajów",
+            "02. Technika vozidla": "02. Technika Pojazdu",
+            "Euro Norma": "Norma Euro",
+            "Nápravy celkem": "Osie ogółem",
+            "Zvednuté nápravy": "Podniesione osie",
+            "Spotřeba prázdné": "Spalanie na pusto",
+            "Start. Náklad (t)": "Początkowy Ładunek (t)",
+            "Cena nafty / L": "Cena paliwa / L",
+            "03. Náklady & Řidič": "03. Koszty i Kierowca",
+            "Složení posádky": "Załoga",
+            "Odměňování řidiče": "Wynagrodzenie",
+            "Odměna CELKEM": "Wynagrodzenie CAŁKOWITE",
+            "Trvání (Dny z AETR)": "Czas trwania (Dni AETR)",
+            "Fix auto/den": "Koszt stały/dzień",
+            "Zobrazit VČETNĚ DPH (21%)": "Pokaż Z VAT (21%)",
+            "Kalkulace ceny VČETNĚ MÝTA": "Kalkulacja Z MYTEM",
+            "Ceníková Kalkulace": "Kalkulacja Cenowa",
+            "Prům. spotřeba trasy:": "Śr. spalanie:",
+            "Nafta celkem:": "Paliwo razem:",
+            "Odměna posádky:": "Wynagrodzenie załogi:",
+            "Fixní náklady & Pneu:": "Koszty stałe i Opony:",
+            "Mýto celkem:": "Myto razem:",
+            "Náklady celkem:": "Koszty całkowite:",
+            "Náklad na 1 km (bez mýta):": "Koszt na 1 km (bez myta):",
+            "Náklad na 1 km (vč. mýta):": "Koszt na 1 km (z mytem):",
+            "Požadovaná marže (%)": "Wymagana marża (%)",
+            "Ceníková prodejní cena:": "Cena sprzedaży:",
+            "Prodejní cena na 1 km:": "Cena sprzedaży na 1 km:",
+            "04. Analýza reality": "04. Analiza Rzeczywistości",
+            "Typ zadání ceny": "Typ podania ceny",
+            "Měna sjednané ceny": "Waluta uzgodnionej ceny",
+            "Sjednaná cena (bez DPH)": "Uzgodniona cena (bez VAT)",
+            "Reálná tržba na 1 km (CZK):": "Rzeczywisty przychód na 1km:",
+            "Seznam Řidičů": "Lista Kierowców",
+            "🤖 Auto-Plánovač Trasy a Diet": "🤖 Auto-Planer Tras i Diet",
+            "1. Řidič (Hlavní)": "1. Kierowca (Główny)",
+            "2. Řidič (Dvojosádka)": "2. Kierowca (Załoga)",
+            "Režim Osádky": "Tryb Załogi",
+            "Prům. rychlost (km/h)": "Śr. prędkość (km/h)",
+            "Datum Startu (Přesný den)": "Data Startu",
+            "Čas Startu": "Czas Startu",
+            "1. Start (Odkud)": "1. Start (Skąd)",
+            "2. Cíl (Kam)": "2. Cel (Dokąd)",
+            "Zdržení v Cíli (h)": "Opóźnienie w Celu (h)",
+            "Zpáteční trasa (Kolečko)": "Trasa powrotna (Kółko)",
+            "Rozpad trasy a odhad diet": "Podział trasy i szacunek diet",
+            "🚀 Vypočítat a Zapsat do Kalendáře!": "🚀 Oblicz i Zapisz w Kalendarzu!",
+            "Stát": "Kraj",
+            "Km": "Km",
+            "Kč Mýto": "Myto",
+            "Za celou trasu": "Za całą trasę",
+            "Za 1 km": "Za 1 km",
+            "Napřímo": "Bezpośrednio",
+            "Kolečko": "Kółko",
+            "Denní sazba (VČETNĚ diet)": "Stawka dzienna (Z dietami)",
+            "Základ (BEZ diet) + Diety": "Baza (BEZ diet) + Diety",
+            "Paušál (za točku)": "Ryczałt (za trasę)"
+        },
+        it: {
+            "ANALÝZA": "ANALISI",
+            "1. Kalkulačka Trasy": "1. Calcolatore Percorso",
+            "2. Šichtovník & Mzdy": "2. Turni e Paghe",
+            "01. Lokace & Trasa": "01. Luogo e Percorso",
+            "⭐ Uložit šablonu": "⭐ Salva modello",
+            "Výchozí Start (Bod A)": "Punto di Partenza (A)",
+            "Konečný Cíl (Bod B)": "Destinazione (B)",
+            "Země určení (Garance)": "Paese di Destinazione",
+            "Měna & Kurz": "Valuta e Tasso",
+            "Spočítat trasu a mýto": "Calcola Percorso e Pedaggio",
+            "Celkem km": "Totale km",
+            "Z toho Přejezdy (km)": "Percorsi a vuoto (km)",
+            "Typ trasy": "Tipo di percorso",
+            "Dokládky km": "Km Extra",
+            "Rozpad mýta dle států": "Dettaglio pedaggio per paese",
+            "02. Technika vozidla": "02. Tecnica Veicolo",
+            "Euro Norma": "Standard Euro",
+            "Nápravy celkem": "Assi Totali",
+            "Zvednuté nápravy": "Assi Sollevati",
+            "Spotřeba prázdné": "Consumo a vuoto",
+            "Start. Náklad (t)": "Carico (t)",
+            "Cena nafty / L": "Prezzo carburante / L",
+            "03. Náklady & Řidič": "03. Costi e Autista",
+            "Složení posádky": "Equipaggio",
+            "Odměňování řidiče": "Retribuzione",
+            "Odměna CELKEM": "Retribuzione TOTALE",
+            "Trvání (Dny z AETR)": "Durata (Giorni AETR)",
+            "Fix auto/den": "Costo fisso/giorno",
+            "Zobrazit VČETNĚ DPH (21%)": "Mostra CON IVA (21%)",
+            "Kalkulace ceny VČETNĚ MÝTA": "Calcolo CON PEDAGGIO",
+            "Ceníková Kalkulace": "Calcolo Prezzo",
+            "Prům. spotřeba trasy:": "Consumo medio:",
+            "Nafta celkem:": "Carburante totale:",
+            "Odměna posádky:": "Retribuzione equipaggio:",
+            "Fixní náklady & Pneu:": "Costi fissi e pneumatici:",
+            "Mýto celkem:": "Pedaggio totale:",
+            "Náklady celkem:": "Costi totali:",
+            "Náklad na 1 km (bez mýta):": "Costo al km (senza pedaggio):",
+            "Náklad na 1 km (vč. mýta):": "Costo al km (con pedaggio):",
+            "Požadovaná marže (%)": "Margine richiesto (%)",
+            "Ceníková prodejní cena:": "Prezzo di vendita:",
+            "Prodejní cena na 1 km:": "Prezzo al km:",
+            "04. Analýza reality": "04. Analisi della Realtà",
+            "Typ zadání ceny": "Tipo inserimento prezzo",
+            "Měna sjednané ceny": "Valuta prezzo concordato",
+            "Sjednaná cena (bez DPH)": "Prezzo concordato (senza IVA)",
+            "Reálná tržba na 1 km (CZK):": "Ricavo reale al km:",
+            "Seznam Řidičů": "Elenco Autisti",
+            "🤖 Auto-Plánovač Trasy a Diet": "🤖 Pianificatore & Diarie",
+            "1. Řidič (Hlavní)": "1. Autista (Principale)",
+            "2. Řidič (Dvojosádka)": "2. Autista (Equipaggio)",
+            "Režim Osádky": "Modalità Equipaggio",
+            "Prům. rychlost (km/h)": "Velocità media (km/h)",
+            "Datum Startu (Přesný den)": "Data di Partenza",
+            "Čas Startu": "Ora di Partenza",
+            "1. Start (Odkud)": "1. Partenza (Da)",
+            "2. Cíl (Kam)": "2. Destinazione (A)",
+            "Zdržení v Cíli (h)": "Sosta a Destinazione (h)",
+            "Zpáteční trasa (Kolečko)": "Viaggio di Ritorno (Giro)",
+            "Rozpad trasy a odhad diet": "Dettaglio Percorso & Diarie",
+            "🚀 Vypočítat a Zapsat do Kalendáře!": "🚀 Calcola e Salva!",
+            "Stát": "Paese",
+            "Km": "Km",
+            "Kč Mýto": "Pedaggio",
+            "Za celou trasu": "Per l'intero percorso",
+            "Za 1 km": "Al km",
+            "Napřímo": "Diretto",
+            "Kolečko": "Giro di ritorno",
+            "Denní sazba (VČETNĚ diet)": "Tariffa giornaliera (CON diarie)",
+            "Základ (BEZ diet) + Diety": "Base (SENZA diarie) + Diarie",
+            "Paušál (za točku)": "Forfait (a viaggio)"
         }
     };
 
-    function T(key) {
+    function changeLanguage() {
         let lang = document.getElementById('langSelect').value;
-        return (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) ? TRANSLATIONS[lang][key] : TRANSLATIONS['cs'][key];
+        
+        // Zpět do češtiny (vrácení originálů z paměti)
+        if (lang === 'cs') {
+            originalTexts.forEach((originalText, element) => {
+                let textNode = Array.from(element.childNodes).find(n => n.nodeType === 3 && n.nodeValue.trim() !== "");
+                if (textNode) {
+                    let trailingSpace = textNode.nodeValue.match(/\s$/) ? " " : "";
+                    textNode.nodeValue = originalText + trailingSpace;
+                }
+            });
+            // Samostatně horní banner, který má pevné ID
+            if(document.getElementById('lblHeaderAnalytik')) document.getElementById('lblHeaderAnalytik').innerText = "ANALÝZA";
+            return;
+        }
+
+        let dict = TRANSLATIONS[lang];
+        if (!dict) return;
+
+        // Procházíme všechny elementy, kde by mohl být text na překlad
+        let elements = document.querySelectorAll('label, h2, h3, h4, span.result-label, button.btn, button.btn-magic, button.btn-secondary, option, span');
+        
+        elements.forEach(el => {
+            // Hledáme čistý text uvnitř elementu (nepřepisujeme tím HTML značky jako <span> pro ikonky)
+            let textNode = Array.from(el.childNodes).find(n => n.nodeType === 3 && n.nodeValue.trim() !== "");
+            if (textNode) {
+                let currentText = textNode.nodeValue.trim();
+                
+                // Uložit do paměti CZ originál, abychom měli z čeho překládat po dalším přepnutí
+                if (!originalTexts.has(el) && TRANSLATIONS["en"][currentText] !== undefined) {
+                    originalTexts.set(el, currentText);
+                }
+                
+                let originalText = originalTexts.has(el) ? originalTexts.get(el) : currentText;
+                
+                if (dict[originalText]) {
+                    // Zachováme mezeru za slovem, pokud tam v originále byla, aby se nelepila na ikonku nápovědy
+                    let trailingSpace = textNode.nodeValue.match(/\s$/) ? " " : "";
+                    textNode.nodeValue = dict[originalText] + trailingSpace;
+                }
+            }
+        });
+
+        // Manuální oprava pro horní label (který je uvnitř flexboxu bez vlastního tagu)
+        if(document.getElementById('lblHeaderAnalytik') && dict["ANALÝZA"]) {
+            document.getElementById('lblHeaderAnalytik').innerText = dict["ANALÝZA"];
+        }
     }
 
-    function changeLanguage() {
-        if(document.getElementById('lblHeaderAnalytik')) document.getElementById('lblHeaderAnalytik').innerText = T('analytik');
-        if(document.getElementById('lblSec1')) document.getElementById('lblSec1').innerText = T('start').split(' ')[0] + " & Trasa";
-        if(document.getElementById('lblStart')) document.getElementById('lblStart').innerHTML = `${T('start')} <span class="icon-help" onclick="showInfo(T('helpStart'))">i</span>`;
-        if(document.getElementById('lblCil')) document.getElementById('lblCil').innerHTML = `${T('cil')} <span class="icon-help" onclick="showInfo(T('helpCil'))">i</span>`;
-        
-        renderAvoidList();
-        renderWaypoints();
-        if(globalBreakdown && globalBreakdown.length > 0) {
-            renderBreakdownSegments(globalBreakdown, waypoints.length > 0 ? 1 : parseFloat(document.getElementById('typTrasy').value));
-        }
-        recalcAETR();
-    }
 
     // =======================================================================
     // 2. INICIALIZACE MAPY A GEOLOKACE
