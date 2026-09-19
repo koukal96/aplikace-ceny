@@ -19,7 +19,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
         body { background-color: var(--cp-gray); color: var(--cp-dark); line-height: 1.5; font-size: 14px; }
 
-        /* OPRAVA: Obrázek na pozadí, ukotvený vpravo */
         #loading-screen { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: #000 url('IMG_9552.png') no-repeat right center; 
@@ -284,14 +283,16 @@
                 </div>
                 <div class="input-group">
                     <label id="lblNapravy">Nápravy celkem</label>
-                    <select id="napravyFyzicke" onchange="updateAllSegmentTolls(); autoSave();">
+                    <select id="napravyFyzicke" onchange="updateAllSegmentTolls(); calculate(); autoSave();">
                         <option value="5">5 náprav (2+3)</option><option value="6">6 a více (3+3)</option>
                         <option value="4">4 nápravy (2+2)</option><option value="3">3 nápravy</option>
                     </select>
                 </div>
                 <div class="input-group">
                     <label id="lblZvedle">Zvednuté nápravy</label>
-                    <select id="zvedleNapravy" onchange="calculate(); autoSave();"><option value="0">0 (Dole)</option><option value="1">1 nahoře</option><option value="2">2 nahoře</option></select>
+                    <select id="zvedleNapravy" onchange="calculate(); autoSave();">
+                        <option value="0">0 (Dole)</option><option value="1">1 nahoře</option><option value="2">2 nahoře</option>
+                    </select>
                 </div>
             </div>
             <div class="form-grid" style="margin-top: 12px; border-top: 1px solid #eee; padding-top: 12px;">
@@ -405,7 +406,6 @@
         <div class="card analysis">
             <h2 id="lblSec4"><span>04.</span> Analýza reality</h2>
             
-            <!-- OPRAVA ANALÝZY REALITY: Přidáno přepínání typu a měny -->
             <div class="form-grid">
                 <div class="input-group">
                     <label style="color:#fff;">Typ zadání ceny</label>
@@ -541,7 +541,7 @@
                 <div style="font-size:13px; margin-bottom:10px;"><b>Odhadovaná vzdálenost:</b> <span id="planEstKm" style="color:var(--cp-dark); font-weight:800;">0 km</span></div>
                 <div id="planBreakdownList" style="margin-bottom:15px;"></div>
                 <div style="background:#f4f4f4; padding:12px; border-radius:4px; font-size:14px; border-left:4px solid var(--cp-danger);">
-                    <div style="margin-bottom:6px;"><b>Očekávaný návrat do cíle:</b> <span id="planArrivalText" style="color:var(--cp-danger); font-weight:800;"></span></div>
+                    <div style="margin-bottom:6px;"><b>Očekávaný návrat do cíle (Konec výkonu):</b> <span id="planArrivalText" style="color:var(--cp-danger); font-weight:800;"></span></div>
                     <div><b>Čistý po pauze (Lze dál jet):</b> <span id="planCleanText" style="color:var(--cp-success); font-weight:800;"></span></div>
                 </div>
             </div>
@@ -590,7 +590,7 @@
             <label>Vyberte Řidiče</label>
             <select id="pdfDriverSelect"></select>
         </div>
-        <div class="input-group" style="margin-bottom:20px;">
+        <div class="input-group">
             <label>Období Exportu</label>
             <select id="pdfPeriodSelect">
                 <option value="week">Aktuální zobrazený týden</option>
@@ -599,8 +599,17 @@
             </select>
         </div>
         
+        <div class="input-group" style="margin-bottom:20px;">
+            <label>Typ Exportu (Co se má vygenerovat)</label>
+            <select id="pdfTypeSelect">
+                <option value="both">Kompletní přehled (Kniha jízd + Mzdy)</option>
+                <option value="kniha">Pouze Kniha jízd (Bez financí)</option>
+                <option value="mzdy">Pouze Mzdový výměr (Bez rozpisu tras)</option>
+            </select>
+        </div>
+        
         <div style="display:flex; gap:10px; margin-bottom:15px; flex-direction:column;">
-            <button class="btn-secondary" style="background:#107c41; padding:15px; font-size:15px;" onclick="exportKnihaPrint()">📄 Vytisknout Knihu Jízd a Mzdy (PDF)</button>
+            <button class="btn-secondary" style="background:#107c41; padding:15px; font-size:15px;" onclick="exportKnihaPrint()">📄 Vytisknout / Uložit do PDF</button>
             <button class="btn-secondary" style="background:#1565c0; padding:12px;" onclick="exportKnihaCSV()">📊 Stáhnout data do Excelu (CSV)</button>
             <button class="btn-secondary" style="background:#25D366; padding:12px;" onclick="exportDriverWA()">💬 Odeslat přehled na WhatsApp</button>
         </div>
@@ -620,7 +629,7 @@
             <div class="input-group"><label>Začátek Směny <span class="icon-help" onclick="showInfo(T('helpShiftStart'))">i</span></label><input type="time" id="editStart" value="06:00" onchange="validateAndRenderShift()"></div>
             <div class="input-group"><label>Režim</label><select id="editCrew" onchange="validateAndRenderShift()"><option value="1">1 Řidič</option><option value="2">Dvojosádka</option></select></div>
         </div>
-        <div class="input-group" style="margin-top: 10px;"><label>Poznámka k dni (Trasa)</label><input type="text" id="editNote"></div>
+        <div class="input-group" style="margin-top: 10px;"><label>Poznámka k dni (Trasa)</label><input type="text" id="editNote" placeholder="Např. Trasa (Ostrava - Berlín)"></div>
         
         <h4 style="font-size:12px; margin: 15px 0 10px 0; border-bottom: 1px solid #eee; padding-bottom:5px;">Rozpis bloků (Jízda/Práce/Pauza)</h4>
         <div id="editActContainer" style="max-height: 250px; overflow-y: auto; padding-right:5px;"></div>
@@ -628,7 +637,7 @@
 
         <div id="shiftPreviewBox" style="background:#f4f4f4; padding:12px; border-radius:4px; margin-top:15px; font-size:13px; border:1px solid #ddd; text-align:center;"></div>
 
-        <button class="btn-secondary btn-whatsapp" id="btnNavShift" style="width:100%; background:var(--cp-blue); border:none; margin-top:10px; display:none;">🧭 Navigovat trasu směny v Mapách</button>
+        <button class="btn-secondary btn-whatsapp" id="btnNavShift" style="width:100%; background:var(--cp-blue); border:none; margin-top:10px; display:none; padding: 15px;">🧭 Navigovat trasu směny v Mapách</button>
 
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top: 15px;">
             <button class="btn-modal-close" style="background: var(--cp-danger); margin-top:0;" onclick="deleteShift()">Smazat Den</button>
@@ -682,7 +691,8 @@
         <button class="btn-modal-close pdf-hide" onclick="closePayroll()" style="padding:15px; font-size:15px;">Uložit Nastavení Mzdy</button>
     </div>
 </div>
-    <script>
+
+<script>
     // =======================================================================
     // 1. JAZYKOVÁ LOKALIZACE A PŘEKLADY
     // =======================================================================
@@ -731,52 +741,8 @@
             planBreakTitle: "Rozpad trasy a odhad diet", btnPlanGen: "🚀 Vypočítat, odhadnout Diety a Zapsat do Kalendáře!",
             helpPlanDriver: "Přiřadí vygenerovanou trasu vybraným řidičům.", helpPlanStart: "Počáteční bod trasy.",
             helpPlanEnd: "Konečný cíl, kde končí hlavní zakázka.", helpPlanTime: "Čas výjezdu. Systém kontroluje pauzu z předchozího dne.",
-            helpPlanCrew: "Ovlivňuje časy AETR - dvojosádka může jet déle (21h výkon).", helpPlanKolecko: "Zakázáno, pokud přidáte jakoukoliv mezizastávku.",
+            helpPlanCrew: "Ovlivňuje časy AETR - dvojosádka může jet déle (21h výkon).", helpPlanKolecko: "Automaticky zrcadlově otočí trasu a spočítá nájezdy pro cestu zpět.",
             helpShiftStart: "Čas zahájení výkonu. Pokud systém hlásí chybu, nebyl dodržen odpočinek.", helpPayType: "U fixní denní sazby jsou diety zahrnuty."
-        },
-        en: {
-            analytik: "ANALYSIS", start: "Start (Point A)", cil: "Destination (Point B)", cilStat: "Target Country", menaKurz: "Currency & Rate",
-            btnTrasa: "Calculate Route & Toll", celkemKm: "Total km", typTrasy: "Route Type", prejezdyKm: "Empty Runs (km)",
-            naprimo: "Direct", kolecko: "Roundtrip", dokladky: "Extra km",
-            rozpad: "Toll Breakdown", technika: "Vehicle Tech",
-            euro: "Euro Standard", naprazy: "Total Axles", zvedle: "Lifted Axles",
-            spotreba: "Empty Fuel Cons.", naklad: "Initial Cargo (t)", nafta: "Fuel Price / L",
-            nakladyRidic: "Costs & Driver", typMzdy: "Driver Payout",
-            zamestnanec: "Daily w. per diem", brigadnik: "Flat fee",
-            odmena: "TOTAL Reward", trvani: "Duration (Days)", fixAuto: "Fix cost/day",
-            posadka: "Crew Setup", opt1Ridic: "1 Driver", opt2Ridici: "Double Crew",
-            dphVcetne: "Show WITH VAT (21%)", dphBez: "Show WITHOUT VAT",
-            ceník: "Price Calculation", spotrebaVcDph: "Avg. Route Consumption:",
-            resNafta: "Total Fuel:", resMzda: "Crew Reward:", resFix: "Fixed Costs & Tires:",
-            resMyto: "Total Toll:", resNakladyCelkem: "Total Costs:",
-            kmBezMyta: "Cost per 1 km (excl. toll):", kmVcMyta: "Cost per 1 km (incl. toll):",
-            marze: "Required Margin (%)", prodejniCena: "List Price:",
-            analytikaReality: "Reality Analysis", sjednanaCena: "Agreed Transport Price",
-            realTrzba: "Real Revenue per 1 km:", cekamZadani: "Waiting for price input",
-            objit: "AVOID", zakaz: "Transit Bans (Detour Active):", povolit: "Allow",
-            chybaAdresa: "Address not found.", prubeh: "Calculating route...", hotovo: "Done",
-            wpAdd: "+ Add Stop / Empty Run", wpPlaceholder: "Waypoint address",
-            wpTypeTransit: "Transit (Keep load)", wpTypeEmpty: "Unload (Empty hereafter)",
-            wpTypePrejezd: "Empty Run", wpTypeHalf: "Partial Unload (Half load)", wpTypeFull: "New Load (Full load)",
-            alertAvoidFail: "Warning: Cannot avoid automatically.",
-            aetrText: "AETR Est: {h}h drive, min. {d} shift(s)", 
-            aetrWarn1: "⚠️ Extended 10h drive used ({e}x). Max 2x a week.",
-            aetrWarn2: "⚠️ Extended 20h crew drive used ({e}x). Max 2x a week.",
-            shareBtn: "📤 Copy Summary", navBtn: "🧭 Open Navigation",
-            favBtn: "⭐ Save Template", favSel: "-- Load Saved Route --",
-            helpStart: "Starting location.", helpCil: "Final destination.", helpCilStat: "Toll calculation.",
-            helpMena: "Converts all outputs.", helpTypTrasy: "Roundtrip is disabled if waypoints are added.",
-            helpDokladky: "Extra km.", helpEuro: "Worse emissions = higher toll.", helpPrazdna: "Base fuel consumption empty.", helpVaha: "Every ton adds 0.2 L / 100 km.",
-            helpPosadka: "Double crew changes AETR rules.", helpTrvani: "Auto-calculated via AETR.",
-            mytoVcetne: "Calculate INCLUDING TOLL", mytoBez: "Calculate EXCLUDING TOLL", prodejniCenaKm: "Selling Price per 1 km:", nezapocitano: "(Excluded)",
-            tab1: "1. Route Calculator", tab2: "2. Planner & Payroll",
-            planDriverTitle: "Driver List", planGenTitle: "🤖 Auto-Planner & Diets", planDriver: "Driver", planStart: "1. Start", planEnd: "2. End",
-            planDay: "Start Day", planTime: "Start Time", planCrew: "Crew", planKolecko: "Roundtrip",
-            planWpTitle: "Waypoints", btnPlanAddWpBefore: "+ Add Stop BEFORE End", btnPlanAddWpAfter: "+ Add Stop AFTER End",
-            planBreakTitle: "Route Breakdown", btnPlanGen: "🚀 Calculate & Add to Calendar!",
-            helpPlanDriver: "Assign route to selected drivers.", helpPlanStart: "Starting point.", helpPlanEnd: "Destination.",
-            helpPlanTime: "Start time. System checks for required rests.", helpPlanCrew: "Affects AETR times.", helpPlanKolecko: "Automatically adds return trip.",
-            helpShiftStart: "Start of shift. Errors mean missed rest.", helpPayType: "Fixed rate includes diets, excl. calculates diets separately."
         }
     };
 
@@ -1108,16 +1074,6 @@
         spocitatTrasu();
     }
 
-    window.promptAvoidCountry = function(code) {
-        if(confirm(`${T('objit')} ${MYTO_STATY[code] ? MYTO_STATY[code].name : code}?`)) {
-            if(!excludedCountries.includes(code)) {
-                excludedCountries.push(code);
-                renderAvoidList();
-                spocitatTrasu();
-            }
-        }
-    }
-
     async function getCoordinates(address) {
         if(!address) return null;
         let gpsMatch = address.match(/^([-+]?\d{1,2}\.\d+)[,\s]+([-+]?\d{1,3}\.\d+)$/);
@@ -1164,7 +1120,6 @@
         return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
     }
 
-    // Pomocná fuknce na segmentaci trasy (nově sdílena pro Kalkulačku i Plánovač)
     async function extractSegmentsFromCoords(coords, distTotal) {
         let pointsToCheck = []; let distAccumulator = 0; const INTERVAL = 25; let distances = [0]; 
         for(let i=1; i<coords.length; i++) {
@@ -1194,7 +1149,6 @@
             if(finalSegments.length > 0 && finalSegments[finalSegments.length-1].code === s.code) finalSegments[finalSegments.length-1].km += s.km;
             else finalSegments.push(s);
         }
-        // Normalizace na přesné OSRM km
         let haversineTotal = finalSegments.reduce((sum, s) => sum + s.km, 0);
         if(haversineTotal > 0) { let ratio = distTotal / haversineTotal; finalSegments.forEach(s => s.km = s.km * ratio); }
         return finalSegments;
@@ -1253,6 +1207,7 @@
         document.getElementById('breakdownContainer').style.display = 'block';
 
         let euroKoef = parseFloat(document.getElementById('euroNorma').value);
+        // Osa zvednuta nema vliv na MYTO, to se plati dle celkovych naprav
         let fyzickeNapravy = parseInt(document.getElementById('napravyFyzicke').value);
         let napravyKoef = MYTO_NAPRAVY_KOEF[fyzickeNapravy > 6 ? '6' : fyzickeNapravy.toString()] || 1.0;
 
@@ -1288,7 +1243,6 @@
     }
     function updateAllSegmentTolls() { document.querySelectorAll('.seg-stat').forEach(sel => { updateSegment(sel.getAttribute('data-index')); }); }
 
-    // OPRAVA VÝPOČTU VČETNĚ TYPU ZADÁNÍ CENY ZA KM/CELKEM
     function calculate() {
         const includesDph = document.getElementById('dphToggle').checked;
         const dphMulti = includesDph ? DPH_SAZBA : 1;
@@ -1302,15 +1256,27 @@
         if(sumKmFromSegments > 0) document.getElementById('vzdalenost').value = (sumKmFromSegments / typTrasyMulti).toFixed(1);
 
         let celkoveKm = ((parseFloat(document.getElementById('vzdalenost').value) || 0) * typTrasyMulti) + (parseFloat(document.getElementById('dokladky').value) || 0);
-        let avgCons = (parseFloat(document.getElementById('spotrebaPrazdne').value) || 25) + ((parseFloat(document.getElementById('vahaNakladu').value) || 0) * SPOTREBA_NA_TUNU);
+        
+        // Zvedlé nápravy šetří spotřebu a pneu, ale ne mýto
+        let zvedle = parseInt(document.getElementById('zvedleNapravy').value) || 0;
+        let baseCons = (parseFloat(document.getElementById('spotrebaPrazdne').value) || 25);
+        let weightCons = ((parseFloat(document.getElementById('vahaNakladu').value) || 0) * SPOTREBA_NA_TUNU);
+        let avgCons = baseCons + weightCons;
+        avgCons -= (zvedle * 0.3); // Nepatrná úspora paliva (např. 0.3 L na zvednutou nápravu)
         document.getElementById('resSpotrebaDynamicka').innerText = avgCons.toFixed(1) + " L / 100 km";
 
         let dny = parseFloat(document.getElementById('dny').value) || 0;
         let nakladMzda = (document.getElementById('typMzdy').value === 'fixni') ? parseFloat(document.getElementById('mzdaHodnota').value) || 0 : (parseFloat(document.getElementById('mzdaHodnota').value) || 0) * dny;
         let nakladFixAuto = (parseFloat(document.getElementById('nakladyAutoDen').value) || 0) * dny;
-        let nakladPneu = celkoveKm * (10 * OPOTREBENI_PNEU_KOLO_KM); 
+        
+        // Úspora na pneu dle zvedlých náprav (při 10 kolech na nápravách např. 15% úspora za každou nápravu navrchu)
+        let opotrebeniKoef = 1 - (zvedle * 0.15);
+        let nakladPneu = celkoveKm * (10 * OPOTREBENI_PNEU_KOLO_KM) * opotrebeniKoef; 
+        
         let nakladNafta = (celkoveKm / 100) * avgCons * (parseFloat(document.getElementById('cenaNafty').value) || 0);
-        let nakladyCelkem = nakladNafta + nakladMzda + nakladFixAuto + nakladPneu + (includesMytoSale ? totalMytoCZK : 0);
+        
+        let nakladyBezMyta = nakladNafta + nakladMzda + nakladFixAuto + nakladPneu;
+        let nakladyCelkem = nakladyBezMyta + (includesMytoSale ? totalMytoCZK : 0);
 
         let marze = parseFloat(document.getElementById('marze').value) || 0;
         let prodejniCena = nakladyCelkem * (1 + (marze / 100));
@@ -1320,10 +1286,14 @@
         document.getElementById('resFixPneu').innerText = formatMoney((nakladFixAuto + nakladPneu) * dphMulti);
         document.getElementById('resMyto').innerText = formatMoney(totalMytoCZK * dphMulti);
         document.getElementById('resNakladyCelkem').innerText = formatMoney(nakladyCelkem * dphMulti);
+        
+        document.getElementById('resKmBezMyta').innerText = formatMoney(celkoveKm > 0 ? (nakladyBezMyta * dphMulti) / celkoveKm : 0) + " / km";
+        document.getElementById('resKmVcMyta').innerText = formatMoney(celkoveKm > 0 ? (nakladyCelkem * dphMulti) / celkoveKm : 0) + " / km";
+        
         document.getElementById('resProdejniCena').innerText = formatMoney(prodejniCena * dphMulti);
         document.getElementById('resProdejniCenaKm').innerText = formatMoney(celkoveKm > 0 ? (prodejniCena * dphMulti) / celkoveKm : 0) + " / km";
 
-        // *** ANALÝZA REALITY S PŘEPOČTEM TYPU ***
+        // *** ANALÝZA REALITY ***
         let skutecnaCenaZadana = parseFloat(document.getElementById('skutecnaCena').value) || 0;
         let realCenaTyp = document.getElementById('realCenaTyp') ? document.getElementById('realCenaTyp').value : 'celkem';
         let realCenaMena = document.getElementById('realCenaMena') ? document.getElementById('realCenaMena').value : 'CZK';
@@ -1490,9 +1460,8 @@
                     let dDur = 0; let sDur = 0;
                     shift.acts.forEach(act => { 
                         sDur += act.d; 
-                        // DVOJOSÁDKA ZOBRAZENÍ V KALENDÁŘI (Polovina z jízdy)
-                        if (act.t === 'drive' && shift.crew === '2') { dDur += act.d / 2; }
-                        else if (act.t === 'drive') { dDur += act.d; }
+                        // DVOJOSÁDKA ZOBRAZENÍ V KALENDÁŘI (Polovina z jízdy pro daného řidiče)
+                        if (act.t === 'drive') { dDur += (shift.crew === '2') ? (act.d / 2) : act.d; }
                     });
                     
                     let endTime = parseTime(shift.start) + sDur;
@@ -1535,7 +1504,6 @@
         });
     }
 
-    // ROZŠÍŘENÝ SIMULÁTOR ÚLOH A DIET (Rozdělení času jízdy podle zemí z OSRM geometry)
     async function executeAutoPlan() {
         let drv1 = document.getElementById('planDriverSelect').value; 
         let drv2 = document.getElementById('planDriverSelect2').value;
@@ -1545,6 +1513,7 @@
         let eR = document.getElementById('planEndRoute').value;
         let speed = parseFloat(document.getElementById('planSpeed').value) || 70;
         let stat = document.getElementById('planStatus');
+        let isKolecko = document.getElementById('planKoleckoToggle').checked;
         
         if (!drv1 || !sR || !eR) { stat.innerText = "Vyplňte Start, Cíl a Řidiče!"; stat.style.display = "block"; return; }
         let driversToSave = crew === '2' ? [drv1, drv2] : [drv1];
@@ -1557,6 +1526,13 @@
             combinedPoints.push({address: eR});
             planWaypointsAfter.forEach(w => combinedPoints.push(w));
 
+            // ZPÁTEČNÍ TRASA - Přetočení bodů na cestu zpět
+            if (isKolecko) {
+                let rev = [...combinedPoints].reverse();
+                rev.shift(); 
+                combinedPoints = combinedPoints.concat(rev);
+            }
+
             let coordStrings = [];
             for (let pt of combinedPoints) {
                 if (pt.address) {
@@ -1565,17 +1541,16 @@
                 }
             }
             
-            // Stáhneme geometrii pro analýzu států
             let url = `https://router.project-osrm.org/route/v1/driving/${coordStrings.join(';')}?overview=full&geometries=geojson`;
             let rRes = await fetch(url);
             let rData = await rRes.json();
             let route = rData.routes[0];
             let distTotal = route.distance / 1000;
             
-            // Analyzujeme segmenty jako v kalkulačce
+            document.getElementById('planEstKm').innerText = distTotal.toFixed(1) + " km";
+
             let segments = await extractSegmentsFromCoords(route.geometry.coordinates, distTotal);
             
-            // Vytvoříme Task Queue. Z segmentů uděláme úseky jízdy
             let taskQueue = [];
             for (let seg of segments) {
                 let timeInCountry = seg.km / speed;
@@ -1596,13 +1571,9 @@
                 while (remTime > 0) {
                     let chunk = Math.min(remTime, 4.5, limit - dD);
                     
-                    // Zápis do Acts pro Kalendář - OPRAVA DVOJOSÁDKY
-                    if (crew === '2') {
-                        acts.push({t: 'drive', d: chunk/2});
-                        acts.push({t: 'work', d: chunk/2});
-                    } else {
-                        acts.push({t: 'drive', d: chunk}); 
-                    }
+                    // Jízda celková pro kamion - Až kalendář/výkaz to dělí mezi řidiče
+                    acts.push({t: 'drive', d: chunk});
+                    
                     dD += chunk; dS += chunk; remTime -= chunk; 
 
                     let calDayIndex = Math.floor(absoluteTimeCounter / 24);
@@ -1634,6 +1605,16 @@
             }
             if (acts.length > 0) generatedShifts.push({ w: currentWeekSave, d: cDay, shift: { start: formatTime(cTime), crew: crew, note: `Dojetí do cíle`, acts: JSON.parse(JSON.stringify(acts)) } }); 
             
+            // Textové doplnění času konce
+            let endDayNum = Math.floor(absoluteTimeCounter / 24) % 7;
+            let endDayStr = document.getElementById('planDaySelect').options[endDayNum].text;
+            document.getElementById('planArrivalText').innerText = `${endDayStr} v ${formatTime(absoluteTimeCounter % 24)}`;
+
+            let cleanTime = absoluteTimeCounter + (crew === '2' ? 9 : 11);
+            let cleanDayNum = Math.floor(cleanTime / 24) % 7;
+            let cleanDayStr = document.getElementById('planDaySelect').options[cleanDayNum].text;
+            document.getElementById('planCleanText').innerText = `${cleanDayStr} v ${formatTime(cleanTime % 24)}`;
+
             // Vyčíslení tranzitních diet (rozpad do řádků)
             let countryHoursCombined = {}; let totalDietsEst = 0; let kurz = parseFloat(document.getElementById('kurzEuro').value) || 25;
             for (let dayIdx in dailyDietTracker) {
@@ -1682,6 +1663,17 @@
             document.getElementById('editStart').value = "06:00"; 
             currentActs = [{t: 'drive', d: 4.5}, {t: 'rest', d: 0.75}, {t: 'drive', d: 4.5}]; 
         }
+        
+        let navBtn = document.getElementById('btnNavShift');
+        let noteStr = shift ? (shift.note || "") : "";
+        let m = noteStr.match(/Trasa\s*\((.*?)\s*-\s*(.*?)\)/);
+        if(m) {
+            navBtn.style.display = 'block';
+            navBtn.onclick = function() { window.open(`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(m[1])}&destination=${encodeURIComponent(m[2])}`, '_blank'); };
+        } else {
+            navBtn.style.display = 'none';
+        }
+
         document.getElementById('shiftModal').style.display = 'flex'; validateAndRenderShift();
     }
     
@@ -1720,10 +1712,10 @@
         document.getElementById('payBonus').value = payroll.bonus || 0; 
         dietRows = payroll.dietRows || [];
         
-        let data = getShiftsForExport(); // Pomocná funkce exportu (vypočítá týdenní hodiny z kalendáře)
+        let data = getShiftsForExport(); 
         document.getElementById('payShiftsCount').value = data.shiftsCount;
         document.getElementById('payTotalHours').innerText = data.totalV.toFixed(1) + " h";
-        document.getElementById('payDriveHours').innerText = data.totalJ.toFixed(1) + " h"; // Už zahrnuje dvojosádku dělenou
+        document.getElementById('payDriveHours').innerText = data.totalJ.toFixed(1) + " h"; 
         
         document.getElementById('payrollModal').style.display = 'flex'; 
         calcPayroll(); renderDietRows();
@@ -1805,8 +1797,7 @@
                     s.acts.forEach(a=>{
                         v+=a.d; 
                         if(a.t==='drive') {
-                            // OPRAVA EXPORTU PRO DVOJOSÁDKU - jízda se dělí 2
-                            if (s.crew === '2') { j += (a.d / 2); } else { j += a.d; }
+                            j += (s.crew === '2') ? (a.d / 2) : a.d; // Oprava AETR - Dvojosádka jízda se pro daného dělí 2
                         }
                     }); 
                     totalV += v; totalJ += j;
@@ -1822,11 +1813,12 @@
         document.getElementById('pdfExportModal').style.display = 'flex';
     }
 
-    // Nový grafický Print HTML Report
     function exportKnihaPrint() {
         let data = getShiftsForExport();
+        let expType = document.getElementById('pdfTypeSelect').value; // both, kniha, mzdy
+        
         let html = `
-        <html><head><title>Kniha Jízd a Mzdový Přehled - ${data.driver}</title>
+        <html><head><title>Tiskový Přehled - ${data.driver}</title>
         <style>
             body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; color: #333; }
             .header-print { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 4px solid #e3000f; padding-bottom: 10px; margin-bottom: 20px; }
@@ -1838,8 +1830,6 @@
             table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
             th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
             th { background: #f0f0f0; text-transform: uppercase; font-size: 11px; }
-            
-            /* Grafika pro vizualizaci směn */
             .bar-wrap { width: 100px; height: 12px; background: #eee; border-radius: 4px; display: flex; overflow: hidden; }
             .bar-drive { background: #4caf50; }
             .bar-work { background: #ff9800; }
@@ -1848,20 +1838,25 @@
         </head><body>
             <div class="header-print">
                 <div>
-                    <h1>Výkaz Směn a Kniha Jízd</h1>
+                    <h1>${expType === 'mzdy' ? 'Mzdový Výměr' : (expType === 'kniha' ? 'Kniha Jízd' : 'Výkaz Směn a Kniha Jízd')}</h1>
                     <div style="font-size: 16px; margin-top: 5px;"><b>Řidič:</b> ${data.driver}</div>
                 </div>
                 <div style="text-align: right; font-size: 14px; font-weight: bold; color: #666;">
                     Období: ${data.title}
                 </div>
-            </div>
+            </div>`;
 
+        if (expType === 'both' || expType === 'mzdy') {
+            html += `
             <div class="summary-box">
                 <div class="summary-item"><div class="label">Odpracováno celkem</div><div class="val">${data.totalV.toFixed(1)} h</div></div>
                 <div class="summary-item"><div class="label">Z toho čistá jízda</div><div class="val" style="color: #1565c0;">${data.totalJ.toFixed(1)} h</div></div>
                 <div class="summary-item"><div class="label">Celkem mzdový základ + Diety</div><div class="val" style="color: #2e7d32;">${data.totalP} CZK</div></div>
-            </div>
+            </div>`;
+        }
 
+        if (expType === 'both' || expType === 'kniha') {
+            html += `
             <table>
                 <thead>
                     <tr>
@@ -1875,30 +1870,33 @@
                     </tr>
                 </thead>
                 <tbody>`;
-        
-        data.rows.forEach(r => { 
-            let grafHtml = `<div class="bar-wrap">`;
-            r.shiftObj.acts.forEach(act => {
-                let pct = (act.d / r.v) * 100;
-                let css = act.t === 'drive' ? 'bar-drive' : (act.t === 'work' ? 'bar-work' : 'bar-rest');
-                grafHtml += `<div class="${css}" style="width:${pct}%"></div>`;
-            });
-            grafHtml += `</div>`;
+            
+            data.rows.forEach(r => { 
+                let grafHtml = `<div class="bar-wrap">`;
+                r.shiftObj.acts.forEach(act => {
+                    let pct = (act.d / r.v) * 100;
+                    let css = act.t === 'drive' ? 'bar-drive' : (act.t === 'work' ? 'bar-work' : 'bar-rest');
+                    grafHtml += `<div class="${css}" style="width:${pct}%"></div>`;
+                });
+                grafHtml += `</div>`;
 
-            html += `<tr>
-                <td style="text-align:center;"><b>T${r.week}</b></td>
-                <td>${r.day}</td>
-                <td style="font-weight:bold;">${r.start}</td>
-                <td>${r.note}</td>
-                <td><b>${r.v.toFixed(1)} h</b></td>
-                <td style="color: #1565c0;"><b>${r.j.toFixed(1)} h</b></td>
-                <td>${grafHtml}</td>
-            </tr>`; 
-        });
+                html += `<tr>
+                    <td style="text-align:center;"><b>T${r.week}</b></td>
+                    <td>${r.day}</td>
+                    <td style="font-weight:bold;">${r.start}</td>
+                    <td>${r.note}</td>
+                    <td><b>${r.v.toFixed(1)} h</b></td>
+                    <td style="color: #1565c0;"><b>${r.j.toFixed(1)} h</b></td>
+                    <td>${grafHtml}</td>
+                </tr>`; 
+            });
+
+            html += `
+                    </tbody>
+                </table>`;
+        }
 
         html += `
-                </tbody>
-            </table>
             <div style="margin-top: 50px; display: flex; justify-content: space-between;">
                 <div style="border-top: 1px solid #333; width: 30%; padding-top: 10px; text-align: center; font-size: 12px;">Podpis dispečera</div>
                 <div style="border-top: 1px solid #333; width: 30%; padding-top: 10px; text-align: center; font-size: 12px;">Podpis řidiče</div>
@@ -1915,9 +1913,16 @@
 
     function exportKnihaCSV() {
         let data = getShiftsForExport();
-        let csv = `Kniha jizd - ${data.driver} - ${data.title}\n`;
-        csv += "Tyden,Den,Start,Trasa,Vykon(h),Jizda(h)\n";
-        data.rows.forEach(r => { csv += `${r.week},${r.day},${r.start},"${r.note}",${r.v.toFixed(1)},${r.j.toFixed(1)}\n`; });
+        let expType = document.getElementById('pdfTypeSelect').value;
+        let csv = `Export dat - ${data.driver} - ${data.title}\n`;
+        
+        if (expType === 'both' || expType === 'mzdy') {
+            csv += `\nMZDY A VYKON\nOdpracovano (h),${data.totalV.toFixed(1)}\nJizda (h),${data.totalJ.toFixed(1)}\nVyplata CELKEM (CZK),${data.totalP}\n\n`;
+        }
+        if (expType === 'both' || expType === 'kniha') {
+            csv += "KNIHA JIZD\nTyden,Den,Start,Trasa,Vykon(h),Jizda(h)\n";
+            data.rows.forEach(r => { csv += `${r.week},${r.day},${r.start},"${r.note}",${r.v.toFixed(1)},${r.j.toFixed(1)}\n`; });
+        }
         
         let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         let link = document.createElement("a"); link.setAttribute("href", URL.createObjectURL(blob));
@@ -1927,11 +1932,21 @@
 
     function exportDriverWA() {
         let data = getShiftsForExport();
-        let text = `📅 *Výplatní přehled: ${data.driver}*\n📍 Období: ${data.title}\n\n`;
-        text += `⏱️ Odpracovaný výkon: ${data.totalV.toFixed(1)} h\n🚛 Čistá jízda (z toho): ${data.totalJ.toFixed(1)} h\n`;
-        text += `💰 *Výplata celkem:* ${data.totalP} Kč`;
+        let expType = document.getElementById('pdfTypeSelect').value;
+        
+        let text = `📅 *Přehled pro: ${data.driver}*\n📍 Období: ${data.title}\n\n`;
+        
+        if (expType === 'both' || expType === 'kniha') {
+            text += `🗓️ Počet odjetých směn: ${data.shiftsCount}\n`;
+        }
+        if (expType === 'both' || expType === 'mzdy') {
+            text += `⏱️ Odpracovaný výkon: ${data.totalV.toFixed(1)} h\n🚛 Čistá jízda (z toho): ${data.totalJ.toFixed(1)} h\n`;
+            text += `💰 *Výplata celkem:* ${data.totalP} Kč`;
+        }
+
         window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
         document.getElementById('pdfExportModal').style.display='none';
     }
 </script>
-
+</body>
+</html>
