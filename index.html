@@ -175,20 +175,20 @@
         <button class="btn-modal-close" onclick="document.getElementById('infoModal').style.display='none'">ZAVŘÍT</button>
     </div>
 </div>
-
 <header>
-    <div class="logo-container">
-        <span style='font-size:18px; font-weight:800; color:white;'>CONTROL POINT</span>
+    <div class="logo-container" style="display: flex; align-items: center; gap: 8px;">
+        <img src="logo_CP_page-0001.jpg" alt="Logo" style="height: 24px; width: auto; object-fit: contain; border-radius: 2px;">
         <span class="analysis-text" id="lblHeaderAnalytik">ANALÝZA</span>
     </div>
-    <div class="header-controls">
-        <button id="btnInstallApp" class="btn-secondary" style="background:#107c41; margin:0; padding:6px 12px; font-size:12px; width:auto;" onclick="installApp()">💾</button>
-        <select id="langSelect" onchange="changeLanguage()">
+    <div class="header-controls" style="display: flex; align-items: center; gap: 6px; flex-wrap: nowrap;">
+        <button id="btnInstallApp" class="btn-secondary" style="background:#107c41; margin:0; padding: 6px 8px; font-size: 14px; width: auto; line-height: 1;" onclick="installApp()" title="Uložit aplikaci">💾</button>
+        <select id="langSelect" onchange="changeLanguage()" style="padding: 6px 8px; font-size: 11px; width: auto;">
             <option value="cs">CZ</option><option value="en">EN</option><option value="de">DE</option>
             <option value="pl">PL</option><option value="it">IT</option>
         </select>
     </div>
 </header>
+
 
 <div class="app-switcher">
     <button class="app-btn active" id="btnAppCalc" onclick="switchApp('calc')">🧮 <span id="lblTab1">1. Kalkulačka Trasy</span></button>
