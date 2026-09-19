@@ -62,8 +62,9 @@
         h2 span.num { color: var(--cp-red); margin-right: 5px; }
         .analysis h2 { color: white; }
 
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; width: 100%; max-width: 100%; }
-        .input-group { display: flex; flex-direction: column; position: relative; margin-bottom: 8px; width: 100%; max-width: 100%; box-sizing: border-box; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; width: 100%; max-width: 100%; min-width: 0; }
+        .input-group { display: flex; flex-direction: column; position: relative; margin-bottom: 8px; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; }
+
         .input-group label { font-size: 11px; font-weight: 600; color: #555; margin-bottom: 4px; text-transform: uppercase; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
         .analysis .input-group label { color: #aaa; }
         .icon-help { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; background-color: #888; color: white; border-radius: 50%; font-size: 11px; font-weight: 800; cursor: pointer; flex-shrink: 0; margin-left: auto; }
@@ -499,8 +500,8 @@
                     <input type="number" id="planSpeed" value="70">
                 </div>
                 <div class="input-group">
-                    <label id="lblPlanDay">Datum Startu (Přesný den) <span class="icon-help" onclick="showInfo('Vyberte přesné datum, aplikace sama určí týden a rok.')">i</span></label>
-                    <input type="date" id="planDateSelect">
+                   <label id="lblPlanDay">Datum startu <span class="icon-help" onclick="showInfo('Vyberte přesné datum, aplikace sama určí týden a rok.')">i</span></label>
+                   <input type="date" id="planDateSelect">
                 </div>
                 <div class="input-group">
                     <label id="lblPlanTime">Čas Startu</label>
