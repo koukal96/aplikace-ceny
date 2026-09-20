@@ -1873,10 +1873,65 @@
     }
 
     function addPlanWaypoint(target) {
-        if(target === 'before') planWaypointsBefore.push({address: "", type: "work", time: 1.5}); 
-        else planWaypointsAfter.push({address: "", type: "work", time: 1.5}); 
-        renderPlanWaypoints();
+    // 1. Zjištění, kam se má zastávka přidat
+    let containerId = (target === 'before') ? 'planWpBeforeContainer' : 'planWpAfterContainer';
+    let container = document.getElementById(containerId);
+
+    if (!container) {
+        console.error("Kontejner pro přidání zastávky nebyl nalezen!");
+        return;
     }
+
+    // 2. Vytvoření HTML kódu pro novou zastávku (včetně roletky pro Stát)
+    let html = `
+    <div class="waypoint-row" style="display:flex; gap:10px; margin-bottom:10px; flex-wrap: wrap; align-items: flex-end;">
+        <div class="input-group" style="margin:0; flex: 2; min-width: 150px;">
+            <label style="font-size:11px; color:#555;">Zastávka (${target === 'before' ? 'Před cílem' : 'Za cílem'})</label>
+            <input type="text" class="plan-wp-address" placeholder="Zadejte město/adresu...">
+        </div>
+        <div class="input-group" style="margin:0; flex: 1; min-width: 80px;">
+            <label style="font-size:11px; color:#555;">Stát</label>
+            <select class="plan-wp-stat">
+                <option value="">-- Auto --</option>
+                <option value="CZ">CZ</option>
+                <option value="DE">DE</option>
+                <option value="AT">AT</option>
+                <option value="PL">PL</option>
+                <option value="SK">SK</option>
+                <option value="IT">IT</option>
+            </select>
+        </div>
+        <!-- Tlačítko pro smazání zastávky, které rovnou znovu zkontroluje kolečko -->
+        <button class="btn-remove-wp" type="button" onclick="this.parentElement.remove(); checkPlanKolecko();" style="height:40px; margin-bottom:2px;">✕</button>
+    </div>`;
+    
+    // 3. Vložení HTML do správného kontejneru na konec
+    container.insertAdjacentHTML('beforeend', html);
+    
+    // 4. Kontrola a případná deaktivace zaškrtávátka "Kolečko"
+    if (typeof checkPlanKolecko === "function") {
+        checkPlanKolecko();
+    }
+}
+    function checkPlanKolecko() {
+    let beforeContainer = document.getElementById('planWpBeforeContainer');
+    let afterContainer = document.getElementById('planWpAfterContainer');
+    let koleckoToggle = document.getElementById('planKoleckoToggle');
+    
+    if (!koleckoToggle) return; // Pokud checkbox pro kolečko na stránce není, nic se neděje
+
+    let wpBeforeCount = beforeContainer ? beforeContainer.children.length : 0;
+    let wpAfterCount = afterContainer ? afterContainer.children.length : 0;
+    
+    if (wpBeforeCount > 0 || wpAfterCount > 0) {
+        koleckoToggle.checked = false;
+        koleckoToggle.disabled = true;
+        koleckoToggle.parentElement.style.opacity = "0.5"; // Vizuální zašednutí
+    } else {
+        koleckoToggle.disabled = false;
+        koleckoToggle.parentElement.style.opacity = "1"; // Vrácení do normálu
+    }
+}
     
     function renderPlanWaypoints() {
         let bC = document.getElementById('planWpBeforeContainer'); bC.innerHTML = "";
