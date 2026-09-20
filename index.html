@@ -2314,13 +2314,41 @@
         document.getElementById('pdfExportModal').style.display = 'flex';
     }
 
+        // --- POMOCNÁ FUNKCE PRO ZAVŘENÍ TISKOVÉHO NÁHLEDU ---
+    window.hiddenElements = [];
+    window.originalBodyBackground = "";
+
+    function closePrintPreview() {
+        let printContainer = document.getElementById('cp-mobile-print-container');
+        if(printContainer) {
+            document.body.removeChild(printContainer);
+        }
+        document.body.style.background = window.originalBodyBackground;
+        window.hiddenElements.forEach(item => {
+            item.element.style.display = item.originalDisplay;
+        });
+        window.hiddenElements = [];
+    }
+
+    // --- HLAVNÍ FUNKCE PRO TISK A EXPORT PDF ---
     function exportKnihaPrint() {
         let data = getShiftsForExport();
         let expType = document.getElementById('pdfTypeSelect').value; 
         
-        // Vytvoříme HTML obsah tisku (bez hlavičky html/body, rovnou obsah)
         let html = `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; color: #333; background: white;">
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; color: #333; background: white; min-height: 100vh;">
+            
+            <!-- OVLÁDACÍ LIŠTA NÁHLEDU (při samotném tisku zmizí) -->
+            <style>
+                @media print { .no-print-toolbar { display: none !important; } }
+            </style>
+            <div class="no-print-toolbar" style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 25px; display: flex; gap: 10px; border: 2px solid #1565c0; position: sticky; top: 10px; z-index: 100000; box-shadow: 0 5px 15px rgba(0,0,0,0.2); flex-wrap: wrap;">
+                <div style="width: 100%; font-size: 13px; color: #0d47a1; font-weight: bold; text-align: center; margin-bottom: 5px;">Náhled je připraven. Vyberte akci:</div>
+                <button onclick="window.print()" style="flex: 2; background: #107c41; color: white; border: none; padding: 15px; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🖨️ Tisk / Uložit PDF</button>
+                <button onclick="closePrintPreview()" style="flex: 1; background: #c62828; color: white; border: none; padding: 15px; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🔙 Zpět</button>
+            </div>
+
+            <!-- OBSAH DOKUMENTU -->
             <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 4px solid #e3000f; padding-bottom: 10px; margin-bottom: 20px;">
                 <div>
                     <h1 style="margin: 0; font-size: 24px; text-transform: uppercase; color: #1a1a1a;">${expType === 'mzdy' ? 'Mzdový Výměr' : (expType === 'kniha' ? 'Kniha Jízd' : 'Výkaz Směn a Kniha Jízd')}</h1>
@@ -2388,33 +2416,20 @@
 
         // 3. Dočasně skrýt všechny ostatní prvky aplikace
         let mainElements = Array.from(document.body.children);
-        let hiddenElements = [];
+        window.hiddenElements = [];
         
         mainElements.forEach(el => {
             if (el.style.display !== 'none' && el.tagName !== 'SCRIPT') {
-                hiddenElements.push({ element: el, originalDisplay: el.style.display });
+                window.hiddenElements.push({ element: el, originalDisplay: el.style.display });
                 el.style.display = 'none';
             }
         });
 
         // 4. Přidat tiskový kontejner do DOM a změnit pozadí na bílé
         document.body.appendChild(printContainer);
-        let originalBodyBackground = document.body.style.background;
+        window.originalBodyBackground = document.body.style.background;
         document.body.style.background = 'white';
-
-        // 5. Zavolat tisk (s mírným zpožděním, aby se stihla překreslit obrazovka)
-        setTimeout(() => {
-            window.print();
-            
-            // 6. Úklid - Vrátit vše do původního stavu
-            setTimeout(() => {
-                document.body.removeChild(printContainer);
-                document.body.style.background = originalBodyBackground;
-                hiddenElements.forEach(item => {
-                    item.element.style.display = item.originalDisplay;
-                });
-            }, 500);
-        }, 300);
+        window.scrollTo(0, 0); // Vyskočíme nahoru, ať je vidět lišta
     }
 
 
