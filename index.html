@@ -1525,7 +1525,8 @@
         plannerLoadState();
         syncPlannerStartDate();
         renderPlanner();
-        calculate(); 
+        calculate();
+        setTimeout(handleSafariAutoPrint, 350);
     });
 
     function showInfo(text) {
@@ -2851,23 +2852,30 @@
     }
 
     function openReportInSafari(){
-        const url=window.location.href;
-        if(/^https:\/\//i.test(url)){
-            // iOS URL scheme: hand the current page back to Safari.
-            window.location.href='x-safari-https://'+url.slice(8);
+        const url=new URL(window.location.href);
+        // Přeneseme přesně to, co uživatel právě zvolil v exportu.
+        url.searchParams.set('cpPrint','1');
+        url.searchParams.set('cpDriver', document.getElementById('pdfDriverSelect')?.value || '');
+        url.searchParams.set('cpPeriod', document.getElementById('pdfPeriodSelect')?.value || 'week');
+        url.searchParams.set('cpType', document.getElementById('pdfTypeSelect')?.value || 'both');
+
+        if(/^https:\/\//i.test(url.href)){
+            // Otevře Safari rovnou na speciální tiskové adrese, nikoli na běžné úvodní stránce.
+            // Po načtení si stránka sama připraví stejný report a pokusí se otevřít Tisk.
+            window.location.href='x-safari-https://'+url.href.slice(8);
             return;
         }
-        alert('Tisk na iPhonu musí být spuštěný v Safari. Tento soubor je otevřený jako lokální HTML, takže Safari nelze automaticky přepnout. Otevři ho prosím v Safari.');
+        alert('Tento soubor není spuštěný z HTTPS adresy. Pro automatický tisk otevři Control Point v Safari.');
     }
 
     function printCurrentReport(){
         const source=document.getElementById('reportPreviewContent');
         if(!source) return;
 
-        // PWA/standalone režim iOS nemá spolehlivý přístup k systémovému tisku.
+        // V režimu PWA/standalone nepřesouváme uživatele jen na hlavní stránku.
+        // Safari dostane speciální URL cpPrint=1 a samo otevře stejný report.
         if(isIOSStandalone()){
-            const ok=confirm('Aplikace je právě otevřená jako ikona na ploše iPhonu. Pro systémový Tisk ji musíme otevřít v Safari.\n\nOK = otevřít v Safari\nZrušit = zůstat zde');
-            if(ok) openReportInSafari();
+            openReportInSafari();
             return;
         }
 
@@ -2895,6 +2903,46 @@
         const host=document.getElementById('printReportHost');
         if(host) host.innerHTML='';
     });
+
+    function handleSafariAutoPrint(){
+        const q=new URLSearchParams(window.location.search);
+        if(q.get('cpPrint')!=='1') return;
+
+        const driver=q.get('cpDriver');
+        const period=q.get('cpPeriod')||'week';
+        const type=q.get('cpType')||'both';
+        const driverSelect=document.getElementById('pdfDriverSelect');
+        const periodSelect=document.getElementById('pdfPeriodSelect');
+        const typeSelect=document.getElementById('pdfTypeSelect');
+        if(driverSelect && driver && [...driverSelect.options].some(o=>String(o.value)===String(driver))) driverSelect.value=driver;
+        if(periodSelect) periodSelect.value=period;
+        if(typeSelect) typeSelect.value=type;
+
+        // V Safari už jsme mimo standalone režim. Vygenerujeme report přímo do tiskového hostu
+        // a zkusíme nativní iOS tisk bez dalšího klepnutí. Když Safari automatický tisk odmítne,
+        // zůstane uživatel na hotovém reportu v Safari a může použít Tisk z nabídky Safari.
+        const data=getShiftsForExport();
+        let expType=type;
+        let reportHtml=`<div style="font-family:Arial,sans-serif;padding:18px;color:#222;background:#fff;"><div style="border-bottom:4px solid #e3000f;padding-bottom:10px;margin-bottom:15px;display:flex;justify-content:space-between;gap:15px;"><div><h2 style="margin:0;">${expType==='mzdy'?'Mzdový výkaz':expType==='kniha'?'Kniha jízd':'Výkaz směn a kniha jízd'}</h2><div>Řidič: <b>${data.driver}</b></div></div><div>${data.title}</div></div>`;
+        if(expType==='both'||expType==='mzdy') reportHtml+=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;"><div style="flex:1;border:1px solid #ddd;padding:10px;text-align:center;min-width:110px;">Odpracováno<br><b>${data.totalV.toFixed(1)} h</b></div><div style="flex:1;border:1px solid #ddd;padding:10px;text-align:center;min-width:110px;">Čistá jízda<br><b>${data.totalJ.toFixed(1)} h</b></div><div style="flex:1;border:1px solid #ddd;padding:10px;text-align:center;min-width:110px;">Výplata<br><b>${formatMoney(data.totalP)}</b></div></div>`;
+        if(expType==='both'||expType==='kniha'){reportHtml+=`<table style="width:100%;border-collapse:collapse;font-size:11px;"><thead><tr><th style="border:1px solid #ccc;padding:6px;">Týden</th><th style="border:1px solid #ccc;padding:6px;">Den</th><th style="border:1px solid #ccc;padding:6px;">Start</th><th style="border:1px solid #ccc;padding:6px;">Trasa / účel</th><th style="border:1px solid #ccc;padding:6px;">Výkon</th><th style="border:1px solid #ccc;padding:6px;">Jízda</th></tr></thead><tbody>`;data.rows.forEach(r=>reportHtml+=`<tr><td style="border:1px solid #ccc;padding:6px;">T${r.week}</td><td style="border:1px solid #ccc;padding:6px;">${r.day}</td><td style="border:1px solid #ccc;padding:6px;">${r.start}</td><td style="border:1px solid #ccc;padding:6px;">${r.note}</td><td style="border:1px solid #ccc;padding:6px;">${r.v.toFixed(1)} h</td><td style="border:1px solid #ccc;padding:6px;">${r.j.toFixed(1)} h</td></tr>`);reportHtml+=`</tbody></table>`;}
+        reportHtml+=`</div>`;
+
+        let host=document.getElementById('printReportHost');
+        if(!host){host=document.createElement('div');host.id='printReportHost';host.className='print-report-host';document.body.appendChild(host);}
+        host.innerHTML=reportHtml;
+        document.body.classList.add('print-report-mode');
+
+        // Po krátkém vykreslení zkusíme obě známé cesty Safari/WebKit.
+        setTimeout(()=>{
+            let used=false;
+            try { used=document.execCommand('print',false,null)===true; } catch(e) {}
+            if(!used){ try { window.print(); } catch(e) {} }
+        },120);
+
+        // URL po načtení vyčistíme, aby se při obnovení stránky tisk nespouštěl znovu.
+        try { history.replaceState(null,'',window.location.pathname+window.location.hash); } catch(e) {}
+    }
 
     function exportKnihaCSV(){
         const data=getShiftsForExport(); const type=document.getElementById('pdfTypeSelect').value;
