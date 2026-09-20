@@ -19,365 +19,75 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
-        /* ==========================================================================
-           ZÁKLADNÍ PROMĚNNÉ A STYLY
-           ========================================================================== */
         :root { 
-            --cp-red: #e3000f; 
-            --cp-red-hover: #b3000b; 
-            --cp-dark: #1a1a1a; 
-            --cp-gray: #f4f4f4; 
-            --cp-border: #e0e0e0; 
-            --cp-white: #ffffff; 
-            --cp-success: #2e7d32; 
-            --cp-danger: #c62828; 
-            --cp-blue: #1565c0; 
-            --shadow: 0 4px 20px rgba(0,0,0,0.06); 
-            --transition: all 0.3s ease; 
+            --cp-red: #e3000f; --cp-red-hover: #b3000b; --cp-dark: #1a1a1a; --cp-gray: #f4f4f4; 
+            --cp-border: #e0e0e0; --cp-white: #ffffff; --cp-success: #2e7d32; --cp-danger: #c62828; 
+            --cp-blue: #1565c0; --shadow: 0 4px 20px rgba(0,0,0,0.06); --transition: all 0.3s ease; 
         }
 
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-            font-family: 'Montserrat', sans-serif; 
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
+        html, body { max-width: 100vw; overflow-x: hidden; background-color: var(--cp-gray); color: var(--cp-dark); line-height: 1.5; font-size: 14px; }
 
-        html, body { 
-            max-width: 100vw; 
-            overflow-x: hidden; 
-            background-color: var(--cp-gray); 
-            color: var(--cp-dark); 
-            line-height: 1.5; 
-            font-size: 14px; 
-        }
-
-        /* --- PWA Offline Banner --- */
-        #offlineBanner { 
-            display: none; 
-            background: #c62828; 
-            color: white; 
-            text-align: center; 
-            padding: 8px; 
-            font-size: 12px; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            position: sticky; 
-            top: 0; 
-            z-index: 1000000; 
-            letter-spacing: 1px; 
-            width: 100%; 
-            box-sizing: border-box;
-        }
+        #offlineBanner { display: none; background: #c62828; color: white; text-align: center; padding: 8px; font-size: 12px; font-weight: 800; text-transform: uppercase; position: sticky; top: 0; z-index: 1000000; letter-spacing: 1px; width: 100%; box-sizing: border-box;}
         body.is-offline #offlineBanner { display: block; }
 
-        /* --- Loading Screen --- */
-        #loading-screen { 
-            position: fixed; 
-            top: 0; left: 0; 
-            width: 100%; height: 100%; 
-            background: #000 url('IMG_9552.png') no-repeat right center; 
-            background-size: cover;
-            z-index: 99999; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            transition: opacity 0.6s ease-out; 
-        }
-        #loading-screen::before { 
-            content: ""; 
-            position: absolute; 
-            top: 0; left: 0; 
-            width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.6); 
-        }
-        .loader-content { 
-            position: relative; 
-            z-index: 100000; 
-            text-align: center; 
-            color: white; 
-        }
-        .spinner { 
-            width: 50px; 
-            height: 50px; 
-            border: 4px solid rgba(255,255,255,0.2); 
-            border-top: 4px solid var(--cp-red); 
-            border-radius: 50%; 
-            animation: spin 1s linear infinite; 
-            margin: 0 auto 15px auto; 
-        }
-        @keyframes spin { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
-        }
+        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000 url('IMG_9552.png') no-repeat right center; background-size: cover; z-index: 99999; display: flex; align-items: center; justify-content: center; transition: opacity 0.6s ease-out; }
+        #loading-screen::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
+        .loader-content { position: relative; z-index: 100000; text-align: center; color: white; }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid var(--cp-red); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- Header (Hlavička na jednom řádku) --- */
-        header { 
-            background-color: var(--cp-dark); 
-            padding: 10px 15px; 
-            border-bottom: 4px solid var(--cp-red); 
-            position: sticky; 
-            top: 0; 
-            z-index: 100; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            flex-wrap: nowrap; 
-            gap: 10px; 
-            width: 100%;
-        }
+        header { background-color: var(--cp-dark); padding: 10px 15px; border-bottom: 4px solid var(--cp-red); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: nowrap; gap: 10px; width: 100%; overflow-x: auto;}
         body.is-offline header { top: 31px; }
 
-        .logo-container { 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-            white-space: nowrap;
-        }
-        .analysis-text { 
-            color: #aaa; 
-            font-size: 11px; 
-            font-weight: 700; 
-            letter-spacing: 1px; 
-            text-transform: uppercase; 
-            border-left: 2px solid var(--cp-red); 
-            padding-left: 8px; 
-        }
+        .logo-container { display: flex; align-items: center; gap: 8px; white-space: nowrap; color:white; font-weight:800; font-size: 16px;}
+        .analysis-text { color: #aaa; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; border-left: 2px solid var(--cp-red); padding-left: 8px; }
         
-        .header-controls { 
-            display: flex; 
-            gap: 10px; 
-            align-items: center; 
-            flex-wrap: nowrap;
-        }
-        .header-controls select, .header-controls button { 
-            padding: 6px 10px; 
-            font-size: 12px; 
-            background: #222; 
-            color: white; 
-            border: 1px solid #444; 
-            border-radius: 4px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            white-space: nowrap;
-        }
+        .header-controls { display: flex; gap: 10px; align-items: center; flex-wrap: nowrap;}
+        .header-controls select, .header-controls button { padding: 6px 10px; font-size: 12px; background: #222; color: white; border: 1px solid #444; border-radius: 4px; font-weight: 600; cursor: pointer; white-space: nowrap;}
 
-        /* --- App Switcher --- */
-        .app-switcher { 
-            display: flex; 
-            max-width: 1400px; 
-            margin: 15px auto 5px auto; 
-            padding: 0 10px; 
-            gap: 10px; 
-            flex-wrap: wrap; 
-            width: 100%; 
-        }
-        .app-btn { 
-            flex: 1; 
-            padding: 12px; 
-            font-size: 14px; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            border: 2px solid var(--cp-dark); 
-            border-radius: 6px; 
-            background: white; 
-            color: var(--cp-dark); 
-            cursor: pointer; 
-            transition: 0.3s; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px; 
-            min-width: 250px;
-        }
-        .app-btn.active { 
-            background: var(--cp-dark); 
-            color: white; 
-            border-color: var(--cp-dark); 
-        }
+        .app-switcher { display: flex; max-width: 1400px; margin: 15px auto 5px auto; padding: 0 10px; gap: 10px; flex-wrap: wrap; width: 100%; }
+        .app-btn { flex: 1; padding: 12px; font-size: 14px; font-weight: 800; text-transform: uppercase; border: 2px solid var(--cp-dark); border-radius: 6px; background: white; color: var(--cp-dark); cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; min-width: 250px;}
+        .app-btn.active { background: var(--cp-dark); color: white; border-color: var(--cp-dark); }
 
-        /* --- Rozvržení a Karty --- */
-        .container, .planner-layout { 
-            max-width: 1400px; 
-            margin: 10px auto; 
-            padding: 0 10px; 
-            display: grid; 
-            gap: 15px; 
-            width: 100%; 
-        }
+        .container, .planner-layout { max-width: 1400px; margin: 10px auto; padding: 0 10px; display: grid; gap: 15px; width: 100%; }
         .container { grid-template-columns: 1fr 450px; }
         .planner-layout { grid-template-columns: 280px 1fr; }
-        
-        @media (max-width: 1100px) { 
-            .container { grid-template-columns: 1fr; } 
-        }
-        @media (max-width: 900px) { 
-            .planner-layout { grid-template-columns: 1fr; } 
-        }
+        @media (max-width: 1100px) { .container { grid-template-columns: 1fr; } }
+        @media (max-width: 900px) { .planner-layout { grid-template-columns: 1fr; } }
 
-        .card { 
-            background: var(--cp-white); 
-            border-radius: 6px; 
-            padding: 20px; 
-            box-shadow: var(--shadow); 
-            margin-bottom: 15px; 
-            border-left: 4px solid var(--cp-red); 
-            width: 100%; 
-            overflow: hidden;
-        }
+        .card { background: var(--cp-white); border-radius: 6px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 15px; border-left: 4px solid var(--cp-red); width: 100%; overflow: hidden;}
         .card.dashboard { border-left: 4px solid var(--cp-dark); }
         .card.analysis { border-left: 4px solid var(--cp-red); background: #1a1a1a; color: white; }
         
-        h2 { 
-            font-size: 15px; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            margin-bottom: 15px; 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-            color: var(--cp-dark); 
-            justify-content: space-between; 
-            flex-wrap: wrap;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-        }
-        h2 span.num { color: var(--cp-red); margin-right: 5px; }
+        h2 { font-size: 15px; font-weight: 800; text-transform: uppercase; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; color: var(--cp-dark); justify-content: flex-start; border-bottom: 2px solid #eee; padding-bottom: 10px; flex-wrap: wrap; }
+        h2 span.num { color: var(--cp-red); margin-right: 2px; }
         .analysis h2 { color: white; border-bottom: 2px solid #333; }
 
-        /* --- Formulářové Prvky --- */
-        .form-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
-            gap: 15px; 
-            width: 100%; 
-        }
-        
-        .input-group { 
-            display: flex; 
-            flex-direction: column; 
-            width: 100%; 
-            box-sizing: border-box; 
-        }
-        
-        .input-group label { 
-            font-size: 11px; 
-            font-weight: 600; 
-            color: #555; 
-            margin-bottom: 6px; 
-            text-transform: uppercase; 
-            display: flex; 
-            align-items: center; 
-            gap: 4px; 
-        }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; width: 100%; }
+        .input-group { display: flex; flex-direction: column; width: 100%; box-sizing: border-box; }
+        .input-group label { font-size: 11px; font-weight: 600; color: #555; margin-bottom: 6px; text-transform: uppercase; display: flex; align-items: center; gap: 4px; }
         .analysis .input-group label { color: #aaa; }
         
-        /* Informační bubliny */
-        .icon-help { 
-            display: inline-flex; 
-            align-items: center; 
-            justify-content: center; 
-            width: 16px; 
-            height: 16px; 
-            background-color: #888; 
-            color: white; 
-            border-radius: 50%; 
-            font-size: 11px; 
-            font-weight: 800; 
-            cursor: pointer; 
-            flex-shrink: 0; 
-            margin-left: auto; 
-            transition: 0.2s;
-        }
+        .icon-help { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; background-color: #888; color: white; border-radius: 50%; font-size: 11px; font-weight: 800; cursor: pointer; flex-shrink: 0; margin-left: auto; transition: 0.2s;}
         .icon-help:hover { background-color: var(--cp-red); }
 
-        input, select { 
-            width: 100%; 
-            padding: 10px; 
-            border: 1px solid var(--cp-border); 
-            border-radius: 4px; 
-            font-size: 14px; 
-            font-family: 'Roboto Mono', monospace; 
-            font-weight: 600; 
-            color: var(--cp-dark); 
-            background: #fafafa; 
-            box-sizing: border-box; 
-        }
+        input, select { width: 100%; padding: 10px; border: 1px solid var(--cp-border); border-radius: 4px; font-size: 14px; font-family: 'Roboto Mono', monospace; font-weight: 600; color: var(--cp-dark); background: #fafafa; box-sizing: border-box; }
         input:focus, select:focus { border-color: var(--cp-red); outline: none; background: var(--cp-white); }
         .analysis input, .analysis select { background: #333; border-color: #555; color: #fff; }
         .readonly-highlight { background: #e3f2fd !important; border-color: #90caf9 !important; color: #0d47a1 !important; font-weight: 800; }
 
-        /* --- Tlačítka --- */
-        .btn { 
-            background-color: var(--cp-red); 
-            color: var(--cp-white); 
-            border: none; 
-            padding: 15px; 
-            border-radius: 4px; 
-            font-size: 14px; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            cursor: pointer; 
-            transition: var(--transition); 
-            width: 100%; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            gap: 8px; 
-            margin-top: 15px; 
-        }
+        .btn { background-color: var(--cp-red); color: var(--cp-white); border: none; padding: 15px; border-radius: 4px; font-size: 14px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: var(--transition); width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 15px; }
         .btn:hover { background-color: var(--cp-red-hover); }
         .btn:disabled { background-color: #ccc; cursor: not-allowed; opacity: 0.7; }
         
-        .btn-secondary { 
-            background-color: #555; 
-            margin-top: 0; 
-            font-size: 13px; 
-            padding: 12px; 
-            color: white; 
-            border: none; 
-            border-radius: 4px; 
-            font-weight: 800; 
-            cursor: pointer; 
-            text-align: center; 
-            display: inline-flex; 
-            justify-content: center; 
-            align-items: center; 
-            gap: 5px; 
-            transition: 0.2s; 
-        }
+        .btn-secondary { background-color: #555; margin-top: 0; font-size: 13px; padding: 12px; color: white; border: none; border-radius: 4px; font-weight: 800; cursor: pointer; text-align: center; display: inline-flex; justify-content: center; align-items: center; gap: 5px; transition: 0.2s; }
         .btn-secondary:hover { background-color: #333; }
-        
-        .btn-magic { 
-            background: linear-gradient(45deg, #1565c0, #42a5f5); 
-            color: white !important; 
-            font-weight: 800; 
-            padding: 15px; 
-            width: 100%; 
-            border: none; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            text-transform: uppercase; 
-            font-size: 14px; 
-            transition: 0.3s; 
-            margin-top: 15px; 
-        } 
+        .btn-magic { background: linear-gradient(45deg, #1565c0, #42a5f5); color: white !important; font-weight: 800; padding: 15px; width: 100%; border: none; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 14px; transition: 0.3s; margin-top: 15px; } 
         .btn-magic:hover { box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .btn-magic:disabled { background: #ccc; cursor: not-allowed; color: #666 !important; }
 
-        /* --- Přepínače (Toggles) --- */
-        .toggle-container { 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            background: var(--cp-dark); 
-            color: white; 
-            padding: 12px 15px; 
-            border-radius: 6px; 
-            margin-bottom: 12px; 
-            width: 100%; 
-            box-sizing: border-box; 
-        }
+        .toggle-container { display: flex; align-items: center; justify-content: space-between; background: var(--cp-dark); color: white; padding: 12px 15px; border-radius: 6px; margin-bottom: 12px; width: 100%; box-sizing: border-box; }
         .toggle-label { font-weight: 600; font-size: 13px; }
         .switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -386,66 +96,21 @@
         input:checked + .slider { background-color: var(--cp-red); }
         input:checked + .slider:before { transform: translateX(22px); }
 
-        /* --- Waypointy a Zastávky --- */
-        .waypoints-container { 
-            border-left: 2px dashed var(--cp-red); 
-            padding-left: 15px; 
-            margin: 15px 0; 
-        }
-        .waypoint-row { 
-            display: flex; 
-            gap: 10px; 
-            margin-bottom: 10px; 
-            align-items: center; 
-            background: #fff; 
-            padding: 12px; 
-            border-radius: 4px; 
-            border: 1px solid #ddd; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02); 
-            flex-wrap: wrap; 
-        }
-        .wp-inputs { 
-            flex-grow: 1; 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
-            gap: 10px; 
-            width: 100%; 
-        }
-        .btn-remove-wp { 
-            background: #ffebee; 
-            color: #c62828; 
-            border: 1px solid #ffcdd2; 
-            padding: 10px 15px; 
-            border-radius: 4px; 
-            font-weight: 800; 
-            cursor: pointer; 
-            flex-shrink: 0; 
-        }
-        .btn-add-wp { 
-            background: #fdf2f2; 
-            color: var(--cp-red); 
-            border: 1px dashed #f5c6c8; 
-            padding: 15px; 
-            border-radius: 4px; 
-            font-size: 12px; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            cursor: pointer; 
-            width: 100%; 
-            margin-bottom: 15px; 
-            transition: 0.2s; 
-        }
+        .waypoints-container { border-left: 2px dashed var(--cp-red); padding-left: 15px; margin: 15px 0; }
+        .waypoint-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; background: #fff; padding: 12px; border-radius: 4px; border: 1px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.02); flex-wrap: wrap; }
+        .wp-inputs { flex-grow: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; width: 100%; }
+        .btn-remove-wp { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; padding: 10px 15px; border-radius: 4px; font-weight: 800; cursor: pointer; flex-shrink: 0; }
 
         #map-container { display: none; height: 300px; border-radius: 6px; overflow: hidden; margin-top: 15px; border: 2px solid #ddd; width: 100%; }
         #map { width: 100%; height: 100%; z-index: 1; }
 
-        /* --- Dashboard Výsledků --- */
         .breakdown-container { background: #e3f2fd; padding: 15px; border-radius: 6px; border: 1px solid #b6d4fe; margin-top: 15px; display: none; }
         .breakdown-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); align-items: center; gap: 10px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #b6d4fe; }
 
         .result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--cp-border); flex-wrap: wrap;}
         .result-label { font-size: 13px; color: #666; font-weight: 600; }
         .result-val { font-family: 'Roboto Mono', monospace; font-size: 14px; font-weight: 700; color: var(--cp-dark); text-align: right; }
+        .result-val .dual-currency { font-size: 0.75em; color: #888; margin-left: 5px; font-weight: 600; }
         
         .dashboard .result-main { background: var(--cp-gray); padding: 15px; border-radius: 6px; margin-top: 15px; border-left: 4px solid var(--cp-red); }
         .dashboard .result-main .result-val { font-size: 20px; color: var(--cp-red); }
@@ -459,6 +124,7 @@
         .msg-info { background: #e3f2fd; color: #0d47a1; display: block !important; }
         .msg-success { background: #d4edda; color: #155724; display: block !important; }
         .msg-error { background: #f8d7da; color: #721c24; display: block !important; }
+        .msg-warning { background: #fff3cd; color: #856404; display: block !important; border: 1px solid #ffeeba; }
 
         /* --- Šichtovník a Kalendář --- */
         .driver-list-box { background: white; border-radius: 6px; padding: 20px; box-shadow: var(--shadow); border-top: 4px solid var(--cp-dark); }
@@ -485,30 +151,10 @@
         .tl-work { background: #ff9800; } 
         .tl-rest { background: #2196f3; }
         
-        .aetr-warn-badge { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; padding: 4px 6px; font-size: 9px; font-weight: 800; border-radius: 3px; margin-top: 4px; display: block; line-height: 1.2; }
-        
-        .cell-actions { position: absolute; top: 4px; right: 4px; display: flex; gap: 4px; opacity: 0.3; transition: 0.2s;}
-        .calendar-table td:hover .cell-actions { opacity: 1; }
-        .cell-btn { background: #fff; border: 1px solid #ccc; font-size: 10px; padding: 4px 6px; border-radius: 3px; cursor: pointer; font-weight: bold;}
-        .cell-btn:hover { background: var(--cp-dark); color: white; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100000; align-items: flex-start; justify-content: center; padding: 20px; backdrop-filter: blur(2px); overflow-y: auto; }
+        .info-box { background: white; padding: 25px; border-radius: 8px; max-width: 650px; width: 100%; margin: 40px auto; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border-top: 5px solid var(--cp-red); position: relative;}
+        .btn-modal-close { background: var(--cp-dark); color: white; padding: 15px; border: none; border-radius: 4px; font-weight: 800; cursor: pointer; width: 100%; text-transform: uppercase; margin-top: 15px;}
 
-        /* --- Modální Okna --- */
-        .modal-overlay { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.85); z-index: 100000; align-items: flex-start; justify-content: center; 
-            padding: 20px; backdrop-filter: blur(2px); overflow-y: auto; 
-        }
-        .info-box { 
-            background: white; padding: 25px; border-radius: 8px; max-width: 650px; width: 100%; 
-            margin: 40px auto; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border-top: 5px solid var(--cp-red); 
-            position: relative;
-        }
-        .btn-modal-close { 
-            background: var(--cp-dark); color: white; padding: 15px; border: none; border-radius: 4px; 
-            font-weight: 800; cursor: pointer; width: 100%; text-transform: uppercase; margin-top: 15px;
-        }
-
-        /* --- Ochrana proti tisku elementů, co nemají být v PDF --- */
         @media print {
             header, .app-switcher, .driver-list-box, .week-controls button, .modal-overlay, .cell-actions, .btn-secondary, .btn { display: none !important; }
             body { background: white; }
@@ -572,8 +218,9 @@
         
         <!-- BLOK 1: TRASA -->
         <div class="card">
-            <h2>
-                <div><span class="num">01.</span> <span data-i18n="sec1">Lokace & Trasa</span></div>
+            <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">
+                <div style="display:flex; align-items:center;"><span class="num">01.</span> <span data-i18n="sec1">Lokace & Trasa</span></div>
+                <button class="btn-secondary" style="background:#ffca28; color:#333; padding:8px 12px; margin:0; font-size:11px;" onclick="saveFavorite()" data-i18n="fav_save">⭐ Uložit šablonu</button>
             </h2>
 
             <div style="background: #f0f0f0; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; border: 1px dashed #ccc; flex-wrap:wrap;">
@@ -581,7 +228,6 @@
                     <option value="" data-i18n="fav_sel">-- Načíst oblíbenou trasu --</option>
                 </select>
                 <button class="btn-secondary" style="background:#c62828; padding:12px; margin:0;" onclick="removeFavorite()" title="Smazat šablonu">🗑️</button>
-                <button class="btn-secondary" style="background:#ffca28; color:#333; padding:12px; margin:0;" onclick="saveFavorite()" data-i18n="fav_save">⭐ Uložit šablonu</button>
             </div>
             
             <div id="avoidListContainer"></div>
@@ -601,10 +247,6 @@
                             <option value="SK">SK</option><option value="PL">PL</option><option value="IT">IT</option>
                             <option value="FR">FR</option><option value="ES">ES</option><option value="NL">NL</option>
                         </select>
-                    </div>
-                    <div class="input-group">
-                        <label data-i18n="tonaz">Tonáž (t)</label>
-                        <input type="number" id="startVaha" value="10" step="0.5" oninput="calculate(); autoSave();">
                     </div>
                 </div>
             </div>
@@ -630,10 +272,6 @@
                             <option value="NL">NL</option><option value="BE">BE</option>
                         </select>
                     </div>
-                    <div class="input-group">
-                        <label data-i18n="konecna_tonaz">Konečná tonáž</label>
-                        <input type="number" id="cilVaha" value="0" step="0.5" oninput="calculate(); autoSave();">
-                    </div>
                 </div>
             </div>
 
@@ -656,14 +294,14 @@
             
             <div class="form-grid" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #eee;">
                 <div class="input-group">
-                    <label data-i18n="celkem_km">Celkem km</label>
+                    <label data-i18n="celkem_km">Celkem km (Základní trasa)</label>
                     <input type="number" id="vzdalenost" value="0" step="0.1" class="readonly-highlight" readonly>
                 </div>
                 <div class="input-group">
                     <label data-i18n="typ_trasy">Typ trasy <span class="icon-help" onclick="showInfo(T('help_typ'))">i</span></label>
-                    <select id="typTrasy" onchange="spocitatTrasu(); autoSave();">
-                        <option value="1" data-i18n="naprimo">Napřímo</option>
-                        <option value="2" data-i18n="kolecko">Kolečko</option>
+                    <select id="typTrasy" onchange="calculate(); autoSave();">
+                        <option value="1" data-i18n="naprimo">Napřímo (1x)</option>
+                        <option value="2" data-i18n="kolecko">Kolečko (2x)</option>
                     </select>
                 </div>
                 <div class="input-group">
@@ -680,7 +318,9 @@
 
         <!-- BLOK 2: TECHNIKA -->
         <div class="card">
-            <h2><span class="num">02.</span> <span data-i18n="sec2">Technika vozidla</span></h2>
+            <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">
+                <div style="display:flex; align-items:center;"><span class="num">02.</span> <span data-i18n="sec2">Technika vozidla</span></div>
+            </h2>
             <div class="form-grid">
                 <div class="input-group">
                     <label data-i18n="euro">Euro Norma</label>
@@ -690,16 +330,18 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label data-i18n="napravy">Nápravy celkem</label>
+                    <label data-i18n="napravy">Fyzické Nápravy</label>
                     <select id="napravyFyzicke" onchange="updateAllSegmentTolls(); calculate(); autoSave();">
-                        <option value="5">5 náprav (2+3)</option><option value="6">6 a více (3+3)</option>
+                        <option value="5">5 náprav (2+3)</option><option value="6">6 a více</option>
                         <option value="4">4 nápravy (2+2)</option><option value="3">3 nápravy</option>
                     </select>
                 </div>
                 <div class="input-group">
-                    <label data-i18n="zvedle">Zvednuté nápravy</label>
+                    <label data-i18n="zvedle">Zvednuté na návěsu <span class="icon-help" onclick="showInfo(T('help_zvedle'))">i</span></label>
                     <select id="zvedleNapravy" onchange="calculate(); autoSave();">
-                        <option value="0">0 (Dole)</option><option value="1">1 nahoře</option><option value="2">2 nahoře</option>
+                        <option value="0" data-i18n="zved_0">0 (Vše dole, těžký)</option>
+                        <option value="1" data-i18n="zved_1">1 nahoře (Jede po 2)</option>
+                        <option value="2" data-i18n="zved_2">2 nahoře (Jede po 1)</option>
                     </select>
                 </div>
             </div>
@@ -707,6 +349,10 @@
                 <div class="input-group">
                     <label data-i18n="spotreba">Spotřeba prázdné (L) <span class="icon-help" onclick="showInfo(T('help_spotreba'))">i</span></label>
                     <input type="number" id="spotrebaPrazdne" value="25" step="0.1" oninput="calculate(); autoSave();">
+                </div>
+                <div class="input-group">
+                    <label data-i18n="naklad">Hmotnost Nákladu (t) <span class="icon-help" onclick="showInfo(T('help_naklad'))">i</span></label>
+                    <input type="number" id="vahaNakladu" value="10" step="0.5" oninput="autoSetAxles(); calculate(); autoSave();">
                 </div>
                 <div class="input-group">
                     <label data-i18n="cena_nafty">Cena nafty / L</label>
@@ -717,7 +363,9 @@
 
         <!-- BLOK 3: NÁKLADY A ŘIDIČ -->
         <div class="card">
-            <h2><span class="num">03.</span> <span data-i18n="sec3">Náklady & Řidič</span></h2>
+            <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">
+                <div style="display:flex; align-items:center;"><span class="num">03.</span> <span data-i18n="sec3">Náklady & Řidič</span></div>
+            </h2>
             <div class="form-grid">
                 <div class="input-group">
                     <label data-i18n="posadka">Složení posádky <span class="icon-help" onclick="showInfo(T('help_posadka'))">i</span></label>
@@ -762,7 +410,7 @@
                 <label class="switch"><input type="checkbox" id="mytoToggle" checked onchange="calculate(); autoSave();"><span class="slider"></span></label>
             </div>
 
-            <h2 style="font-size: 15px; color: #666; margin-top:20px;" data-i18n="cenikova_kalk">Ceníková Kalkulace</h2>
+            <h2 style="font-size: 15px; color: #666; margin-top:20px; border-bottom: none;" data-i18n="cenikova_kalk">Ceníková Kalkulace</h2>
             
             <div style="background: #f8f9fa; padding: 12px; border-radius: 4px; border: 1px solid #ddd; margin-bottom: 12px; display: flex; justify-content: space-between;">
                 <span style="color: var(--cp-dark); font-weight: 600;" data-i18n="prum_spotreba">Prům. spotřeba trasy:</span>
@@ -804,13 +452,15 @@
             </div>
 
             <div style="display:flex; gap:10px; margin-top: 25px;">
-                <button class="btn-secondary" onclick="shareSummary()" id="btnShare" style="background:#25D366; color:white; border:none; flex:1; padding: 15px;" data-i18n="btn_kopirovat">📤 Kopírovat Souhrn</button>
-                <button class="btn-secondary" onclick="openNav()" id="btnNav" style="background:var(--cp-blue); color:white; border:none; flex:1; padding: 15px;" data-i18n="btn_navigace">🧭 Navigace</button>
+                <button class="btn-secondary" onclick="shareSummaryWA()" style="background:#25D366; color:white; border:none; flex:1; padding: 15px;" data-i18n="btn_wa_share">💬 Odeslat na WhatsApp</button>
+                <button class="btn-secondary" onclick="openNav()" id="btnNav" style="background:var(--cp-blue); color:white; border:none; flex:1; padding: 15px;" data-i18n="btn_navigace">🧭 Navigace v Mapách</button>
             </div>
         </div>
 
         <div class="card analysis">
-            <h2><span data-i18n="sec4">04. Analýza reality</span></h2>
+            <h2 style="border-bottom: 2px solid #333; padding-bottom: 10px;">
+                <span data-i18n="sec4">04. Analýza reality</span>
+            </h2>
             
             <div class="form-grid">
                 <div class="input-group">
@@ -1110,7 +760,6 @@
         <div style="display:flex; gap:12px; margin-bottom:20px; flex-direction:column;">
             <button class="btn-secondary" style="background:#107c41; padding:18px; font-size:15px; border-radius: 6px;" onclick="exportKnihaPrint()" data-i18n="btn_pdf">📄 Vytvořit PDF dokument</button>
             <button class="btn-secondary" style="background:#1565c0; padding:15px; font-size:14px; border-radius: 6px;" onclick="exportKnihaCSV()" data-i18n="btn_csv">📊 Stáhnout data do Excelu</button>
-            <button class="btn-secondary" style="background:#25D366; padding:15px; font-size:14px; border-radius: 6px;" onclick="exportDriverWA()" data-i18n="btn_wa">💬 Sdílet přes WhatsApp</button>
         </div>
         
         <button class="btn-modal-close" style="background:#ccc; color:#333; margin-top: 0; border-radius: 6px;" onclick="document.getElementById('pdfExportModal').style.display='none'" data-i18n="zrusit">Zpět</button>
@@ -1137,19 +786,19 @@
             start_pt:"Výchozí Start (Bod A)", end_pt:"Konečný Cíl (Bod B)", auto:"-- Automaticky --", 
             adresa:"Adresa", stat:"Stát", tonaz:"Tonáž (t)", konecna_tonaz:"Konečná tonáž", stat_garance:"Stát (Garance)", 
             pridat_zastavku:"+ Přidat zastávku (Průjezd / Vykládka)", mena_kurz:"Měna a Kurz EUR", 
-            spocitat:"🚀 Spočítat trasu ze satelitu OSRM", celkem_km:"Celkem km", typ_trasy:"Typ trasy", 
-            naprimo:"Napřímo", kolecko:"Zpáteční (Kolečko)", dokladky:"Dokládky (km mimo)", rozpad_myta:"Rozpad mýta a Států", 
-            euro:"Euro Norma", napravy:"Nápravy celkem", zvedle:"Zvednuté nápravy", spotreba:"Spotřeba prázdné (L)", 
+            spocitat:"🚀 Spočítat trasu ze satelitu OSRM", celkem_km:"Celkem km (Základní trasa)", typ_trasy:"Typ trasy", 
+            naprimo:"Napřímo (1x)", kolecko:"Kolečko (2x)", dokladky:"Dokládky (km mimo)", rozpad_myta:"Rozpad mýta dle států", 
+            euro:"Euro Norma", napravy:"Fyzické Nápravy", zvedle:"Zvednuté na návěsu", spotreba:"Spotřeba prázdné (L)", naklad:"Hmotnost Nákladu (t)",
             cena_nafty:"Cena nafty / L", posadka:"Složení posádky", ridic_1:"1 Řidič", ridic_2:"Dvojosádka", 
-            typ_mzdy:"Odměňování řidiče", mzda_den:"Denní sazba (vč. diet)", mzda_fix:"Fixní odměna (točka)", 
-            odmena_hodnota:"Odměna (Hodnota)", trvani:"Trvání trasy (Dny)", fix_auto:"Fixní náklady auta / Den", 
+            typ_mzdy:"Odměňování řidiče", mzda_den:"Denní mzda (vč. diet)", mzda_fix:"Paušál (za točku)", 
+            odmena_hodnota:"Odměna Hodnota", trvani:"Trvání (Dny z AETR)", fix_auto:"Fix auto/den", 
             dph_toggle:"Zobrazit VČETNĚ DPH (21%)", myto_toggle:"Kalkulace VČETNĚ MÝTA", cenikova_kalk:"Ceníková Kalkulace", 
-            prum_spotreba:"Prům. spotřeba vč. tun:", res_nafta:"Nafta celkem:", res_mzda:"Odměna posádky:", 
-            res_fix:"Fixní náklady auta & Pneu:", res_myto:"Mýto celkem:", res_celkem:"NÁKLADY CELKEM:", 
+            prum_spotreba:"Prům. spotřeba trasy:", res_nafta:"Nafta celkem:", res_mzda:"Odměna posádky:", 
+            res_fix:"Fixní náklady & Pneu:", res_myto:"Mýto celkem:", res_celkem:"Náklady celkem:", 
             res_km_bez:"Náklad na 1 km (bez mýta):", res_km_vc:"Náklad na 1 km (vč. mýta):", marze:"Požadovaná marže k zisku (%)", 
-            prodejni_cena:"Doporučená prodejní cena:", prodej_km:"Prodejní cena na 1 km:", btn_kopirovat:"📤 Kopírovat Souhrn", 
-            btn_navigace:"🧭 Navigace", typ_zadani:"Typ zadání ceny", za_celou:"Za celou trasu", za_km:"Za 1 km", 
-            mena_zadani:"Měna tržby", sjednana_cena:"Sjednaná cena s klientem (bez DPH)", real_trzba:"Reálná tržba na 1 km:", 
+            prodejni_cena:"Ceníková prodejní cena:", prodej_km:"Prodejní cena na 1 km:", btn_kopirovat:"📤 Kopírovat Souhrn", 
+            btn_navigace:"🧭 Navigace v Mapách", typ_zadani:"Typ zadání ceny", za_celou:"Za celou trasu", za_km:"Za 1 km", 
+            mena_zadani:"Měna sjednané ceny", sjednana_cena:"Sjednaná cena s klientem (bez DPH)", real_trzba:"Reálná tržba na 1 km:", 
             cekam:"Čekám na zadání ceny", seznam_ridicu:"Seznam Řidičů", auto_plan:"🤖 AETR Generátor Trasy a Diet", 
             ridic_hlavni:"1. Řidič (Hlavní)", rezim_osadky:"Režim Osádky", prum_rychlost:"Prům. rychlost (km/h)", 
             datum_startu:"Datum Startu", cas_startu:"Čas Startu", plan_start:"1. Start (Odkud)", plan_cil:"2. Cíl (Kam)", 
@@ -1165,16 +814,18 @@
             vyber_ridice:"Vyberte Řidiče pro export", obdobi_exportu:"Časové období", tyden:"Tento týden", 
             mesic:"Tento měsíc", rok:"Celý rok", typ_exportu:"Co si přejete vygenerovat?", komplet:"Kompletní přehled (Kniha + Mzdy)", 
             jen_kniha:"Pouze Knihu jízd", jen_mzdy:"Pouze Mzdový výměr", btn_pdf:"📄 Vytvořit PDF dokument", 
-            btn_csv:"📊 Stáhnout data do Excelu", btn_wa:"💬 Sdílet přes WhatsApp", ulozit_plochu:"📱 Uložit na plochu", 
+            btn_csv:"📊 Stáhnout data do Excelu", btn_wa_share:"💬 Odeslat na WhatsApp", ulozit_plochu:"📱 Uložit na plochu", 
             offline_banner:"⚠️ Jste Offline - OSRM Trasování a Geolokace jsou vypnuté", start_sys:"Start systému...", 
-            fav_sel:"-- Načíst oblíbenou šablonu --", fav_save:"⭐ Uložit šablonu",
+            fav_sel:"-- Načíst oblíbenou trasu --", fav_save:"⭐ Uložit šablonu", zved_0:"0 (Vše dole, těžký)", zved_1:"1 nahoře (Jede po 2)", zved_2:"2 nahoře (Jede po 1)",
             help_adresa:"Zadejte název města nebo celou adresu.",
             help_garance:"Pokud OSRM netrefí stát podle hranic, tento stát se použije jako cílový pro mýto a diety.",
             help_mena:"Zvolte měnu pro zobrazení výsledků.",
             help_typ:"U kolečka se vzdálenost automaticky násobí 2x.",
-            help_spotreba:"Spotřeba kamionu, když jede úplně prázdný. K ní se automaticky připočte váha nákladu.",
+            help_spotreba:"Spotřeba kamionu, když jede úplně prázdný.",
+            help_naklad:"K základní spotřebě se automaticky připočte +0.2L na každou tunu nákladu.",
             help_posadka:"Dvojosádka má k dispozici 21h výkonu místo 15h.",
             help_trvani:"Kolik pracovních dní (směn) zabere tato trasa podle pravidel AETR.",
+            help_zvedle:"Ovlivňuje opotřebení pneumatik. Mýto se vždy počítá podle fyzických náprav vozidla. Automatika zvedá nápravy podle zadané váhy nákladu (nad 20t vše dole).",
             help_plan_driver:"Vyberte řidiče, kterému se směny zapíšou do kalendáře.",
             help_plan_crew:"1 Řidič má k dispozici 9h jízdy a 15h výkonu. Dvojosádka má 18h jízdy a 21h výkonu.",
             help_datum:"Vyberte kalendářní den, kdy jízda začíná. Systém si sám najde správný týden v kalendáři.",
@@ -1187,10 +838,10 @@
             sec1:"Location & Route", sec2:"Vehicle specs", sec3:"Costs & Driver", sec4:"04. Profit Analysis", 
             start_pt:"Start Point (A)", end_pt:"Destination (B)", auto:"-- Auto --", 
             adresa:"Address", stat:"Country", tonaz:"Tonnage (t)", konecna_tonaz:"Final Tonnage", stat_garance:"Target Country", 
-            pridat_zastavku:"+ Add waypoint", mena_kurz:"Currency & Rate", 
-            spocitat:"🚀 Calculate OSRM Route", celkem_km:"Total km", typ_trasy:"Route type", 
-            naprimo:"Direct", kolecko:"Roundtrip", dokladky:"Extra km", rozpad_myta:"Toll breakdown by country", 
-            euro:"Euro Standard", napravy:"Total Axles", zvedle:"Lifted Axles", spotreba:"Empty Consumption (L)", 
+            pridat_zastavku:"+ Add waypoint", mena_kurz:"Currency & Rate EUR", 
+            spocitat:"🚀 Calculate OSRM Route", celkem_km:"Total km (Base route)", typ_trasy:"Route type", 
+            naprimo:"Direct (1x)", kolecko:"Roundtrip (2x)", dokladky:"Extra km", rozpad_myta:"Toll breakdown by country", 
+            euro:"Euro Standard", napravy:"Total Physical Axles", zvedle:"Lifted Axles", spotreba:"Empty Consumption (L)", naklad:"Cargo Weight (t)",
             cena_nafty:"Fuel price / L", posadka:"Crew setup", ridic_1:"1 Driver", ridic_2:"2 Drivers", 
             typ_mzdy:"Driver payment", mzda_den:"Daily wage", mzda_fix:"Flat fee", 
             odmena_hodnota:"Reward Value", trvani:"Duration (Days)", fix_auto:"Fix cost/day", 
@@ -1199,7 +850,7 @@
             res_fix:"Fixed costs & Tires:", res_myto:"Total Toll:", res_celkem:"TOTAL COSTS:", 
             res_km_bez:"Cost per km (no toll):", res_km_vc:"Cost per km (incl. toll):", marze:"Target margin (%)", 
             prodejni_cena:"Selling price:", prodej_km:"Selling price per km:", btn_kopirovat:"📤 Copy Summary", 
-            btn_navigace:"🧭 Navigation", typ_zadani:"Price input type", za_celou:"Per route", za_km:"Per 1 km", 
+            btn_navigace:"🧭 Maps Navigation", typ_zadani:"Price input type", za_celou:"Per route", za_km:"Per 1 km", 
             mena_zadani:"Agreed currency", sjednana_cena:"Agreed price (excl. VAT)", real_trzba:"Real revenue per km:", 
             cekam:"Waiting for input", seznam_ridicu:"Driver List", auto_plan:"🤖 Auto-Planner & Diets", 
             ridic_hlavni:"1. Driver (Main)", rezim_osadky:"Crew Mode", prum_rychlost:"Avg. speed (km/h)", 
@@ -1216,16 +867,18 @@
             vyber_ridice:"Select Driver", obdobi_exportu:"Export Period", tyden:"Current Week", 
             mesic:"Current Month", rok:"Full Year", typ_exportu:"Export Type", komplet:"Complete Overview", 
             jen_kniha:"Logbook Only", jen_mzdy:"Payroll Only", btn_pdf:"📄 Generate PDF", 
-            btn_csv:"📊 Excel Export", btn_wa:"💬 WhatsApp", ulozit_plochu:"📱 Save to Home Screen", 
+            btn_csv:"📊 Excel Export", btn_wa_share:"💬 Send via WhatsApp", ulozit_plochu:"📱 Save to Home Screen", 
             offline_banner:"⚠️ Offline - OSRM disabled", start_sys:"System Boot...", 
-            fav_sel:"-- Load template --", fav_save:"⭐ Save template",
+            fav_sel:"-- Load template --", fav_save:"⭐ Save template", zved_0:"0 (All down, heavy)", zved_1:"1 up (Drives on 2)", zved_2:"2 up (Drives on 1)",
             help_adresa:"Enter city or exact address.",
             help_garance:"Fallback country if GPS borders fail.",
             help_mena:"Choose currency.",
             help_typ:"Roundtrip multiplies distance by 2.",
             help_spotreba:"Empty truck fuel consumption.",
+            help_naklad:"+0.2L of fuel consumption is added per each ton of cargo.",
             help_posadka:"2 drivers have 21h shift instead of 15h.",
             help_trvani:"How many AETR days this route will take.",
+            help_zvedle:"Affects tire wear. Toll is always calculated based on physical axles. Auto-lifts based on weight.",
             help_plan_driver:"Select driver to map the route to.",
             help_plan_crew:"1 Driver = 15h limit. 2 Drivers = 21h limit.",
             help_datum:"Select exact start date.",
@@ -1365,12 +1018,17 @@
     let wpCounter = 0; 
     let lastRouteData = null;
 
-    function formatMoney(amountInCZK) { 
+    // Dvojité formátování měny - ukáže obě měny najednou v závislosti na zvolené měně v UI
+    function formatDualMoney(amountInCZK) { 
         let mena = document.getElementById('menaSelect').value; 
-        let kurz = parseFloat(document.getElementById('kurzEuro').value) || 25; 
-        let finalVal = mena === 'EUR' ? amountInCZK / kurz : amountInCZK; 
-        let fmt = new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: mena, minimumFractionDigits: 0, maximumFractionDigits: 2 }); 
-        return fmt.format(finalVal); 
+        let k = parseFloat(document.getElementById('kurzEuro').value) || 25; 
+        let eurVal = amountInCZK / k;
+        
+        let fmtCZK = new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 }).format(amountInCZK);
+        let fmtEUR = new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: 'EUR', maximumFractionDigits: 2 }).format(eurVal);
+        
+        if (mena === 'EUR') return `${fmtEUR} <span class="dual-currency">(${fmtCZK})</span>`;
+        return `${fmtCZK} <span class="dual-currency">(${fmtEUR})</span>`; 
     }
     
     function haversine(lon1, lat1, lon2, lat2) { 
@@ -1559,7 +1217,7 @@
                 <div class="breakdown-row">
                     <div class="breakdown-input-group"><label>Stát</label><input type="text" value="${MYTO_STATY[s.c].name}" readonly></div>
                     <div class="breakdown-input-group"><label>Km</label><input type="number" class="seg-km" value="${s.k.toFixed(0)}" oninput="calculate()"></div>
-                    <div class="breakdown-input-group"><label>Kč Mýto</label><input type="number" class="seg-toll" value="${Math.round(toll)}" oninput="calculate()"></div>
+                    <div class="breakdown-input-group"><label>Mýto (Kč)</label><input type="number" class="seg-toll" value="${Math.round(toll)}" oninput="calculate()"></div>
                     <button class="btn-secondary" onclick="avoidCountryPlan('${s.c}')" style="background:var(--cp-danger);margin:0;padding:10px;" title="Zakázat tento stát">✕</button>
                 </div>`;
             });
@@ -1671,10 +1329,18 @@
         } 
         calculate();
     }
+
+    function autoSetAxles() {
+        let v = parseFloat(document.getElementById('vahaNakladu').value) || 0;
+        let z = document.getElementById('zvedleNapravy');
+        if (v > 20) z.value = "0";      // Vše dole
+        else if (v > 15) z.value = "1"; // Jede po 2 na návěsu
+        else z.value = "2";             // Jede po 1 na návěsu (prázdný)
+    }
     
     function calculate() {
-        let tMyto = 0; 
-        document.querySelectorAll('.seg-toll').forEach(i => tMyto += parseFloat(i.value) || 0);
+        let tMytoBase = 0; 
+        document.querySelectorAll('.seg-toll').forEach(i => tMytoBase += parseFloat(i.value) || 0);
         
         let dist = parseFloat(document.getElementById('vzdalenost').value) || 0; 
         let m = waypoints.length > 0 ? 1 : (parseFloat(document.getElementById('typTrasy').value) || 1); 
@@ -1689,26 +1355,33 @@
         let wD = parseFloat(document.getElementById('dny').value) || 1; 
         let wage = wT === 'fixni' ? wV : (wV * wD); 
         
-        let fix = (parseFloat(document.getElementById('nakladyAutoDen').value) || 0) * wD;
+        // Pneu opotřebení
+        let zvedle = parseInt(document.getElementById('zvedleNapravy').value) || 0;
+        let kolaNaZemi = 10 - (zvedle * 2); // Odhad (Tahač + Návěs)
+        let nakladPneu = dF * kolaNaZemi * OPOTREBENI_PNEU_KOLO_KM;
+
+        let fix = ((parseFloat(document.getElementById('nakladyAutoDen').value) || 0) * wD) + nakladPneu;
         
         let dphToggle = document.getElementById('dphToggle').checked;
         let dph = dphToggle ? 1.21 : 1; 
         let incM = document.getElementById('mytoToggle').checked; 
+        
+        let tMyto = tMytoBase * m; // Kolečko zdvojnásobí Mýto
         let costs = fuel + wage + fix + (incM ? tMyto : 0);
         
-        document.getElementById('resNafta').innerText = formatMoney(fuel * dph); 
-        document.getElementById('resMzda').innerText = formatMoney(wage * dph); 
-        document.getElementById('resFixPneu').innerText = formatMoney(fix * dph); 
-        document.getElementById('resMyto').innerText = formatMoney(tMyto * dph); 
-        document.getElementById('resNakladyCelkem').innerText = formatMoney(costs * dph);
+        document.getElementById('resNafta').innerHTML = formatDualMoney(fuel * dph); 
+        document.getElementById('resMzda').innerHTML = formatDualMoney(wage * dph); 
+        document.getElementById('resFixPneu').innerHTML = formatDualMoney(fix * dph); 
+        document.getElementById('resMyto').innerHTML = formatDualMoney(tMyto * dph); 
+        document.getElementById('resNakladyCelkem').innerHTML = formatDualMoney(costs * dph);
         
-        document.getElementById('resKmBezMyta').innerText = dF > 0 ? formatMoney(((costs - (incM ? tMyto : 0)) * dph) / dF) + " / km" : "0"; 
-        document.getElementById('resKmVcMyta').innerText = dF > 0 ? formatMoney((costs * dph) / dF) + " / km" : "0";
+        document.getElementById('resKmBezMyta').innerText = dF > 0 ? formatMoney(((costs - (incM ? tMyto : 0)) * dph) / dF) + " / km" : "0 / km"; 
+        document.getElementById('resKmVcMyta').innerText = dF > 0 ? formatMoney((costs * dph) / dF) + " / km" : "0 / km";
         
         let marze = parseFloat(document.getElementById('marze').value) || 0;
         let pCena = costs * (1 + (marze / 100)) * dph; 
-        document.getElementById('resProdejniCena').innerText = formatMoney(pCena); 
-        document.getElementById('resProdejniCenaKm').innerText = dF > 0 ? formatMoney(pCena / dF) + " / km" : "0";
+        document.getElementById('resProdejniCena').innerHTML = formatDualMoney(pCena); 
+        document.getElementById('resProdejniCenaKm').innerText = dF > 0 ? formatMoney(pCena / dF) + " / km" : "0 / km";
         
         // Zisky a realita
         let sC = parseFloat(document.getElementById('skutecnaCena').value) || 0; 
@@ -1723,7 +1396,6 @@
         let zB = document.getElementById('ziskStatusBox');
         
         if (sC > 0 && dF > 0) { 
-            let realTrzbaDisplay = sysMena === 'EUR' ? (sCZK / dF) / k : (sCZK / dF);
             document.getElementById('realTrzbaKm').innerText = formatMoney(sCZK / dF) + " / km"; 
             
             let diff = sNet - costs; 
@@ -1824,16 +1496,26 @@
         return Math.ceil((((d2 - yearStart) / 86400000) + 1) / 7); 
     }
     
+    function initPlanner() {
+        let n = new Date(); 
+        plannerState.currentYear = n.getFullYear(); 
+        plannerState.currentWeek = getISOWeek(n);
+        plannerState.drivers = [];
+        plannerState.shifts = {};
+        plannerState.payrolls = {};
+    }
+
     function plannerLoadState() { 
-        let s = localStorage.getItem('cpPlan3'); 
-        if (s) {
-            plannerState = JSON.parse(s);
-        } else {
-            let n = new Date(); 
-            plannerState.currentYear = n.getFullYear(); 
-            plannerState.currentWeek = getISOWeek(n);
-        } 
-        document.getElementById('yearSelect').value = plannerState.currentYear; 
+        try {
+            let s = localStorage.getItem('cpPlan3'); 
+            if (s) { plannerState = JSON.parse(s); } else { initPlanner(); }
+        } catch(e) { initPlanner(); }
+        
+        if(!plannerState.drivers) plannerState.drivers = [];
+        if(!plannerState.shifts) plannerState.shifts = {};
+        if(!plannerState.payrolls) plannerState.payrolls = {};
+
+        document.getElementById('yearSelect').value = plannerState.currentYear || new Date().getFullYear(); 
         updateDriverSelects(); 
     }
     
@@ -1886,16 +1568,18 @@
         let s2 = document.getElementById('planDriverSelect2'); 
         let p = document.getElementById('pdfDriverSelect'); 
         
-        s1.innerHTML = ""; 
-        s2.innerHTML = `<option value="">-- Nevybráno --</option>`; 
-        p.innerHTML = ""; 
+        if(s1) s1.innerHTML = ""; 
+        if(s2) s2.innerHTML = `<option value="">-- Nevybráno --</option>`; 
+        if(p) p.innerHTML = ""; 
         
-        plannerState.drivers.forEach(d => {
-            let opt = `<option value="${d.id}">${d.name}</option>`; 
-            s1.innerHTML += opt; 
-            s2.innerHTML += opt; 
-            p.innerHTML += opt;
-        }); 
+        if(plannerState.drivers) {
+            plannerState.drivers.forEach(d => {
+                let opt = `<option value="${d.id}">${d.name}</option>`; 
+                if(s1) s1.innerHTML += opt; 
+                if(s2) s2.innerHTML += opt; 
+                if(p) p.innerHTML += opt;
+            }); 
+        }
     }
 
     function toggleDriver2() {
@@ -1921,6 +1605,8 @@
         let list = document.getElementById('plannerDriverList'); 
         list.innerHTML = "";
         
+        if(!plannerState.drivers) return;
+
         plannerState.drivers.forEach(d => { 
             list.innerHTML += `
             <div class="driver-item">
@@ -2375,6 +2061,38 @@
         }
     }
 
+    // --- NAVIGACE A SDÍLENÍ ---
+    function openNav() {
+        let sA = document.getElementById('startAdresa').value;
+        let cA = document.getElementById('cilAdresa').value;
+        if(!sA || !cA) { alert("Spočítejte nejprve trasu."); return; }
+        
+        let url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(sA)}&destination=${encodeURIComponent(cA)}`;
+        if(waypoints.length > 0) {
+            let wpsStr = waypoints.map(w => encodeURIComponent(w.address)).join('|');
+            url += `&waypoints=${wpsStr}`;
+        }
+        window.open(url, '_blank');
+    }
+
+    function shareSummaryWA() {
+        let sA = document.getElementById('startAdresa').value;
+        let cA = document.getElementById('cilAdresa').value;
+        let km = document.getElementById('vzdalenost').value;
+        
+        // Získání ceny bez HTML značek (čistý text)
+        let cenaHtml = document.getElementById('resProdejniCena').innerHTML;
+        let cena = cenaHtml.replace(/<[^>]*>?/gm, ''); 
+        
+        let cenaKmHtml = document.getElementById('resProdejniCenaKm').innerHTML;
+        let cenaKm = cenaKmHtml.replace(/<[^>]*>?/gm, '');
+        
+        let text = `🚛 CONTROL POINT - TRASA\n📍 ${sA} -> ${cA}\n📏 ${km} km\n💰 Cena: ${cena}\n🛣️ Za km: ${cenaKm}`;
+        
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+
     // --- TISK A EXPORT (PWA OCHRANA POMOCÍ HTML2PDF) ---
     function getShiftsForExport() {
         let dId = document.getElementById('pdfDriverSelect').value; 
@@ -2426,7 +2144,7 @@
     }
 
     function openPdfExportModal() { 
-        if (plannerState.drivers.length === 0) {
+        if (!plannerState.drivers || plannerState.drivers.length === 0) {
             alert("Nejprve si musíte v levém panelu přidat řidiče.");
             return;
         } 
@@ -2607,23 +2325,6 @@
         l.setAttribute("href", URL.createObjectURL(b)); 
         l.setAttribute("download", `Data_${d.drv.replace(' ','_')}.csv`); 
         l.click(); 
-        document.getElementById('pdfExportModal').style.display = 'none'; 
-    }
-    
-    function exportDriverWA() { 
-        let d = getShiftsForExport(); 
-        let eT = document.getElementById('pdfTypeSelect').value; 
-        
-        let text = `📅 *Přehled pro: ${d.drv}*\n📍 Období: ${d.t}\n\n`; 
-        
-        if (eT === 'both' || eT === 'kniha') {
-            text += `🗓️ Počet odjetých směn: ${d.sC}\n`;
-        } 
-        if (eT === 'both' || eT === 'mzdy') {
-            text += `⏱️ Odpracovaný výkon: ${d.tV.toFixed(1)} h\n🚛 Čistá jízda (z toho): ${d.tJ.toFixed(1)} h\n💰 *Výplata celkem:* ${d.tP} Kč`;
-        } 
-        
-        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); 
         document.getElementById('pdfExportModal').style.display = 'none'; 
     }
 </script>
