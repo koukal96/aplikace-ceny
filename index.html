@@ -3366,7 +3366,7 @@
         plannerState.currentWeek = getISOWeek(firstDay);
         renderPlanner();
     }
-        function changeWeek(delta) { 
+            function changeWeek(delta) { 
         plannerState.currentWeek += delta; 
         
         if (plannerState.currentWeek > 52) { 
@@ -3378,13 +3378,17 @@
             plannerState.currentYear--; 
         }
         
-        // Změna UI roletky pro rok
-        if(document.getElementById('yearSelect')) document.getElementById('yearSelect').value = plannerState.currentYear;
+        // Přesný výpočet reálného měsíce podle ISO týdne a roku (bere čtvrtek daného týdne)
+        let simpleDate = new Date(plannerState.currentYear, 0, 4);
+        let dayOfWeek = simpleDate.getDay() || 7;
+        let targetDate = new Date(plannerState.currentYear, 0, 4 + (plannerState.currentWeek - 1) * 7 + (1 - dayOfWeek));
         
-        // Přibližný výpočet měsíce podle vybraného týdne a změna UI roletky
-        let simpleDate = new Date(plannerState.currentYear, 0, 1 + (plannerState.currentWeek - 1) * 7);
-        plannerState.currentMonth = simpleDate.getMonth();
-        if(document.getElementById('monthSelect')) document.getElementById('monthSelect').value = plannerState.currentMonth;
+        plannerState.currentMonth = targetDate.getMonth();
+        plannerState.currentYear = targetDate.getFullYear(); // Pojistka pro přelom roku
+
+        // Zápis do UI roletek
+        if(document.getElementById('yearSelect')) document.getElementById('yearSelect').value = plannerState.currentYear.toString();
+        if(document.getElementById('monthSelect')) document.getElementById('monthSelect').value = plannerState.currentMonth.toString();
 
         renderPlanner(); 
     }
@@ -3574,12 +3578,12 @@
         if (!sR || !eR) { stat.innerText = "❌ Vyplňte Start a Cíl!"; stat.style.display = "block"; return; }
         
         plannerState.currentYear = sDate.getFullYear();
-        plannerState.currentMonth = sDate.getMonth();
+        plannerState.currentMonth = sDate.getMonth(); // sDate už v sobě nese správný měsíc z data startu!
         plannerState.currentWeek = getISOWeek(sDate);
         
-        // Přidáno .toString() pro kompatibilitu na iOS
         document.getElementById('yearSelect').value = plannerState.currentYear.toString();
         document.getElementById('monthSelect').value = plannerState.currentMonth.toString();
+
 
         let driversToSave = crew === '2' ? [drv1, drv2] : [drv1];
         let cTime = parseTime(document.getElementById('planTimeSelect').value); 
