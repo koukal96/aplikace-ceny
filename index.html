@@ -10,9 +10,7 @@
     <title>Control Point - Transport Analytics & ERP</title>
     
     <!-- PWA Manifest pro instalaci na plochu -->
-    <link rel="apple-touch-icon" href="IMG_9552.png">
-    <link rel="icon" type="image/png" href="IMG_9552.png">
-    <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Control%20Point%22%2C%22short_name%22%3A%22CP%20Analytics%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f4f4f4%22%2C%22theme_color%22%3A%22%23e3000f%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22IMG_9552.png%22%2C%22sizes%22%3A%22any%22%2C%22type%22%3A%22image%2Fpng%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D' >
+    <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Control%20Point%22%2C%22short_name%22%3A%22CP%20Analytics%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f4f4f4%22%2C%22theme_color%22%3A%22%23e3000f%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII%3D%22%2C%22sizes%22%3A%221x1%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D'>
 
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -165,9 +163,8 @@
         @media print { .pdf-hide { display: none !important; } body{background:white;} }
 
         /* === OPRAVY 2026: čistší mobilní UI === */
-        .shift-top-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; width:100%; align-items:end; }
-        .shift-top-grid .input-group { margin-bottom:0; min-width:0; }
-        .shift-top-grid input, .shift-top-grid select { width:100%; min-width:0; height:44px; padding:8px 9px; }
+        .shift-top-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .shift-top-grid .input-group { margin-bottom:0; }
         .currency-top { margin-bottom:12px; }
         .currency-top select { width:auto; min-width:120px; background:#333; color:#fff; border-color:#555; }
         .breakdown-row { grid-template-columns:minmax(120px,1.2fr) minmax(90px,.7fr) minmax(110px,.9fr) 42px; }
@@ -203,15 +200,12 @@
         .print-report-host { display:none; }
         @media print {
             body.print-report-mode > *:not(#printReportHost) { display:none !important; }
-            body.print-report-mode #printReportHost { display:block !important; position:static !important; width:100% !important; max-width:none !important; overflow:visible !important; }
-            body.print-report-mode #printReportHost * { visibility:visible !important; }
+            body.print-report-mode #printReportHost { display:block !important; position:static !important; width:100% !important; }
             body.print-report-mode #printReportHost table { width:100%; border-collapse:collapse; }
             body.print-report-mode #printReportHost th, body.print-report-mode #printReportHost td { border:1px solid #ccc; padding:6px; }
         }
         @media (max-width: 600px) {
-            .shift-top-grid { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; }
-            .shift-top-grid .input-group label { min-height:18px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-            .shift-top-grid input, .shift-top-grid select { height:42px; padding:7px 8px; font-size:13px; }
+            .shift-top-grid { grid-template-columns:1fr 1fr; gap:8px; }
             .breakdown-row { grid-template-columns:1fr 1fr; }
             .btn-avoid-country { width:100%; grid-column:span 2; }
             .report-preview-actions { flex-direction:column; }
@@ -223,9 +217,7 @@
             .planner-gen-grid .input-group:nth-child(5), .planner-gen-grid .input-group:nth-child(6) { grid-column:span 1; }
         }
         @media (max-width: 390px) {
-            .shift-top-grid { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:6px; }
-            .planner-gen-grid { grid-template-columns:1fr; }
-            .shift-top-grid input, .shift-top-grid select { font-size:12px; }
+            .shift-top-grid, .planner-gen-grid { grid-template-columns:1fr; }
         }
         @media print {
             .pdf-hide { display:none !important; }
@@ -860,4 +852,2048 @@
             "Spotřeba prázdné": "Empty Consumption",
             "Start. Náklad (t)": "Initial Cargo (t)",
             "Cena nafty / L": "Fuel price / L",
-            "03. Náklady & Řidič": "03. Costs & Dri
+            "03. Náklady & Řidič": "03. Costs & Driver",
+            "Složení posádky": "Crew setup",
+            "Odměňování řidiče": "Driver payment",
+            "Odměna CELKEM": "TOTAL Reward",
+            "Doba (Dny z AETR)": "Duration (AETR Days)",
+            "Fix auto/den": "Fix cost/day",
+            "Zobrazit VČETNĚ DPH (21%)": "Show INCL. VAT (21%)",
+            "Kalkulace ceny VČETNĚ MÝTA": "Calc INCL. TOLL",
+            "Ceníková Kalkulace": "Price Calculation",
+            "Prům. spotřeba trasy:": "Avg. consumption:",
+            "Nafta celkem:": "Total Fuel:",
+            "Odměna posádky:": "Crew reward:",
+            "Fixní náklady & Pneu:": "Fixed costs & Tires:",
+            "Mýto celkem:": "Total Toll:",
+            "Náklady celkem:": "Total Costs:",
+            "Náklad na 1 km (bez mýta):": "Cost per km (no toll):",
+            "Náklad na 1 km (vč. mýta):": "Cost per km (incl. toll):",
+            "Požadovaná marže (%)": "Target margin (%)",
+            "Ceníková prodejní cena:": "Selling price:",
+            "Prodejní cena na 1 km:": "Selling price per km:",
+            "04. Analýza reality": "04. Reality Analysis",
+            "Typ zadání ceny": "Price input type",
+            "Měna sjednané ceny": "Agreed price currency",
+            "Sjednaná cena (bez DPH)": "Agreed price (excl. VAT)",
+            "Reálná tržba na 1 km (CZK):": "Real revenue per km:",
+            "Seznam Řidičů": "Driver List",
+            "🤖 Auto-Plánovač Trasy a Diet": "🤖 Auto-Planner & Diets",
+            "1. Řidič (Hlavní)": "1. Driver (Main)",
+            "2. Řidič (Dvojosádka)": "2. Driver (Crew)",
+            "Režim Osádky": "Crew Mode",
+            "Prům. rychlost (km/h)": "Avg. speed (km/h)",
+            "Datum Startu ": "Start Date",
+            "Čas Startu": "Start Time",
+            "1. Start (Odkud)": "1. Start (From)",
+            "2. Cíl (Kam)": "2. Destination (To)",
+            "Zdržení v Cíli (h)": "Delay at Dest. (h)",
+            "Zpáteční trasa (Kolečko)": "Return Trip (Roundtrip)",
+            "Rozpad trasy a odhad diet": "Route Breakdown & Diets",
+            "🚀 Vypočítat a Zapsat do Kalendáře!": "🚀 Calculate & Save to Calendar!",
+            "Stát": "Country",
+            "Km": "Km",
+            "Kč Mýto": "Toll",
+            "Za celou trasu": "Per total route",
+            "Za 1 km": "Per 1 km",
+            "Napřímo": "Direct",
+            "Kolečko": "Roundtrip",
+            "Denní sazba (VČETNĚ diet)": "Daily rate (INCL. diets)",
+            "Základ (BEZ diet) + Diety": "Base (EXCL. diets) + Diets",
+            "Paušál (za točku)": "Flat fee (per trip)",
+            "Úprava Směny": "Edit Shift", "Začátek Směny": "Shift Start", "Režim": "Mode",
+            "Poznámka k dni (Trasa)": "Day note (Route)", "Rozpis bloků (Jízda/Práce/Pauza)": "Blocks (Driving/Work/Rest)",
+            "+ Přidat blok (Jízda / Práce / Pauza)": "+ Add block (Driving / Work / Rest)", "Smazat Den": "Delete Day", "Uložit Směnu": "Save Shift", "Zrušit": "Cancel",
+            "Rychlé Nastavení Sazby a Diet": "Quick Pay & Diet Settings", "Odpracovaný výkon:": "Worked time:", "Z toho čistá jízda:": "Driving time:",
+            "1. ZÁKLADNÍ MZDA PRO TENTO TÝDEN": "1. BASE PAY FOR THIS WEEK", "Typ Sazby": "Rate Type", "Sazba / Den (Kč)": "Rate / Day (CZK)",
+            "Odjeto směn": "Shifts completed", "Typ mzdy": "Pay type", "Základ (Kč)": "Base (CZK)", "Denní sazba": "Daily rate", "Měsíční mzda": "Monthly salary",
+            "Měsíc": "Month", "Dnů v měsíci": "Days in month", "Poměrná denní sazba": "Daily equivalent",
+            "2. ZAHRANIČNÍ DIETY V TÝDNU": "2. FOREIGN DIETS THIS WEEK", "+ Přidat zemi k výpočtu diety": "+ Add country for diet calculation",
+            "Zahraniční diety celkem (Kč)": "Total foreign diets (CZK)", "Bonusy / Srážky (Kč)": "Bonuses / Deductions (CZK)",
+            "ODHADOVANÁ VÝPLATA ZA TENTO TÝDEN:": "ESTIMATED PAY FOR THIS WEEK:", "Uložit Nastavení Mzdy": "Save Pay Settings",
+            "Export Data (Kniha / Mzdy)": "Export Data (Logbook / Payroll)", "Vyberte Řidiče": "Select Driver", "Období Exportu": "Export Period",
+            "Aktuální zobrazený týden": "Currently displayed week", "Aktuální vybraný měsíc": "Currently selected month", "Celý vybraný rok": "Entire selected year",
+            "Typ Exportu (Co se má vygenerovat)": "Export Type (What to generate)", "Kompletní přehled (Kniha jízd + Mzdy)": "Complete overview (Logbook + Payroll)",
+            "Pouze Kniha jízd (Bez financí)": "Logbook only (No finances)", "Pouze Mzdový výměr (Bez rozpisu tras)": "Payroll only (No route details)",
+            "📄 Náhled / Tisk / Uložit PDF": "📄 Preview / Print / Save PDF", "📊 Stáhnout data do Excelu (CSV)": "📊 Download data to Excel (CSV)",
+            "💬 Odeslat přehled na WhatsApp": "💬 Send overview to WhatsApp", "🚛 Jízda": "🚛 Driving", "⚒️ Práce/Vykládka": "⚒️ Work/Unloading", "🛏️ Pauza": "🛏️ Rest",
+            "Jízda": "Driving", "Práce/Vykládka": "Work/Unloading", "Pauza": "Rest", "Čas": "Time", "Délka": "Duration", "Délka v hodinách": "Duration in hours",
+            "Hodin": "Hours", "Smazat blok": "Delete block", "Smazat řádek": "Delete row", "Jízdní doba": "Driving time",
+            "Váha vozidla/soupravy na začátku zakázky.": "Vehicle/combination weight at the start of the job.",
+            "Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)": "Weight affects consumption. (Each tonne adds 0.2 L/100 km)",
+            "Výchozí spotřeba prázdného vozidla": "Base consumption of empty vehicle",
+            "Režim jízdy 1 nebo 2 řidiči": "Driving mode: 1 or 2 drivers",
+            "Trasa se pojede v kolečku": "The route will be driven as a round trip",
+            "Cílová destinace (Pokud se zadá jakákoliv mezizastávka nebude fungovat kolečko)": "Destination (adding any intermediate stop disables round trip)",
+            "Kurz (Kč/EUR)": "Exchange rate (CZK/EUR)", "helpTypTrasy": "Route type determines whether the distance is one-way or round trip.",
+            "helpEuro": "Euro emission class affects the toll calculation.", "helpPayType": "Choose whether the daily rate already includes foreign diets.",
+            "helpShiftStart": "Start time of the shift.", "aetrWarn1": "An AETR extension is required: {e}.", "aetrWarn2": "An AETR crew extension is required: {e}."
+        },
+        de: {
+            "ANALÝZA": "ANALYSE",
+            "1. Kalkulačka Trasy": "1. Routenrechner",
+            "2. Šichtovník & Mzdy": "2. Schichtplan & Lohn",
+            "01. Lokace & Trasa": "01. Ort & Route",
+            "⭐ Uložit šablonu": "⭐ Vorlage speichern",
+            "Výchozí Start (Bod A)": "Startpunkt (A)",
+            "Konečný Cíl (Bod B)": "Zielpunkt (B)",
+            "Země určení (Garance)": "Zielland",
+            "Měna & Kurz": "Währung & Kurs",
+            "Spočítat trasu a mýto": "Route & Maut berechnen",
+            "Celkem km": "Gesamt km",
+            "Z toho Přejezdy (km)": "Leerfahrten (km)",
+            "Typ trasy": "Routentyp",
+            "Dokládky km": "Zusätzliche km",
+            "Rozpad mýta dle států": "Mautaufschlüsselung nach Land",
+            "02. Technika vozidla": "02. Fahrzeugtechnik",
+            "Euro Norma": "Euro Norm",
+            "Nápravy celkem": "Achsen gesamt",
+            "Zvednuté nápravy": "Liftachsen",
+            "Spotřeba prázdné": "Verbrauch leer",
+            "Start. Náklad (t)": "Ladung (t)",
+            "Cena nafty / L": "Spritpreis / L",
+            "03. Náklady & Řidič": "03. Kosten & Fahrer",
+            "Složení posádky": "Besatzung",
+            "Odměňování řidiče": "Fahrerlohn",
+            "Odměna CELKEM": "Gesamtlohn",
+            "Doba (Dny z AETR)": "Dauer (AETR Tage)",
+            "Fix auto/den": "Fixkosten/Tag",
+            "Zobrazit VČETNĚ DPH (21%)": "Inkl. MwSt. (21%)",
+            "Kalkulace ceny VČETNĚ MÝTA": "Kalkulation INKL. MAUT",
+            "Ceníková Kalkulace": "Preiskalkulation",
+            "Prům. spotřeba trasy:": "Ø Verbrauch:",
+            "Nafta celkem:": "Sprit gesamt:",
+            "Odměna posádky:": "Lohn Besatzung:",
+            "Fixní náklady & Pneu:": "Fixkosten & Reifen:",
+            "Mýto celkem:": "Maut gesamt:",
+            "Náklady celkem:": "Gesamtkosten:",
+            "Náklad na 1 km (bez mýta):": "Kosten pro km (ohne Maut):",
+            "Náklad na 1 km (vč. mýta):": "Kosten pro km (inkl. Maut):",
+            "Požadovaná marže (%)": "Zielmarge (%)",
+            "Ceníková prodejní cena:": "Verkaufspreis:",
+            "Prodejní cena na 1 km:": "Verkaufspreis pro km:",
+            "04. Analýza reality": "04. Realitätsanalyse",
+            "Typ zadání ceny": "Preisangabetyp",
+            "Měna sjednané ceny": "Währung des Preises",
+            "Sjednaná cena (bez DPH)": "Vereinbarter Preis (netto)",
+            "Reálná tržba na 1 km (CZK):": "Realer Umsatz pro km:",
+            "Seznam Řidičů": "Fahrerliste",
+            "🤖 Auto-Plánovač Trasy a Diet": "🤖 Auto-Planer & Spesen",
+            "1. Řidič (Hlavní)": "1. Fahrer (Haupt)",
+            "2. Řidič (Dvojosádka)": "2. Fahrer (Besatzung)",
+            "Režim Osádky": "Besatzungsmodus",
+            "Prům. rychlost (km/h)": "Ø Geschw. (km/h)",
+            "Datum Startu ": "Startdatum",
+            "Čas Startu": "Startzeit",
+            "1. Start (Odkud)": "1. Start (Von)",
+            "2. Cíl (Kam)": "2. Ziel (Nach)",
+            "Zdržení v Cíli (h)": "Aufenthalt am Ziel (h)",
+            "Zpáteční trasa (Kolečko)": "Rückfahrt (Rundtrip)",
+            "Rozpad trasy a odhad diet": "Routenaufschlüsselung & Spesen",
+            "🚀 Vypočítat a Zapsat do Kalendáře!": "🚀 Berechnen & Speichern!",
+            "Stát": "Land",
+            "Km": "Km",
+            "Kč Mýto": "Maut",
+            "Za celou trasu": "Pro Gesamtroute",
+            "Za 1 km": "Pro 1 km",
+            "Napřímo": "Direkt",
+            "Kolečko": "Rundfahrt",
+            "Denní sazba (VČETNĚ diet)": "Tagessatz (INKL. Spesen)",
+            "Základ (BEZ diet) + Diety": "Basis (OHNE Spesen) + Spesen",
+            "Paušál (za točku)": "Pauschale (pro Fahrt)"
+        },
+        pl: {
+            "ANALÝZA": "ANALIZA",
+            "1. Kalkulačka Trasy": "1. Kalkulator Trasy",
+            "2. Šichtovník & Mzdy": "2. Harmonogram i Płace",
+            "01. Lokace & Trasa": "01. Lokalizacja i Trasa",
+            "⭐ Uložit šablonu": "⭐ Zapisz szablon",
+            "Výchozí Start (Bod A)": "Punkt Startowy (A)",
+            "Konečný Cíl (Bod B)": "Cel (B)",
+            "Země určení (Garance)": "Kraj Docelowy",
+            "Měna & Kurz": "Waluta i Kurs",
+            "Spočítat trasu a mýto": "Oblicz trasę i myto",
+            "Celkem km": "Razem km",
+            "Z toho Přejezdy (km)": "Przejazdy na pusto (km)",
+            "Typ trasy": "Typ trasy",
+            "Dokládky km": "Dodatkowe km",
+            "Rozpad mýta dle států": "Podział opłat według krajów",
+            "02. Technika vozidla": "02. Technika Pojazdu",
+            "Euro Norma": "Norma Euro",
+            "Nápravy celkem": "Osie ogółem",
+            "Zvednuté nápravy": "Podniesione osie",
+            "Spotřeba prázdné": "Spalanie na pusto",
+            "Start. Náklad (t)": "Początkowy Ładunek (t)",
+            "Cena nafty / L": "Cena paliwa / L",
+            "03. Náklady & Řidič": "03. Koszty i Kierowca",
+            "Složení posádky": "Załoga",
+            "Odměňování řidiče": "Wynagrodzenie",
+            "Odměna CELKEM": "Wynagrodzenie CAŁKOWITE",
+            "Doba (Dny z AETR)": "Czas trwania (Dni AETR)",
+            "Fix auto/den": "Koszt stały/dzień",
+            "Zobrazit VČETNĚ DPH (21%)": "Pokaż Z VAT (21%)",
+            "Kalkulace ceny VČETNĚ MÝTA": "Kalkulacja Z MYTEM",
+            "Ceníková Kalkulace": "Kalkulacja Cenowa",
+            "Prům. spotřeba trasy:": "Śr. spalanie:",
+            "Nafta celkem:": "Paliwo razem:",
+            "Odměna posádky:": "Wynagrodzenie załogi:",
+            "Fixní náklady & Pneu:": "Koszty stałe i Opony:",
+            "Mýto celkem:": "Myto razem:",
+            "Náklady celkem:": "Koszty całkowite:",
+            "Náklad na 1 km (bez mýta):": "Koszt na 1 km (bez myta):",
+            "Náklad na 1 km (vč. mýta):": "Koszt na 1 km (z mytem):",
+            "Požadovaná marže (%)": "Wymagana marża (%)",
+            "Ceníková prodejní cena:": "Cena sprzedaży:",
+            "Prodejní cena na 1 km:": "Cena sprzedaży na 1 km:",
+            "04. Analýza reality": "04. Analiza Rzeczywistości",
+            "Typ zadání ceny": "Typ podania ceny",
+            "Měna sjednané ceny": "Waluta uzgodnionej ceny",
+            "Sjednaná cena (bez DPH)": "Uzgodniona cena (bez VAT)",
+            "Reálná tržba na 1 km (CZK):": "Rzeczywisty przychód na 1km:",
+            "Seznam Řidičů": "Lista Kierowców",
+            "🤖 Auto-Plánovač Trasy a Diet": "🤖 Auto-Planer Tras i Diet",
+            "1. Řidič (Hlavní)": "1. Kierowca (Główny)",
+            "2. Řidič (Dvojosádka)": "2. Kierowca (Załoga)",
+            "Režim Osádky": "Tryb Załogi",
+            "Prům. rychlost (km/h)": "Śr. prędkość (km/h)",
+            "Datum Startu": "Data Startu",
+            "Čas Startu": "Czas Startu",
+            "1. Start (Odkud)": "1. Start (Skąd)",
+            "2. Cíl (Kam)": "2. Cel (Dokąd)",
+            "Zdržení v Cíli (h)": "Opóźnienie w Celu (h)",
+            "Zpáteční trasa (Kolečko)": "Trasa powrotna (Kółko)",
+            "Rozpad trasy a odhad diet": "Podział trasy i szacunek diet",
+            "🚀 Vypočítat a Zapsat do Kalendáře!": "🚀 Oblicz i Zapisz w Kalendarzu!",
+            "Stát": "Kraj",
+            "Km": "Km",
+            "Kč Mýto": "Myto",
+            "Za celou trasu": "Za całą trasę",
+            "Za 1 km": "Za 1 km",
+            "Napřímo": "Bezpośrednio",
+            "Kolečko": "Kółko",
+            "Denní sazba (VČETNĚ diet)": "Stawka dzienna (Z dietami)",
+            "Základ (BEZ diet) + Diety": "Baza (BEZ diet) + Diety",
+            "Paušál (za točku)": "Ryczałt (za trasę)"
+        },
+        it: {
+            "ANALÝZA": "ANALISI",
+            "1. Kalkulačka Trasy": "1. Calcolatore Percorso",
+            "2. Šichtovník & Mzdy": "2. Turni e Paghe",
+            "01. Lokace & Trasa": "01. Luogo e Percorso",
+            "⭐ Uložit šablonu": "⭐ Salva modello",
+            "Výchozí Start (Bod A)": "Punto di Partenza (A)",
+            "Konečný Cíl (Bod B)": "Destinazione (B)",
+            "Země určení (Garance)": "Paese di Destinazione",
+            "Měna & Kurz": "Valuta e Tasso",
+            "Spočítat trasu a mýto": "Calcola Percorso e Pedaggio",
+            "Celkem km": "Totale km",
+            "Z toho Přejezdy (km)": "Percorsi a vuoto (km)",
+            "Typ trasy": "Tipo di percorso",
+            "Dokládky km": "Km Extra",
+            "Rozpad mýta dle států": "Dettaglio pedaggio per paese",
+            "02. Technika vozidla": "02. Tecnica Veicolo",
+            "Euro Norma": "Standard Euro",
+            "Nápravy celkem": "Assi Totali",
+            "Zvednuté nápravy": "Assi Sollevati",
+            "Spotřeba prázdné": "Consumo a vuoto",
+            "Start. Náklad (t)": "Carico (t)",
+            "Cena nafty / L": "Prezzo carburante / L",
+            "03. Náklady & Řidič": "03. Costi e Autista",
+            "Složení posádky": "Equipaggio",
+            "Odměňování řidiče": "Retribuzione",
+            "Odměna CELKEM": "Retribuzione TOTALE",
+            "Doba (Dny z AETR)": "Durata (Giorni AETR)",
+            "Fix auto/den": "Costo fisso/giorno",
+            "Zobrazit VČETNĚ DPH (21%)": "Mostra CON IVA (21%)",
+            "Kalkulace ceny VČETNĚ MÝTA": "Calcolo CON PEDAGGIO",
+            "Ceníková Kalkulace": "Calcolo Prezzo",
+            "Prům. spotřeba trasy:": "Consumo medio:",
+            "Nafta celkem:": "Carburante totale:",
+            "Odměna posádky:": "Retribuzione equipaggio:",
+            "Fixní náklady & Pneu:": "Costi fissi e pneumatici:",
+            "Mýto celkem:": "Pedaggio totale:",
+            "Náklady celkem:": "Costi totali:",
+            "Náklad na 1 km (bez mýta):": "Costo al km (senza pedaggio):",
+            "Náklad na 1 km (vč. mýta):": "Costo al km (con pedaggio):",
+            "Požadovaná marže (%)": "Margine richiesto (%)",
+            "Ceníková prodejní cena:": "Prezzo di vendita:",
+            "Prodejní cena na 1 km:": "Prezzo al km:",
+            "04. Analýza reality": "04. Analisi della Realtà",
+            "Typ zadání ceny": "Tipo inserimento prezzo",
+            "Měna sjednané ceny": "Valuta prezzo concordato",
+            "Sjednaná cena (bez DPH)": "Prezzo concordato (senza IVA)",
+            "Reálná tržba na 1 km (CZK):": "Ricavo reale al km:",
+            "Seznam Řidičů": "Elenco Autisti",
+            "🤖 Auto-Plánovač Trasy a Diet": "🤖 Pianificatore & Diarie",
+            "1. Řidič (Hlavní)": "1. Autista (Principale)",
+            "2. Řidič (Dvojosádka)": "2. Autista (Equipaggio)",
+            "Režim Osádky": "Modalità Equipaggio",
+            "Prům. rychlost (km/h)": "Velocità media (km/h)",
+            "Datum Startu": "Data di Partenza",
+            "Čas Startu": "Ora di Partenza",
+            "1. Start (Odkud)": "1. Partenza (Da)",
+            "2. Cíl (Kam)": "2. Destinazione (A)",
+            "Zdržení v Cíli (h)": "Sosta a Destinazione (h)",
+            "Zpáteční trasa (Kolečko)": "Viaggio di Ritorno (Giro)",
+            "Rozpad trasy a odhad diet": "Dettaglio Percorso & Diarie",
+            "🚀 Vypočítat a Zapsat do Kalendáře!": "🚀 Calcola e Salva!",
+            "Stát": "Paese",
+            "Km": "Km",
+            "Kč Mýto": "Pedaggio",
+            "Za celou trasu": "Per l'intero percorso",
+            "Za 1 km": "Al km",
+            "Napřímo": "Diretto",
+            "Kolečko": "Giro di ritorno",
+            "Denní sazba (VČETNĚ diet)": "Tariffa giornaliera (CON diarie)",
+            "Základ (BEZ diet) + Diety": "Base (SENZA diarie) + Diarie",
+            "Paušál (za točku)": "Forfait (a viaggio)",
+            "Úprava Směny":"Modifica turno","Začátek Směny":"Inizio turno","Režim":"Modalità","Poznámka k dni (Trasa)":"Nota del giorno (percorso)","Rozpis bloků (Jízda/Práce/Pauza)":"Blocchi (guida/lavoro/pausa)","Zrušit":"Annulla","Uložit Směnu":"Salva turno","Smazat Den":"Elimina giorno","Jízda":"Guida","Práce/Vykládka":"Lavoro/Scarico","Pauza":"Pausa","Čas":"Ora","Délka":"Durata","Hodin":"Ore","Smazat blok":"Elimina blocco","Smazat řádek":"Elimina riga","Jízdní doba":"Tempo di guida","Režim jízdy 1 nebo 2 řidiči":"Modalità: 1 o 2 autisti","Kurz (Kč/EUR)":"Cambio (CZK/EUR)"
+        }
+    };
+
+    // Doplňkové překlady pro modální okna, nápovědy a dynamicky generované řádky.
+    const EXTRA_TRANSLATIONS = {
+      en: {
+        "Úprava Směny":"Edit Shift","Začátek Směny":"Shift Start","Režim":"Mode","Poznámka k dni (Trasa)":"Day note (Route)",
+        "Rozpis bloků (Jízda/Práce/Pauza)":"Blocks (Driving/Work/Rest)","+ Přidat blok (Jízda / Práce / Pauza)":"+ Add block (Driving / Work / Rest)",
+        "Smazat Den":"Delete Day","Uložit Směnu":"Save Shift","Zrušit":"Cancel","Rychlé Nastavení Sazby a Diet":"Quick Pay & Diet Settings",
+        "Odpracovaný výkon:":"Worked time:","Z toho čistá jízda:":"Driving time:","1. ZÁKLADNÍ MZDA PRO TENTO TÝDEN":"1. BASE PAY FOR THIS WEEK",
+        "Typ Sazby":"Rate Type","Sazba / Den (Kč)":"Rate / Day (CZK)","Odjeto směn":"Shifts completed","Typ mzdy":"Pay type","Základ (Kč)":"Base (CZK)",
+        "Denní sazba":"Daily rate","Měsíční mzda":"Monthly salary","Měsíc":"Month","Dnů v měsíci":"Days in month","Poměrná denní sazba":"Daily equivalent",
+        "2. ZAHRANIČNÍ DIETY V TÝDNU":"2. FOREIGN DIETS THIS WEEK","+ Přidat zemi k výpočtu diety":"+ Add country for diet calculation",
+        "Zahraniční diety celkem (Kč)":"Total foreign diets (CZK)","Bonusy / Srážky (Kč)":"Bonuses / Deductions (CZK)",
+        "ODHADOVANÁ VÝPLATA ZA TENTO TÝDEN:":"ESTIMATED PAY FOR THIS WEEK:","Uložit Nastavení Mzdy":"Save Pay Settings",
+        "Export Data (Kniha / Mzdy)":"Export Data (Logbook / Payroll)","Vyberte Řidiče":"Select Driver","Období Exportu":"Export Period",
+        "Aktuální zobrazený týden":"Currently displayed week","Aktuální vybraný měsíc":"Currently selected month","Celý vybraný rok":"Entire selected year",
+        "Typ Exportu (Co se má vygenerovat)":"Export Type (What to generate)","Kompletní přehled (Kniha jízd + Mzdy)":"Complete overview (Logbook + Payroll)",
+        "Pouze Kniha jízd (Bez financí)":"Logbook only (No finances)","Pouze Mzdový výměr (Bez rozpisu tras)":"Payroll only (No route details)",
+        "📄 Náhled / Tisk / Uložit PDF":"📄 Preview / Print / Save PDF","📊 Stáhnout data do Excelu (CSV)":"📊 Download data to Excel (CSV)",
+        "💬 Odeslat přehled na WhatsApp":"💬 Send overview to WhatsApp","Jízda":"Driving","Práce/Vykládka":"Work/Unloading","Pauza":"Rest",
+        "Čas":"Time","Délka":"Duration","Délka v hodinách":"Duration in hours","Hodin":"Hours","Smazat blok":"Delete block","Smazat řádek":"Delete row",
+        "Jízdní doba":"Driving time","Váha vozidla/soupravy na začátku zakázky.":"Vehicle/combination weight at the start of the job.",
+        "Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)":"Weight affects consumption. (Each tonne adds 0.2 L/100 km)",
+        "Výchozí spotřeba prázdného vozidla":"Base consumption of empty vehicle","Režim jízdy 1 nebo 2 řidiči":"Driving mode: 1 or 2 drivers",
+        "Trasa se pojede v kolečku":"The route will be driven as a round trip","Cílová destinace (Pokud se zadá jakákoliv mezizastávka nebude fungovat kolečko)":"Destination (adding any intermediate stop disables round trip)",
+        "Kurz (Kč/EUR)":"Exchange rate (CZK/EUR)","helpTypTrasy":"Route type determines whether the distance is one-way or round trip.",
+        "helpEuro":"Euro emission class affects the toll calculation.","helpPayType":"Choose whether the daily rate already includes foreign diets.","helpShiftStart":"Start time of the shift."
+      },
+      de: {
+        "Úprava Směny":"Schicht bearbeiten","Začátek Směny":"Schichtbeginn","Režim":"Modus","Poznámka k dni (Trasa)":"Tagesnotiz (Route)","Rozpis bloků (Jízda/Práce/Pauza)":"Blöcke (Fahren/Arbeit/Pause)","+ Přidat blok (Jízda / Práce / Pauza)":"+ Block hinzufügen (Fahren / Arbeit / Pause)","Smazat Den":"Tag löschen","Uložit Směnu":"Schicht speichern","Zrušit":"Abbrechen",
+        "Rychlé Nastavení Sazby a Diet":"Schnelle Lohn- und Speseneinstellung","Odpracovaný výkon:":"Arbeitszeit:","Z toho čistá jízda:":"Fahrzeit:","1. ZÁKLADNÍ MZDA PRO TENTO TÝDEN":"1. GRUNDLOHN FÜR DIESE WOCHE","Typ Sazby":"Tariftyp","Sazba / Den (Kč)":"Satz / Tag (CZK)","Odjeto směn":"Gefahrene Schichten","Typ mzdy":"Lohnart","Základ (Kč)":"Grundlohn (CZK)","Denní sazba":"Tagessatz","Měsíční mzda":"Monatslohn","Měsíc":"Monat","Dnů v měsíci":"Tage im Monat","Poměrná denní sazba":"Täglicher Anteil",
+        "2. ZAHRANIČNÍ DIETY V TÝDNU":"2. AUSLANDSSPESEN DIESE WOCHE","+ Přidat zemi k výpočtu diety":"+ Land für Spesen hinzufügen","Zahraniční diety celkem (Kč)":"Auslandsspesen gesamt (CZK)","Bonusy / Srážky (Kč)":"Boni / Abzüge (CZK)","ODHADOVANÁ VÝPLATA ZA TENTO TÝDEN:":"GESCHÄTZTER WOCHENLOHN:","Uložit Nastavení Mzdy":"Lohneinstellungen speichern",
+        "Export Data (Kniha / Mzdy)":"Datenexport (Fahrtenbuch / Lohn)","Vyberte Řidiče":"Fahrer auswählen","Období Exportu":"Exportzeitraum","Aktuální zobrazený týden":"Aktuell angezeigte Woche","Aktuální vybraný měsíc":"Aktuell ausgewählter Monat","Celý vybraný rok":"Gesamtes ausgewähltes Jahr","Typ Exportu (Co se má vygenerovat)":"Exporttyp","Kompletní přehled (Kniha jízd + Mzdy)":"Komplettübersicht (Fahrtenbuch + Lohn)","Pouze Kniha jízd (Bez financí)":"Nur Fahrtenbuch (ohne Finanzen)","Pouze Mzdový výměr (Bez rozpisu tras)":"Nur Lohnabrechnung (ohne Routen)","📄 Náhled / Tisk / Uložit PDF":"📄 Vorschau / Drucken / PDF speichern","📊 Stáhnout data do Excelu (CSV)":"📊 Daten als Excel (CSV) herunterladen","💬 Odeslat přehled na WhatsApp":"💬 Übersicht per WhatsApp senden","Jízda":"Fahren","Práce/Vykládka":"Arbeit/Entladen","Pauza":"Pause","Čas":"Zeit","Délka":"Dauer","Délka v hodinách":"Dauer in Stunden","Hodin":"Stunden","Smazat blok":"Block löschen","Smazat řádek":"Zeile löschen","Jízdní doba":"Fahrzeit","Kurz (Kč/EUR)":"Wechselkurs (CZK/EUR)"
+      },
+      pl: {
+        "Úprava Směny":"Edycja zmiany","Začátek Směny":"Początek zmiany","Režim":"Tryb","Poznámka k dni (Trasa)":"Notatka dnia (trasa)","Rozpis bloků (Jízda/Práce/Pauza)":"Bloki (jazda/praca/przerwa)","+ Přidat blok (Jízda / Práce / Pauza)":"+ Dodaj blok (jazda / praca / przerwa)","Smazat Den":"Usuń dzień","Uložit Směnu":"Zapisz zmianę","Zrušit":"Anuluj","Rychlé Nastavení Sazby a Diet":"Szybkie ustawienia płacy i diet","Odpracovaný výkon:":"Czas pracy:","Z toho čistá jízda:":"Czas jazdy:","1. ZÁKLADNÍ MZDA PRO TENTO TÝDEN":"1. PŁACA PODSTAWOWA NA TEN TYDZIEŃ","Typ Sazby":"Typ stawki","Sazba / Den (Kč)":"Stawka / dzień (CZK)","Odjeto směn":"Liczba zmian","Typ mzdy":"Typ płacy","Základ (Kč)":"Podstawa (CZK)","Denní sazba":"Stawka dzienna","Měsíční mzda":"Pensja miesięczna","Měsíc":"Miesiąc","Dnů v měsíci":"Dni w miesiącu","Poměrná denní sazba":"Stawka dzienna proporcjonalna","2. ZAHRANIČNÍ DIETY V TÝDNU":"2. DIETY ZAGRANICZNE W TYGODNIU","+ Přidat zemi k výpočtu diety":"+ Dodaj kraj do wyliczenia diety","Zahraniční diety celkem (Kč)":"Diety zagraniczne razem (CZK)","Bonusy / Srážky (Kč)":"Premie / Potrącenia (CZK)","ODHADOVANÁ VÝPLATA ZA TENTO TÝDEN:":"SZACOWANA WYPŁATA ZA TEN TYDZIEŃ:","Uložit Nastavení Mzdy":"Zapisz ustawienia płacy","Export Data (Kniha / Mzdy)":"Eksport danych (Ewidencja / Płace)","Vyberte Řidiče":"Wybierz kierowcę","Období Exportu":"Okres eksportu","Aktuální zobrazený týden":"Aktualnie wyświetlany tydzień","Aktuální vybraný měsíc":"Aktualnie wybrany miesiąc","Celý vybraný rok":"Cały wybrany rok","Typ Exportu (Co se má vygenerovat)":"Typ eksportu","Kompletní přehled (Kniha jízd + Mzdy)":"Pełne zestawienie (Ewidencja + Płace)","Pouze Kniha jízd (Bez financí)":"Tylko ewidencja (bez finansów)","Pouze Mzdový výměr (Bez rozpisu tras)":"Tylko płace (bez tras)","📄 Náhled / Tisk / Uložit PDF":"📄 Podgląd / Drukuj / Zapisz PDF","📊 Stáhnout data do Excelu (CSV)":"📊 Pobierz dane do Excel (CSV)","💬 Odeslat přehled na WhatsApp":"💬 Wyślij zestawienie przez WhatsApp","Jízda":"Jazda","Práce/Vykládka":"Praca/Rozładunek","Pauza":"Przerwa","Čas":"Czas","Délka":"Czas trwania","Délka v hodinách":"Czas trwania w godzinach","Hodin":"Godziny","Smazat blok":"Usuń blok","Smazat řádek":"Usuń wiersz","Jízdní doba":"Czas jazdy","Kurz (Kč/EUR)":"Kurs (CZK/EUR)"
+      },
+      it: {
+        "Úprava Směny":"Modifica turno","Začátek Směny":"Inizio turno","Režim":"Modalità","Poznámka k dni (Trasa)":"Nota del giorno (percorso)","Rozpis bloků (Jízda/Práce/Pauza)":"Blocchi (guida/lavoro/pausa)","+ Přidat blok (Jízda / Práce / Pauza)":"+ Aggiungi blocco (guida / lavoro / pausa)","Smazat Den":"Elimina giorno","Uložit Směnu":"Salva turno","Zrušit":"Annulla","Rychlé Nastavení Sazby a Diet":"Impostazioni rapide paga e diarie","Odpracovaný výkon:":"Tempo lavorato:","Z toho čistá jízda:":"Tempo di guida:","1. ZÁKLADNÍ MZDA PRO TENTO TÝDEN":"1. PAGA BASE DI QUESTA SETTIMANA","Typ Sazby":"Tipo tariffa","Sazba / Den (Kč)":"Tariffa / giorno (CZK)","Odjeto směn":"Turni effettuati","Typ mzdy":"Tipo di paga","Základ (Kč)":"Base (CZK)","Denní sazba":"Tariffa giornaliera","Měsíční mzda":"Stipendio mensile","Měsíc":"Mese","Dnů v měsíci":"Giorni nel mese","Poměrná denní sazba":"Equivalente giornaliero","2. ZAHRANIČNÍ DIETY V TÝDNU":"2. DIARIE ESTERE DELLA SETTIMANA","+ Přidat zemi k výpočtu diety":"+ Aggiungi paese per il calcolo delle diarie","Zahraniční diety celkem (Kč)":"Diarie estere totali (CZK)","Bonusy / Srážky (Kč)":"Bonus / Trattenute (CZK)","ODHADOVANÁ VÝPLATA ZA TENTO TÝDEN:":"STIMA PAGA DI QUESTA SETTIMANA:","Uložit Nastavení Mzdy":"Salva impostazioni paga","Export Data (Kniha / Mzdy)":"Esporta dati (Registro / Paghe)","Vyberte Řidiče":"Seleziona autista","Období Exportu":"Periodo export","Aktuální zobrazený týden":"Settimana visualizzata","Aktuální vybraný měsíc":"Mese selezionato","Celý vybraný rok":"Intero anno selezionato","Typ Exportu (Co se má vygenerovat)":"Tipo di export","Kompletní přehled (Kniha jízd + Mzdy)":"Riepilogo completo (Registro + Paghe)","Pouze Kniha jízd (Bez financí)":"Solo registro (senza finanze)","Pouze Mzdový výměr (Bez rozpisu tras)":"Solo paghe (senza percorsi)","📄 Náhled / Tisk / Uložit PDF":"📄 Anteprima / Stampa / Salva PDF","📊 Stáhnout data do Excelu (CSV)":"📊 Scarica dati Excel (CSV)","💬 Odeslat přehled na WhatsApp":"💬 Invia riepilogo su WhatsApp","Jízda":"Guida","Práce/Vykládka":"Lavoro/Scarico","Pauza":"Pausa","Čas":"Ora","Délka":"Durata","Délka v hodinách":"Durata in ore","Hodin":"Ore","Smazat blok":"Elimina blocco","Smazat řádek":"Elimina riga","Jízdní doba":"Tempo di guida","Kurz (Kč/EUR)":"Cambio (CZK/EUR)"}
+    };
+    Object.keys(EXTRA_TRANSLATIONS).forEach(lang => Object.assign(TRANSLATIONS[lang], EXTRA_TRANSLATIONS[lang]));
+    // Kompletní doplnění překladů pro popisky, placeholdery, nápovědy a stavové zprávy.
+    const COMPLETE_UI_TRANSLATIONS = {
+      en: {
+        "Hmotnost nákladu (t)":"Cargo weight (t)","Mzdy / Diety":"Pay / Diets","Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)":"Weight affects consumption. (Each tonne adds 0.2 L/100 km)",
+        "Vyberte přesné datum, aplikace sama určí týden a rok.":"Select the exact date; the app determines the week and year automatically.",
+        "Doba vykládky. Pokud je 0.75 a více, počítá se i jako pauza.":"Unloading time. If it is 0.75 h or more, it also counts as a rest break.",
+        "Nejprve zadejte Start a Cíl.":"Enter Start and Destination first.","Nejprve spočítejte trasu.":"Calculate the route first.",
+        "Souhrn zkopírován do schránky! Můžete jej vložit do WhatsAppu.":"Summary copied to the clipboard! You can paste it into WhatsApp.",
+        "Nemáte přidané žádné řidiče.":"No drivers have been added.","Zadejte město/adresu...":"Enter city/address...","Adresa":"Address","Zastávka":"Stop","Zdržení (h)":"Delay (h)",
+        "Nové jméno...":"New name...","Např. Turate nebo Milán":"e.g. Turate or Milan","Např. Praha":"e.g. Prague","Např. Madrid":"e.g. Madrid","Např. Trasa (Ostrava - Berlín)":"e.g. Route (Ostrava - Berlin)","Např. adresa / město":"e.g. address / city",
+        "Stát":"Country","Start":"Start","Cíl":"Destination","Volno (Pauza)":"Free (Rest)","Výkon":"Duty time","Čistá jízda":"Driving time","Výplata":"Pay","Řidič":"Driver","Řidič:":"Driver:","Týden":"Week","Den":"Day","Hodiny Celkem":"Total hours",
+        "Odhadovaná vzdálenost:":"Estimated distance:","Očekávaný návrat do cíle (Konec výkonu):":"Expected arrival at destination (end of duty):","Čistý po pauze (Lze dál jet):":"Net time after rest (can continue driving):","Přesný odhad diet (tranzit):":"Exact diet estimate (transit):",
+        "Čekám na zadání ceny":"Waiting for price input","Mýto":"Toll","Výstupní měna":"Output currency","Ne":"No","Ano":"Yes","Nejdříve lze vyjet v":"Earliest departure:","Nutná pauza":"Required rest","Předchozí směna skončila v":"Previous shift ended at","Start systému...":"System starting...",
+        "🧭 Navigovat trasu v Mapách":"🧭 Navigate route in Maps","🧭 Navigovat trasu směny v Mapách":"🧭 Navigate shift route in Maps","+ Přidat Zastávku PŘED cílem (Nakládka/Vykládka)":"+ Add stop BEFORE destination (Loading/Unloading)","+ Přidat Zastávku ZA cílem (Pokračování trasy)":"+ Add stop AFTER destination (Continue route)",
+        "Průjezdový bod":"Transit point","Prázdný":"Empty","Přejezd":"Empty run","1/2 nákladu":"Half load","Plný":"Full load","5 náprav (2+3)":"5 axles (2+3)","6 a více (3+3)":"6+ axles (3+3)","4 nápravy (2+2)":"4 axles (2+2)","3 nápravy":"3 axles","1 nahoře":"1 lifted","2 nahoře":"2 lifted",
+        "Víkend:":"Weekend:","Dluh":"Debt","<24h!":"<24h!","Analyzuji trasu, body a AETR logiku...":"Analyzing route, points and AETR logic...","Úspěšně naplánováno vč. tranzitních států a pauz!":"Successfully planned including transit countries and breaks!","Chyba generátoru:":"Generator error:","Jste offline. Výpočet trasy přes OSRM nelze provést.":"You are offline. Route calculation via OSRM is unavailable.","Vyberte přesné datum startu!":"Select the exact start date!","Vyberte prvního řidiče!":"Select the first driver!","Režim 2 řidičů je aktivní, ale druhý řidič není vybrán!":"Two-driver mode is active, but the second driver has not been selected!","Chyba: Zvolili jste stejného řidiče dvakrát pro dvojosádku!":"Error: the same driver was selected twice for a two-driver crew!","Vyplňte Start a Cíl!":"Enter Start and Destination!","Nelze naplánovat! Řidič neměl pauzu":"Cannot plan! The driver did not have the required rest","Přidat blok":"Add block","Zrušit":"Cancel"
+      },
+      de: {
+        "Hmotnost nákladu (t)":"Ladungsgewicht (t)","Mzdy / Diety":"Lohn / Spesen","Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)":"Das Gewicht beeinflusst den Verbrauch. (Je Tonne +0,2 l/100 km)",
+        "Vyberte přesné datum, aplikace sama určí týden a rok.":"Exaktes Datum wählen; die App bestimmt Woche und Jahr automatisch.","Doba vykládky. Pokud je 0.75 a více, počítá se i jako pauza.":"Entladezeit. Ab 0,75 h zählt sie auch als Pause.",
+        "Nejprve zadejte Start a Cíl.":"Bitte zuerst Start und Ziel eingeben.","Nejprve spočítejte trasu.":"Bitte zuerst die Route berechnen.","Souhrn zkopírován do schránky! Můžete jej vložit do WhatsAppu.":"Zusammenfassung kopiert! Sie kann in WhatsApp eingefügt werden.","Nemáte přidané žádné řidiče.":"Es wurden keine Fahrer hinzugefügt.",
+        "Zadejte město/adresu...":"Stadt/Adresse eingeben...","Adresa":"Adresse","Zastávka":"Stopp","Zdržení (h)":"Aufenthalt (Std.)","Nové jméno...":"Neuer Name...","Např. Turate nebo Milán":"z. B. Turate oder Mailand","Např. Praha":"z. B. Prag","Např. Madrid":"z. B. Madrid","Např. Trasa (Ostrava - Berlín)":"z. B. Route (Ostrava - Berlin)","Např. adresa / město":"z. B. Adresse / Stadt","Stát":"Land","Start":"Start","Cíl":"Ziel","Volno (Pauza)":"Frei (Pause)","Výkon":"Arbeitszeit","Čistá jízda":"Fahrzeit","Výplata":"Lohn","Řidič":"Fahrer","Řidič:":"Fahrer:","Týden":"Woche","Den":"Tag","Hodiny Celkem":"Gesamtstunden","Odhadovaná vzdálenost:":"Geschätzte Entfernung:","Očekávaný návrat do cíle (Konec výkonu):":"Voraussichtliche Ankunft am Ziel (Dienstende):","Čistý po pauze (Lze dál jet):":"Nettozeit nach Pause (Weiterfahrt möglich):","Přesný odhad diet (tranzit):":"Genaue Spesenschätzung (Transit):","Čekám na zadání ceny":"Warte auf Preiseingabe","Mýto":"Maut","Výstupní měna":"Ausgabewährung","Ne":"Nein","Ano":"Ja","Nejdříve lze vyjet v":"Früheste Abfahrt:","Nutná pauza":"Erforderliche Pause","Předchozí směna skončila v":"Vorherige Schicht endete um","Start systému...":"Systemstart...","🧭 Navigovat trasu v Mapách":"🧭 Route in Maps öffnen","🧭 Navigovat trasu směny v Mapách":"🧭 Schichtroute in Maps öffnen","+ Přidat Zastávku PŘED cílem (Nakládka/Vykládka)":"+ Stopp VOR Ziel hinzufügen (Laden/Entladen)","+ Přidat Zastávku ZA cílem (Pokračování trasy)":"+ Stopp NACH Ziel hinzufügen (Route fortsetzen)","Průjezdový bod":"Durchfahrtspunkt","Prázdný":"Leer","Přejezd":"Leerfahrt","1/2 nákladu":"Halbe Ladung","Plný":"Voll","5 náprav (2+3)":"5 Achsen (2+3)","6 a více (3+3)":"6+ Achsen (3+3)","4 nápravy (2+2)":"4 Achsen (2+2)","3 nápravy":"3 Achsen","1 nahoře":"1 angehoben","2 nahoře":"2 angehoben","Víkend:":"Wochenende:","Dluh":"Fehlbetrag","Analyzuji trasu, body a AETR logiku...":"Route, Punkte und AETR-Logik werden analysiert...","Úspěšně naplánováno vč. tranzitních států a pauz!":"Erfolgreich einschließlich Transitstaaten und Pausen geplant!","Chyba generátoru:":"Generatorfehler:","Jste offline. Výpočet trasy přes OSRM nelze provést.":"Sie sind offline. Die Routenberechnung über OSRM ist nicht möglich.","Vyberte přesné datum startu!":"Exaktes Startdatum wählen!","Vyberte prvního řidiče!":"Ersten Fahrer auswählen!","Režim 2 řidičů je aktivní, ale druhý řidič není vybrán!":"Zwei-Fahrer-Modus aktiv, aber kein zweiter Fahrer ausgewählt!","Vyplňte Start a Cíl!":"Start und Ziel eingeben!","Nelze naplánovat! Řidič neměl pauzu":"Planung nicht möglich! Die erforderliche Pause fehlt","Přidat blok":"Block hinzufügen","Zrušit":"Abbrechen"
+      },
+      pl: {
+        "Hmotnost nákladu (t)":"Masa ładunku (t)","Mzdy / Diety":"Płace / Diety","Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)":"Masa wpływa na spalanie. (Każda tona +0,2 l/100 km)","Vyberte přesné datum, aplikace sama určí týden a rok.":"Wybierz dokładną datę; aplikacja automatycznie ustali tydzień i rok.","Doba vykládky. Pokud je 0.75 a více, počítá se i jako pauza.":"Czas rozładunku. Od 0,75 h jest również liczony jako przerwa.","Nejprve zadejte Start a Cíl.":"Najpierw wpisz Start i Cel.","Nejprve spočítejte trasu.":"Najpierw oblicz trasę.","Nemáte přidané žádné řidiče.":"Nie dodano żadnych kierowców.","Zadejte město/adresu...":"Wpisz miasto/adres...","Adresa":"Adres","Zastávka":"Postój","Zdržení (h)":"Postój (godz.)","Nové jméno...":"Nowe imię...","Např. Praha":"np. Praga","Např. Madrid":"np. Madryt","Např. Turate nebo Milán":"np. Turate lub Mediolan","Např. Trasa (Ostrava - Berlín)":"np. Trasa (Ostrawa - Berlin)","Např. adresa / město":"np. adres / miasto","Stát":"Kraj","Start":"Start","Cíl":"Cel","Volno (Pauza)":"Wolne (Przerwa)","Výkon":"Czas pracy","Čistá jízda":"Czas jazdy","Výplata":"Wypłata","Řidič":"Kierowca","Řidič:":"Kierowca:","Týden":"Tydzień","Den":"Dzień","Hodiny Celkem":"Łącznie godzin","Odhadovaná vzdálenost:":"Szacowana odległość:","Očekávaný návrat do cíle (Konec výkonu):":"Przewidywany powrót do celu (koniec pracy):","Čistý po pauze (Lze dál jet):":"Czysty czas po przerwie (można jechać dalej):","Přesný odhad diet (tranzit):":"Dokładny szacunek diet (tranzyt):","Čekám na zadání ceny":"Oczekiwanie na cenę","Mýto":"Myto","Výstupní měna":"Waluta wyjściowa","Ne":"Nie","Ano":"Tak","Nejdříve lze vyjet v":"Najwcześniejszy wyjazd:","Nutná pauza":"Wymagana przerwa","Předchozí směna skončila v":"Poprzednia zmiana zakończyła się o","Start systému...":"Uruchamianie systemu...","🧭 Navigovat trasu v Mapách":"🧭 Nawiguj trasę w Mapach","🧭 Navigovat trasu směny v Mapách":"🧭 Nawiguj trasę zmiany w Mapach","+ Přidat Zastávku PŘED cílem (Nakládka/Vykládka)":"+ Dodaj postój PRZED celem (załadunek/rozładunek)","+ Přidat Zastávku ZA cílem (Pokračování trasy)":"+ Dodaj postój ZA celem (kontynuacja trasy)","Průjezdový bod":"Punkt tranzytowy","Prázdný":"Pusty","Přejezd":"Przejazd pusty","1/2 nákladu":"Połowa ładunku","Plný":"Pełny","5 náprav (2+3)":"5 osi (2+3)","6 a více (3+3)":"6+ osi (3+3)","4 nápravy (2+2)":"4 osie (2+2)","3 nápravy":"3 osie","1 nahoře":"1 podniesiona","2 nahoře":"2 podniesione","Víkend:":"Weekend:","Dluh":"Dług","Analyzuji trasu, body a AETR logiku...":"Analizowanie trasy, punktów i logiki AETR...","Úspěšně naplánováno vč. tranzitních států a pauz!":"Pomyślnie zaplanowano wraz z krajami tranzytowymi i przerwami!","Chyba generátoru:":"Błąd generatora:","Jste offline. Výpočet trasy přes OSRM nelze provést.":"Jesteś offline. Obliczenie trasy przez OSRM jest niedostępne.","Vyberte přesné datum startu!":"Wybierz dokładną datę startu!","Vyberte prvního řidiče!":"Wybierz pierwszego kierowcę!","Režim 2 řidičů je aktivní, ale druhý řidič není vybrán!":"Tryb dwóch kierowców jest aktywny, ale nie wybrano drugiego kierowcy!","Vyplňte Start a Cíl!":"Wpisz Start i Cel!","Nelze naplánovat! Řidič neměl pauzu":"Nie można zaplanować! Kierowcy brakuje wymaganej przerwy","Přidat blok":"Dodaj blok","Zrušit":"Anuluj"
+      },
+      it: {
+        "Hmotnost nákladu (t)":"Peso del carico (t)","Mzdy / Diety":"Paghe / Diarie","Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)":"Il peso influisce sui consumi. (Ogni tonnellata aggiunge 0,2 l/100 km)","Vyberte přesné datum, aplikace sama určí týden a rok.":"Seleziona la data esatta; l'app determina automaticamente settimana e anno.","Doba vykládky. Pokud je 0.75 a více, počítá se i jako pauza.":"Tempo di scarico. Da 0,75 h viene conteggiato anche come pausa.","Nejprve zadejte Start a Cíl.":"Inserisci prima Partenza e Destinazione.","Nejprve spočítejte trasu.":"Calcola prima il percorso.","Nemáte přidané žádné řidiče.":"Nessun autista aggiunto.","Zadejte město/adresu...":"Inserisci città/indirizzo...","Adresa":"Indirizzo","Zastávka":"Fermata","Zdržení (h)":"Sosta (ore)","Nové jméno...":"Nuovo nome...","Např. Praha":"es. Praga","Např. Madrid":"es. Madrid","Např. Turate nebo Milán":"es. Turate o Milano","Např. Trasa (Ostrava - Berlín)":"es. Percorso (Ostrava - Berlino)","Např. adresa / město":"es. indirizzo / città","Stát":"Paese","Start":"Partenza","Cíl":"Destinazione","Volno (Pauza)":"Libero (Pausa)","Výkon":"Tempo di lavoro","Čistá jízda":"Tempo di guida","Výplata":"Paga","Řidič":"Autista","Řidič:":"Autista:","Týden":"Settimana","Den":"Giorno","Hodiny Celkem":"Ore totali","Odhadovaná vzdálenost:":"Distanza stimata:","Očekávaný návrat do cíle (Konec výkonu):":"Arrivo previsto alla destinazione (fine servizio):","Čistý po pauze (Lze dál jet):":"Tempo netto dopo la pausa (si può continuare):","Přesný odhad diet (tranzit):":"Stima precisa delle diarie (transito):","Čekám na zadání ceny":"In attesa del prezzo","Mýto":"Pedaggio","Výstupní měna":"Valuta di output","Ne":"No","Ano":"Sì","Nejdříve lze vyjet v":"Partenza più presto:","Nutná pauza":"Pausa richiesta","Předchozí směna skončila v":"Il turno precedente è terminato alle","Start systému...":"Avvio del sistema...","🧭 Navigovat trasu v Mapách":"🧭 Naviga il percorso in Mappe","🧭 Navigovat trasu směny v Mapách":"🧭 Naviga il percorso del turno in Mappe","+ Přidat Zastávku PŘED cílem (Nakládka/Vykládka)":"+ Aggiungi fermata PRIMA della destinazione (carico/scarico)","+ Přidat Zastávku ZA cílem (Pokračování trasy)":"+ Aggiungi fermata DOPO la destinazione (continua percorso)","Průjezdový bod":"Punto di transito","Prázdný":"Vuoto","Přejezd":"Trasferimento a vuoto","1/2 nákladu":"Mezzo carico","Plný":"Pieno","5 náprav (2+3)":"5 assi (2+3)","6 a více (3+3)":"6+ assi (3+3)","4 nápravy (2+2)":"4 assi (2+2)","3 nápravy":"3 assi","1 nahoře":"1 sollevato","2 nahoře":"2 sollevati","Víkend:":"Weekend:","Dluh":"Debito","Analyzuji trasu, body a AETR logiku...":"Analisi del percorso, dei punti e della logica AETR...","Úspěšně naplánováno vč. tranzitních států a pauz!":"Pianificazione completata con paesi di transito e pause!","Chyba generátoru:":"Errore del generatore:","Jste offline. Výpočet trasy přes OSRM nelze provést.":"Sei offline. Il calcolo del percorso tramite OSRM non è disponibile.","Vyberte přesné datum startu!":"Seleziona la data esatta di partenza!","Vyberte prvního řidiče!":"Seleziona il primo autista!","Režim 2 řidičů je aktivní, ale druhý řidič není vybrán!":"Modalità due autisti attiva, ma il secondo autista non è selezionato!","Vyplňte Start a Cíl!":"Inserisci Partenza e Destinazione!","Nelze naplánovat! Řidič neměl pauzu":"Impossibile pianificare! Manca la pausa richiesta","Přidat blok":"Aggiungi blocco","Zrušit":"Annulla"
+      }
+    };
+    Object.keys(COMPLETE_UI_TRANSLATIONS).forEach(lang=>Object.assign(TRANSLATIONS[lang],COMPLETE_UI_TRANSLATIONS[lang]));
+
+
+    function changeLanguage() {
+        let lang = document.getElementById('langSelect').value;
+        
+        // Zpět do češtiny (vrácení originálů z paměti)
+        if (lang === 'cs') {
+            originalTexts.forEach((originalText, element) => {
+                let textNode = Array.from(element.childNodes).find(n => n.nodeType === 3 && n.nodeValue.trim() !== "");
+                if (textNode) {
+                    let trailingSpace = textNode.nodeValue.match(/\s$/) ? " " : "";
+                    textNode.nodeValue = originalText + trailingSpace;
+                }
+            });
+            // Obnovit i původní placeholdery/title/aria-labely.
+            originalAttrs.forEach((attrs, element) => {
+                Object.keys(attrs).forEach(attr => element.setAttribute(attr, attrs[attr]));
+            });
+            // Samostatně horní banner, který má pevné ID
+            if(document.getElementById('lblHeaderAnalytik')) document.getElementById('lblHeaderAnalytik').innerText = "ANALÝZA";
+            if (typeof validateAndRenderShift === 'function' && document.getElementById('shiftModal')?.style.display === 'flex') validateAndRenderShift();
+            if (typeof renderDietRows === 'function' && document.getElementById('payrollModal')?.style.display === 'flex') renderDietRows();
+            return;
+        }
+
+        let dict = TRANSLATIONS[lang];
+        if (!dict) return;
+
+        // Procházíme všechny elementy, kde by mohl být text na překlad
+        let elements = document.querySelectorAll('label, h2, h3, h4, span.result-label, button.btn, button.btn-magic, button.btn-secondary, option, span');
+        
+        elements.forEach(el => {
+            // Hledáme čistý text uvnitř elementu (nepřepisujeme tím HTML značky jako <span> pro ikonky)
+            let textNode = Array.from(el.childNodes).find(n => n.nodeType === 3 && n.nodeValue.trim() !== "");
+            if (textNode) {
+                let currentText = textNode.nodeValue.trim();
+                
+                // Uložit do paměti CZ originál, abychom měli z čeho překládat po dalším přepnutí
+                if (!originalTexts.has(el) && TRANSLATIONS["en"][currentText] !== undefined) {
+                    originalTexts.set(el, currentText);
+                }
+                
+                let originalText = originalTexts.has(el) ? originalTexts.get(el) : currentText;
+                
+                if (dict[originalText]) {
+                    // Zachováme mezeru za slovem, pokud tam v originále byla, aby se nelepila na ikonku nápovědy
+                    let trailingSpace = textNode.nodeValue.match(/\s$/) ? " " : "";
+                    textNode.nodeValue = dict[originalText] + trailingSpace;
+                }
+            }
+        });
+
+        // Překlad placeholderů, title a aria-labelů uvnitř vstupních polí a tlačítek.
+        document.querySelectorAll('[placeholder],[title],[aria-label]').forEach(el => {
+            ['placeholder','title','aria-label'].forEach(attr => {
+                const val = el.getAttribute(attr);
+                if (!val) return;
+                if (!originalAttrs.has(el)) originalAttrs.set(el, {});
+                const saved = originalAttrs.get(el);
+                if (saved[attr] === undefined) saved[attr] = val;
+                const original = saved[attr];
+                if (dict[original]) el.setAttribute(attr, dict[original]);
+            });
+        });
+
+        // Manuální oprava pro horní label (který je uvnitř flexboxu bez vlastního tagu)
+        if(document.getElementById('lblHeaderAnalytik') && dict["ANALÝZA"]) {
+            document.getElementById('lblHeaderAnalytik').innerText = dict["ANALÝZA"];
+        }
+        if (typeof validateAndRenderShift === 'function' && document.getElementById('shiftModal')?.style.display === 'flex') validateAndRenderShift();
+        if (typeof renderDietRows === 'function' && document.getElementById('payrollModal')?.style.display === 'flex') renderDietRows();
+    }
+
+
+    // =======================================================================
+    // 2. INICIALIZACE MAPY A GEOLOKACE
+    // =======================================================================
+        function T(key) {
+        const lang = document.getElementById('langSelect')?.value || 'cs';
+        if (lang === 'cs') return key;
+        return (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) ? TRANSLATIONS[lang][key] : key;
+    }
+    let map, routeLayer, markerGroup;
+    // Stav kalkulačky – musí být inicializován před každou funkcí, která jej používá.
+    let waypoints = [];
+    let wpCounter = 0;
+    let excludedCountries = [];
+    let totalPrejezdKm = 0;
+    let lastRouteData = null;
+    let globalBreakdown = [];
+    let avgFuelConsumption = 20;
+
+    function initMap() {
+        if(!map) {
+            document.getElementById('map-container').style.display = 'block';
+            map = L.map('map').setView([49.5, 17.2], 5);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+            markerGroup = L.layerGroup().addTo(map);
+        }
+    }
+
+    function drawMap(coordsGeoJson) {
+        initMap();
+        if(routeLayer) map.removeLayer(routeLayer);
+        markerGroup.clearLayers();
+
+        let latlngs = coordsGeoJson.map(c => [c[1], c[0]]);
+        routeLayer = L.polyline(latlngs, {color: '#e3000f', weight: 4}).addTo(map);
+        map.fitBounds(routeLayer.getBounds(), {padding: [20,20]});
+
+        L.marker(latlngs[0]).addTo(markerGroup).bindPopup("Start");
+        L.marker(latlngs[latlngs.length-1]).addTo(markerGroup).bindPopup("Cíl");
+    }
+
+    const OPOTREBENI_PNEU_KOLO_KM = 0.15;
+    const SPOTREBA_NA_TUNU = 0.20; 
+    const DPH_SAZBA = 1.21;
+    
+    const MYTO_STATY = {
+        'CZ': { name: 'Česko', rate: 4.5 }, 'SK': { name: 'Slovensko', rate: 5.0 }, 'DE': { name: 'Německo', rate: 8.5 }, 
+        'AT': { name: 'Rakousko', rate: 11.5 }, 'IT': { name: 'Itálie', rate: 6.0 }, 'PL': { name: 'Polsko', rate: 3.5 },
+        'HU': { name: 'Maďarsko', rate: 8.0 }, 'RO': { name: 'Rumunsko', rate: 2.0 }, 'ES': { name: 'Španělsko', rate: 4.0 },
+        'NL': { name: 'Nizozemí', rate: 1.0 }, 'BE': { name: 'Belgie', rate: 4.5 }, 'CH': { name: 'Švýcarsko', rate: 12.0 },
+        'FR': { name: 'Francie', rate: 6.5 }
+    };
+    const MYTO_NAPRAVY_KOEF = { '2': 0.7, '3': 0.8, '4': 1.0, '5': 1.0, '6': 1.1 };
+
+    function getEuroRate() { return parseFloat(document.getElementById('kurzEuro')?.value) || 25; }
+
+    function formatMoney(amountInCZK, currencyOverride) {
+        const mena = currencyOverride || document.getElementById('menaSelect')?.value || 'CZK';
+        const kurz = getEuroRate();
+        const finalVal = mena === 'EUR' ? (amountInCZK / kurz) : amountInCZK;
+        return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: mena, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(finalVal);
+    }
+
+    function syncCurrency(value) {
+        const main = document.getElementById('menaSelect');
+        const top = document.getElementById('menaTopSelect');
+        if (main) main.value = value;
+        if (top) top.value = value;
+        calculate();
+        autoSave();
+        renderBreakdownCurrency();
+    }
+
+    const STORAGE_PREFIX = 'controlPoint_';
+    function storageKeys(key) { return [STORAGE_PREFIX + key, key]; }
+    function safeParseStorage(key, fallback) {
+        for (const k of storageKeys(key)) {
+            try {
+                const raw = window.localStorage.getItem(k);
+                if (raw !== null && raw !== '') return JSON.parse(raw);
+            } catch (e) { console.warn('Storage read error', k, e); }
+        }
+        return fallback;
+    }
+
+    function safeSetStorage(key, value) {
+        let ok = false;
+        const raw = JSON.stringify(value);
+        for (const k of storageKeys(key)) {
+            try { window.localStorage.setItem(k, raw); ok = true; }
+            catch (e) { console.warn('Storage write error', k, e); }
+        }
+        return ok;
+    }
+
+    function recoverPlannerStateFromStorage() {
+        const known = ['cpPlannerStateUltimate','cpPlannerState','plannerState'];
+        const backups = [];
+        for (const key of known) {
+            const v = safeParseStorage(key, null);
+            if (v && typeof v === 'object') backups.push(v);
+        }
+        const drivers = safeParseStorage('cpDrivers', null);
+        if (Array.isArray(drivers) && drivers.length) backups.push({drivers});
+        // Recover from older app versions whose key name contained planner/driver.
+        try {
+            for (let i=0;i<localStorage.length;i++) {
+                const k=localStorage.key(i)||'';
+                if (!/(planner|driver|shift|mzd)/i.test(k)) continue;
+                if (known.includes(k) || k==='cpDrivers') continue;
+                try {
+                    const v=JSON.parse(localStorage.getItem(k));
+                    if (v && typeof v==='object' && (Array.isArray(v.drivers)||Array.isArray(v.driverList))) backups.push(v);
+                } catch(_) {}
+            }
+        } catch(_) {}
+        return backups;
+    }
+
+    function autoSave() {
+        const data = {
+            start: document.getElementById('startAdresa').value,
+            cil: document.getElementById('cilAdresa').value,
+            cilStat: document.getElementById('cilStat').value,
+            mena: document.getElementById('menaSelect').value,
+            kurz: document.getElementById('kurzEuro').value,
+            typTrasy: document.getElementById('typTrasy').value,
+            dokladky: document.getElementById('dokladky').value,
+            euro: document.getElementById('euroNorma').value,
+            napravy: document.getElementById('napravyFyzicke').value,
+            zvedle: document.getElementById('zvedleNapravy').value,
+            prazdna: document.getElementById('spotrebaPrazdne').value,
+            startVaha: document.getElementById('vahaNakladu')?.value || '0',
+            vaha: document.getElementById('vahaNakladu')?.value || '0',
+            nafta: document.getElementById('cenaNafty').value,
+            posadka: document.getElementById('posadka').value,
+            mzdaTyp: document.getElementById('typMzdy').value,
+            mzdaHodnota: document.getElementById('mzdaHodnota').value,
+            dny: document.getElementById('dny').value,
+            fix: document.getElementById('nakladyAutoDen').value,
+            dph: document.getElementById('dphToggle').checked,
+            mytoToggle: document.getElementById('mytoToggle')?.checked ?? true,
+            marze: document.getElementById('marze').value,
+            skutecna: document.getElementById('skutecnaCena').value,
+            realCenaTyp: document.getElementById('realCenaTyp')?.value || 'celkem',
+            realCenaMena: document.getElementById('realCenaMena')?.value || 'CZK',
+            waypoints: waypoints,
+            excludedCountries: excludedCountries
+        };
+        safeSetStorage('controlPointDraft', data);
+    }
+
+    function loadAutoSave() {
+        const d = safeParseStorage('controlPointDraft', null);
+        if (d) {
+            document.getElementById('startAdresa').value = d.start ?? 'Věrovany 94';
+            document.getElementById('cilAdresa').value = d.cil ?? '';
+            document.getElementById('cilStat').value = d.cilStat ?? '';
+            document.getElementById('menaSelect').value = d.mena || 'CZK';
+            document.getElementById('kurzEuro').value = d.kurz || '25';
+            document.getElementById('typTrasy').value = d.typTrasy || '1';
+            document.getElementById('dokladky').value = d.dokladky || '0';
+            document.getElementById('euroNorma').value = d.euro || '1.0';
+            document.getElementById('napravyFyzicke').value = d.napravy || '5';
+            document.getElementById('zvedleNapravy').value = d.zvedle || '0';
+            document.getElementById('spotrebaPrazdne').value = d.prazdna || '20';
+            document.getElementById('vahaNakladu').value = d.vaha ?? d.startVaha ?? '10';
+            syncCargoWeight();
+            document.getElementById('cenaNafty').value = d.nafta || '40';
+            document.getElementById('posadka').value = d.posadka || '1';
+            document.getElementById('typMzdy').value = d.mzdaTyp || 'denni';
+            document.getElementById('mzdaHodnota').value = d.mzdaHodnota || '3000';
+            document.getElementById('dny').value = d.dny || '1';
+            document.getElementById('nakladyAutoDen').value = d.fix || '2500';
+            document.getElementById('dphToggle').checked = !!d.dph;
+            if (document.getElementById('mytoToggle')) document.getElementById('mytoToggle').checked = d.mytoToggle !== false;
+            document.getElementById('marze').value = d.marze || '15';
+            document.getElementById('skutecnaCena').value = d.skutecna || '0';
+            if (document.getElementById('realCenaTyp')) document.getElementById('realCenaTyp').value = d.realCenaTyp || 'celkem';
+            if (document.getElementById('realCenaMena')) document.getElementById('realCenaMena').value = d.realCenaMena || 'CZK';
+            if (Array.isArray(d.waypoints)) { waypoints = d.waypoints; wpCounter = Math.max(0, ...waypoints.map(w => Number(w.id) || 0)); }
+            else { waypoints = []; wpCounter = 0; }
+            excludedCountries = Array.isArray(d.excludedCountries) ? d.excludedCountries : [];
+        }
+        // Vždy inicializovat, i když není uložený draft.
+        if (!Array.isArray(waypoints)) waypoints = [];
+        if (!Array.isArray(excludedCountries)) excludedCountries = [];
+        const top = document.getElementById('menaTopSelect');
+        if (top) top.value = document.getElementById('menaSelect').value;
+        renderWaypoints();
+        renderAvoidList();
+        checkKoleckoStatus();
+        updateFavoritesDropdown();
+    }
+
+    // Kompatibilita se staršími uloženými daty / Safari cache: #startVaha zůstává pouze interní.
+    function ensureStartVahaField() {
+        let el = document.getElementById('startVaha');
+        if (!el) {
+            el = document.createElement('input');
+            el.type = 'hidden'; el.id = 'startVaha';
+            el.value = document.getElementById('vahaNakladu')?.value || '10';
+            document.body.appendChild(el);
+        }
+        syncCargoWeight();
+    }
+
+    function syncCargoWeight() {
+        const cargo = document.getElementById('vahaNakladu');
+        const legacy = document.getElementById('startVaha');
+        if (cargo && legacy) legacy.value = cargo.value || '0';
+    }
+
+    window.addEventListener('load', () => {
+        updateOnlineStatus();
+        ensureStartVahaField();
+        const planDate = document.getElementById('planDateSelect');
+        if (planDate && !planDate.value) {
+            const now = new Date();
+            planDate.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+        }
+
+        setTimeout(() => {
+            const loader = document.getElementById('loading-screen');
+            if(loader) { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 600); }
+        }, 1000); 
+        loadAutoSave();
+        plannerLoadState();
+        populatePlannerYears(new Date().getFullYear());
+        syncPlannerSelectors();
+        renderPlanner();
+        updatePlannerNavButton();
+        ['planStartRoute','planEndRoute'].forEach(id => { const el=document.getElementById(id); if(el) el.addEventListener('input', updatePlannerNavButton); });
+        calculate(); 
+    });
+
+    function showInfo(text) {
+        document.getElementById('infoModalText').innerHTML = text;
+        document.getElementById('infoModal').style.display = 'flex';
+    }
+
+    function setStatus(msg, type) {
+        const box = document.getElementById('apiStatus');
+        box.className = 'msg-' + type;
+        box.innerText = msg;
+        box.style.display = 'block';
+    }
+
+    function calcOptimalShifts(hours, posadka) {
+        let maxStandard = posadka === 2 ? 18 : 9;
+        let maxExtended = posadka === 2 ? 20 : 10;
+        let diff = maxExtended - maxStandard; 
+        
+        let shifts = Math.ceil(hours / maxStandard);
+        let warning = "";
+
+        let lowerShifts = shifts - 1;
+        if (lowerShifts > 0) {
+            let overflow = hours - (lowerShifts * maxStandard);
+            let maxOverflowAllowed = diff * Math.min(2, lowerShifts); 
+            
+            if (overflow > 0 && overflow <= maxOverflowAllowed) {
+                shifts = lowerShifts; 
+                let usedExtensions = Math.ceil(overflow / diff);
+                warning = posadka === 2 ? T('aetrWarn2').replace('{e}', usedExtensions) : T('aetrWarn1').replace('{e}', usedExtensions);
+            }
+        }
+        if (shifts < 1) shifts = 1;
+        return { shifts: shifts, warning: warning };
+    }
+
+    function recalcAETR() {
+        // #vzdalenost je již CELKEM km (u Kolečko je již 2x).
+        // AETR nesmí Kolečko násobit podruhé.
+        let distTotal = parseFloat(document.getElementById('vzdalenost').value) || 0;
+        if(distTotal > 0) {
+            let celkoveKm = distTotal + (parseFloat(document.getElementById('dokladky').value) || 0);
+            let posadka = parseInt(document.getElementById('posadka').value) || 1;
+            let hoursDrive = celkoveKm / 70; 
+
+            let aetrData = calcOptimalShifts(hoursDrive, posadka);
+            document.getElementById('dny').value = aetrData.shifts;
+            
+            let aetrBox = document.getElementById('aetrInfo');
+            if(aetrBox) {
+                let baseText = T('').replace('{h}', hoursDrive.toFixed(1)).replace('{d}', aetrData.shifts);
+                if (aetrData.warning) {
+                    aetrBox.innerHTML = baseText + "<br><span style='color:#c62828; font-weight:800; font-size:10px;'>" + aetrData.warning + "</span>";
+                    aetrBox.style.background = "#ffebee";
+                } else {
+                    aetrBox.innerHTML = baseText;
+                    aetrBox.style.background = "#d4edda";
+                }
+                aetrBox.style.display = 'none';
+            }
+        }
+        calculate();
+    }
+    // =======================================================================
+    // 3. KALKULAČKA TRAS A OSRM GEOLOKACE
+    // =======================================================================
+    function updateFavoritesDropdown() {
+        const favs = safeParseStorage('cpFavorites', {}) || safeParseStorage('favorites', {}) || safeParseStorage('routeTemplates', {}) || {};
+        const sel = document.getElementById('favSelect');
+        if (!sel) return;
+        const current = sel.value;
+        sel.innerHTML = `<option value="">-- Načíst oblíbenou trasu --</option>`;
+        Object.keys(favs).sort((a,b)=>a.localeCompare(b,'cs')).forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name; opt.textContent = name;
+            sel.appendChild(opt);
+        });
+        if (favs[current]) sel.value = current;
+    }
+
+    function saveFavorite() {
+        autoSave();
+        const name = prompt('Zadejte název šablony (např. Mohelnice - Miláno):');
+        if (!name || !name.trim()) return;
+        const key = name.trim();
+        const favs = safeParseStorage('cpFavorites', {}) || safeParseStorage('favorites', {}) || safeParseStorage('routeTemplates', {}) || {};
+        const draft = safeParseStorage('controlPointDraft', null);
+        if (!draft) { alert('Nejdříve vyplňte trasu a údaje.'); return; }
+        favs[key] = JSON.parse(JSON.stringify(draft));
+        safeSetStorage('cpFavorites', favs);
+        safeSetStorage('favorites', favs);
+        safeSetStorage('routeTemplates', favs);
+        updateFavoritesDropdown();
+        document.getElementById('favSelect').value = key;
+        alert('Šablona byla uložena a zůstane uložená i po zavření aplikace.');
+    }
+
+    function loadFavorite() {
+        const name = document.getElementById('favSelect')?.value;
+        if (!name) return;
+        const favs = safeParseStorage('cpFavorites', {}) || safeParseStorage('favorites', {}) || safeParseStorage('routeTemplates', {}) || {};
+        if (!favs[name]) return;
+        safeSetStorage('controlPointDraft', favs[name]);
+        loadAutoSave();
+        calculate();
+        if (document.getElementById('startAdresa').value && document.getElementById('cilAdresa').value) spocitatTrasu();
+    }
+
+    function removeFavorite() {
+        const sel = document.getElementById('favSelect');
+        const name = sel?.value;
+        if (!name) { alert('Vyberte šablonu, kterou chcete smazat.'); return; }
+        if (!confirm(`Opravdu smazat šablonu „${name}“?`)) return;
+        const favs = safeParseStorage('cpFavorites', {}) || safeParseStorage('favorites', {}) || safeParseStorage('routeTemplates', {}) || {};
+        delete favs[name];
+        safeSetStorage('cpFavorites', favs);
+        safeSetStorage('favorites', favs);
+        safeSetStorage('routeTemplates', favs);
+        updateFavoritesDropdown();
+    }
+
+    function addWaypoint() {
+        wpCounter++;
+        waypoints.push({ id: wpCounter, address: "", type: "transit" });
+        renderWaypoints();
+        checkKoleckoStatus();
+        autoSave();
+    }
+
+    function removeWaypoint(id) {
+        waypoints = waypoints.filter(wp => wp.id !== id);
+        totalPrejezdKm = 0;
+        document.getElementById('prejezdyShow').value = '0';
+        renderWaypoints();
+        checkKoleckoStatus();
+        autoSave();
+        if(document.getElementById('vzdalenost').value > 0) spocitatTrasu();
+    }
+
+    function updateWaypoint(id) {
+        let wp = waypoints.find(w => w.id === id);
+        if(wp) {
+            wp.address = document.getElementById(`wp_addr_${id}`).value;
+            wp.type = document.getElementById(`wp_type_${id}`).value;
+            // Stav nákladu na začátku/po nakládce: prázdný=0 t, 1/2=12 t, plný=24 t.
+            const startVaha = document.getElementById('startVaha');
+            const loadMap = { empty: 0, prejezd: 0, half: 12, full: 24 };
+            if (startVaha && Object.prototype.hasOwnProperty.call(loadMap, wp.type)) {
+                startVaha.value = loadMap[wp.type];
+                const cargo = document.getElementById('vahaNakladu');
+                if (cargo) cargo.value = loadMap[wp.type];
+            }
+        }
+        autoSave();
+        calculate();
+        if(wp?.address && document.getElementById('vzdalenost').value > 0) spocitatTrasu();
+    }
+
+    function renderWaypoints() {
+        const container = document.getElementById('waypointsContainer');
+        container.innerHTML = '';
+        waypoints.forEach(wp => {
+            const row = document.createElement('div');
+            row.className = 'waypoint-row';
+            row.innerHTML = `
+                <div class="wp-inputs">
+                    <input type="text" id="wp_addr_${wp.id}" value="${String(wp.address||'').replace(/"/g,'&quot;')}" placeholder="Např. adresa / město" onchange="updateWaypoint(${wp.id})">
+                    <select id="wp_type_${wp.id}" onchange="updateWaypoint(${wp.id})">
+                        <option value="transit" ${wp.type === 'transit' ? 'selected' : ''}>Průjezdový bod</option>
+                        <option value="empty" ${wp.type === 'empty' ? 'selected' : ''}>Prázdný</option>
+                        <option value="prejezd" ${wp.type === 'prejezd' ? 'selected' : ''}>Přejezd</option>
+                        <option value="half" ${wp.type === 'half' ? 'selected' : ''}>1/2 nákladu</option>
+                        <option value="full" ${wp.type === 'full' ? 'selected' : ''}>Plný</option>
+                    </select>
+                </div>
+                <button class="btn-remove-wp" onclick="removeWaypoint(${wp.id})" title="Smazat bod">✕</button>`;
+            container.appendChild(row);
+        });
+    }
+
+    function checkKoleckoStatus() {
+        let typSel = document.getElementById('typTrasy');
+        if(waypoints.length > 0) { typSel.value = "1"; typSel.disabled = true; } 
+        else { typSel.disabled = false; }
+    }
+
+    function renderAvoidList() {
+        let container = document.getElementById('avoidListContainer');
+        if(excludedCountries.length === 0) { container.innerHTML = ''; return; }
+        
+        let html = `<div style="font-size:11px; font-weight:600; color:white; margin-bottom:12px; background:var(--cp-danger); padding:8px; border-radius:4px;"><b>${T('zakaz')}</b><br>`;
+        excludedCountries.forEach(code => {
+            let name = MYTO_STATY[code] ? MYTO_STATY[code].name : code;
+            html += `<span style="display:inline-block; margin-top:4px; background:rgba(0,0,0,0.3); color:white; padding:4px 8px; border-radius:3px; margin-right:4px; cursor:pointer;" onclick="removeAvoid('${code}')">✕ ${T('povolit')} ${name}</span>`;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    function removeAvoid(code) {
+        excludedCountries = excludedCountries.filter(c => c !== code);
+        renderAvoidList();
+        spocitatTrasu();
+    }
+
+    async function getCoordinates(address) {
+        if(!address) return null;
+        let gpsMatch = address.match(/^([-+]?\d{1,2}\.\d+)[,\s]+([-+]?\d{1,3}\.\d+)$/);
+        if(gpsMatch) return [parseFloat(gpsMatch[2]), parseFloat(gpsMatch[1])];
+        try {
+            let res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(address)}&limit=1`);
+            let data = await res.json();
+            if(data.features && data.features.length > 0) return data.features[0].geometry.coordinates;
+        } catch(e) {}
+        try {
+            let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`);
+            let data = await res.json();
+            if(data && data.length > 0) return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
+        } catch(e) {}
+        throw new Error(`${T('chybaAdresa')} (${address})`);
+    }
+
+    async function getCountryCodeFromCoordsFast(lon, lat) {
+        try {
+            let res = await fetch(`https://photon.komoot.io/reverse?lon=${lon}&lat=${lat}`);
+            let data = await res.json();
+            if(data && data.features && data.features.length > 0) {
+                let cc = data.features[0].properties.countrycode;
+                if (cc) return cc.toUpperCase();
+            }
+        } catch(e) {}
+        return null; 
+    }
+
+    async function getCountryCodeFromCoords(lon, lat) {
+        let cc = await getCountryCodeFromCoordsFast(lon, lat);
+        if (cc) return cc;
+        try {
+            let res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=3`);
+            let data = await res.json();
+            if(data && data.address && data.address.country_code) return data.address.country_code.toUpperCase();
+        } catch(e) {}
+        return "CZ";
+    }
+
+    function haversine(lon1, lat1, lon2, lat2) {
+        const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+        return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+    }
+
+    async function extractSegmentsFromCoords(coords, distTotal) {
+        let pointsToCheck = []; let distAccumulator = 0; const INTERVAL = 25; let distances = [0]; 
+        for(let i=1; i<coords.length; i++) {
+            let d = haversine(coords[i-1][0], coords[i-1][1], coords[i][0], coords[i][1]);
+            distances.push(d); distAccumulator += d;
+            if(distAccumulator >= INTERVAL) { pointsToCheck.push({ index: i, coord: coords[i] }); distAccumulator = 0; }
+        }
+        for(let p of pointsToCheck) { p.cc = await getCountryCodeFromCoordsFast(p.coord[0], p.coord[1]); }
+        let startCountry = await getCountryCodeFromCoords(coords[0][0], coords[0][1]) || 'CZ';
+        let currentCountry = MYTO_STATY[startCountry] ? startCountry : 'CZ';
+        let currentSegmentKm = 0; let rawSegments = []; let checkIdx = 0;
+        for(let i=1; i<coords.length; i++) {
+            currentSegmentKm += distances[i];
+            if (checkIdx < pointsToCheck.length && pointsToCheck[checkIdx].index === i) {
+                let cc = pointsToCheck[checkIdx].cc;
+                if (cc && MYTO_STATY[cc] && cc !== currentCountry) {
+                    rawSegments.push({ code: currentCountry, km: currentSegmentKm });
+                    currentCountry = cc; currentSegmentKm = 0;
+                }
+                checkIdx++;
+            }
+        }
+        rawSegments.push({ code: currentCountry, km: currentSegmentKm });
+        
+        let finalSegments = [];
+        for(let s of rawSegments) {
+            if(finalSegments.length > 0 && finalSegments[finalSegments.length-1].code === s.code) finalSegments[finalSegments.length-1].km += s.km;
+            else finalSegments.push(s);
+        }
+        let haversineTotal = finalSegments.reduce((sum, s) => sum + s.km, 0);
+        if(haversineTotal > 0) { let ratio = distTotal / haversineTotal; finalSegments.forEach(s => s.km = s.km * ratio); }
+        return finalSegments;
+    }
+
+    function applyRoundTripDistance() {
+        const kmEl = document.getElementById('vzdalenost');
+        if (!kmEl) return;
+        const base = parseFloat(kmEl.dataset.onewayKm);
+        if (!Number.isFinite(base) || base <= 0) return;
+        const round = waypoints.length === 0 && document.getElementById('typTrasy')?.value === '2';
+        kmEl.value = (base * (round ? 2 : 1)).toFixed(1);
+    }
+
+        async function spocitatTrasu() {
+        if (!navigator.onLine) { setStatus('❌ Jste offline. Výpočet trasy z OSRM není dostupný.', 'error'); return; }
+        const startStr = document.getElementById('startAdresa').value.trim();
+        const cilStr = document.getElementById('cilAdresa').value.trim();
+        const btn = document.getElementById('btnTrasa');
+        if (!startStr || !cilStr) { setStatus('Vyplňte Start i Cíl.', 'error'); return; }
+        btn.disabled = true;
+        setStatus('Počítám trasu, rozpad států a mýto...', 'info');
+        try {
+            const coords = [];
+            const startCoords = await getCoordinates(startStr); coords.push(startCoords);
+            for (const wp of waypoints) if (wp.address?.trim()) coords.push(await getCoordinates(wp.address.trim()));
+            const cilCoords = await getCoordinates(cilStr); coords.push(cilCoords);
+            const coordStrings = coords.map(c => `${c[0]},${c[1]}`);
+            const url = `https://router.project-osrm.org/route/v1/driving/${coordStrings.join(';')}?overview=full&geometries=geojson&alternatives=true&steps=false`;
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`OSRM HTTP ${res.status}`);
+            const data = await res.json();
+            if (!data.routes?.length) throw new Error('Trasa nebyla nalezena.');
+
+            let candidates = data.routes;
+            let selected = candidates[0];
+            let selectedSegments = await extractSegmentsFromCoords(selected.geometry.coordinates, selected.distance/1000);
+            const blocked = new Set(excludedCountries);
+            let avoidFailed = false;
+            let avoidSucceeded = false;
+            if (blocked.size) {
+                const evaluated = [];
+                for (const route of candidates) {
+                    const segs = await extractSegmentsFromCoords(route.geometry.coordinates, route.distance/1000);
+                    const blockedKm = segs.filter(s => blocked.has(s.code)).reduce((a,s)=>a+s.km,0);
+                    evaluated.push({route, segs, blockedKm});
+                }
+                evaluated.sort((a,b) => (a.blockedKm - b.blockedKm) || (a.route.distance - b.route.distance));
+                if (evaluated[0].blockedKm > 0.5) {
+                    const names = [...blocked].map(c => MYTO_STATY[c]?.name || c).join(', ');
+                    avoidFailed = true;
+                    renderAvoidList();
+                    setStatus(`❌ Zemi ${names} se nepodařilo objet dostupnou alternativní trasou. Původní trasa zůstává zachována.`, 'error');
+                } else {
+                    selected = evaluated[0].route;
+                    selectedSegments = evaluated[0].segs;
+                    avoidSucceeded = selected !== candidates[0];
+                    if (avoidSucceeded) setStatus('✓ Alternativní trasa bez zadané země byla nalezena.', 'success');
+                }
+            }
+
+            const distTotal = selected.distance / 1000;
+            drawMap(selected.geometry.coordinates);
+            globalBreakdown = selectedSegments;
+            const vMulti = waypoints.length > 0 ? 1 : ((document.getElementById('typTrasy').value === '2') ? 2 : 1);
+            const routeKmForCalc = distTotal * vMulti;
+            const kmEl = document.getElementById('vzdalenost');
+            if (kmEl) { kmEl.dataset.onewayKm = distTotal.toFixed(1); kmEl.value = routeKmForCalc.toFixed(1); }
+
+            // Přejezd = součet úseků, které končí v waypointu označeném jako Přejezd.
+            let prejezd = 0;
+            if (waypoints.length && Array.isArray(selected.legs)) {
+                for (let i=0; i<waypoints.length; i++) {
+                    if ((waypoints[i].type === 'prejezd' || waypoints[i].type === 'empty') && selected.legs[i]) prejezd += Number(selected.legs[i].distance || 0) / 1000;
+                }
+            }
+            totalPrejezdKm = Math.min(distTotal * vMulti, prejezd * vMulti);
+            document.getElementById('prejezdyShow').value = totalPrejezdKm.toFixed(1);
+
+            renderBreakdownSegments(globalBreakdown, vMulti);
+            lastRouteData = { start:startStr, cil:cilStr, wps:waypoints.map(w=>w.address), dist:distTotal.toFixed(1) };
+            recalcAETR();
+            autoSave();
+            if (!avoidFailed && !avoidSucceeded) setStatus(`Hotovo: ${routeKmForCalc.toFixed(1)} km`, 'success');
+        } catch (error) {
+            setStatus('CHYBA: ' + error.message, 'error');
+        } finally { btn.disabled = false; }
+    }
+
+    function renderBreakdownSegments(segments, multi) {
+        const list = document.getElementById('breakdownList');
+        list.innerHTML = '';
+        if (!segments?.length) { document.getElementById('breakdownContainer').style.display='none'; return; }
+        document.getElementById('breakdownContainer').style.display = 'block';
+        const euroKoef = parseFloat(document.getElementById('euroNorma').value) || 1;
+        const fyzickeNapravy = parseInt(document.getElementById('napravyFyzicke').value) || 5;
+        const napravyKoef = MYTO_NAPRAVY_KOEF[fyzickeNapravy > 6 ? '6' : String(fyzickeNapravy)] || 1;
+        const mena = document.getElementById('menaSelect').value;
+        const kurz = getEuroRate();
+        segments.forEach((seg,index)=>{
+            const actKm = seg.km * multi;
+            const rate = MYTO_STATY[seg.code]?.rate || 8.5;
+            const tollCZK = calculateSegmentTollCZK(actKm, rate);
+            const displayToll = mena === 'EUR' ? tollCZK/kurz : tollCZK;
+            let options = '';
+            Object.keys(MYTO_STATY).forEach(k=>options += `<option value="${k}" ${k===seg.code?'selected':''}>${MYTO_STATY[k].name}</option>`);
+            list.insertAdjacentHTML('beforeend', `
+                <div class="breakdown-row">
+                    <div class="breakdown-input-group"><label>Stát</label><select class="seg-stat" data-index="${index}" onchange="updateSegment(${index})">${options}</select></div>
+                    <div class="breakdown-input-group"><label>Km</label><input type="number" class="seg-km" data-index="${index}" value="${actKm.toFixed(1)}" oninput="updateSegment(${index})"></div>
+                    <div class="breakdown-input-group"><label>Mýto (${mena})</label><input type="number" class="seg-toll" data-index="${index}" data-czk="${tollCZK}" value="${displayToll.toFixed(2)}" oninput="updateSegmentToll(${index}, this.value)"></div>
+                    <button class="btn-avoid-country" onclick="avoidCountryFromSegment(${index})" title="Zkusit objet tuto zemi">✕</button>
+                </div>`);
+        });
+        calculate();
+    }
+
+    function renderBreakdownCurrency() {
+        document.querySelectorAll('.seg-toll').forEach(inp=>{
+            const czk = parseFloat(inp.dataset.czk);
+            if (!Number.isFinite(czk)) return;
+            inp.value = (document.getElementById('menaSelect').value === 'EUR' ? czk/getEuroRate() : czk).toFixed(2);
+        });
+        document.querySelectorAll('#breakdownList .breakdown-input-group label').forEach(label=>{
+            if (label.textContent.startsWith('Mýto')) label.textContent = `Mýto (${document.getElementById('menaSelect').value})`;
+        });
+    }
+
+    function updateSegmentToll(index, value) {
+        const inp = document.querySelector(`.seg-toll[data-index="${index}"]`);
+        const numeric = parseFloat(value) || 0;
+        const czk = document.getElementById('menaSelect').value === 'EUR' ? numeric * getEuroRate() : numeric;
+        if (inp) inp.dataset.czk = String(czk);
+        calculate();
+    }
+
+    async function avoidCountryFromSegment(index) {
+        const sel = document.querySelector(`.seg-stat[data-index="${index}"]`);
+        if (!sel) return;
+        const code = sel.value;
+        if (!excludedCountries.includes(code)) excludedCountries.push(code);
+        renderAvoidList();
+        autoSave();
+        await spocitatTrasu();
+    }
+
+    function getTollAxleFactor() {
+        const n = parseInt(document.getElementById('napravyFyzicke')?.value, 10) || 5;
+        return MYTO_NAPRAVY_KOEF[n > 6 ? '6' : String(n)] || 1;
+    }
+    function calculateSegmentTollCZK(km) {
+        const rate = arguments.length > 1 ? arguments[1] : 8.5;
+        const euro = parseFloat(document.getElementById('euroNorma')?.value) || 1;
+        return (Number(km)||0) * 0.85 * rate * euro * getTollAxleFactor();
+    }
+
+    function updateSegment(index) {
+        const statSel = document.querySelector(`.seg-stat[data-index="${index}"]`);
+        const kmInp = document.querySelector(`.seg-km[data-index="${index}"]`);
+        const tollInp = document.querySelector(`.seg-toll[data-index="${index}"]`);
+        if (!statSel || !kmInp || !tollInp) return;
+        const km = parseFloat(kmInp.value) || 0;
+        const rate = MYTO_STATY[statSel.value]?.rate || 8.5;
+        const euro = parseFloat(document.getElementById('euroNorma').value) || 1;
+        const napr = MYTO_NAPRAVY_KOEF[document.getElementById('napravyFyzicke').value > 6 ? '6' : document.getElementById('napravyFyzicke').value] || 1;
+        const czk = calculateSegmentTollCZK(km, rate);
+        tollInp.dataset.czk = String(czk);
+        tollInp.value = (document.getElementById('menaSelect').value === 'EUR' ? czk/getEuroRate() : czk).toFixed(2);
+        calculate();
+    }
+
+    function updateAllSegmentTolls() {
+        document.querySelectorAll('.seg-stat').forEach(sel => updateSegment(sel.dataset.index));
+        renderBreakdownCurrency();
+    }
+
+    function calculate() {
+        const includesDph = document.getElementById('dphToggle').checked;
+        const dphMulti = includesDph ? DPH_SAZBA : 1;
+        const includesMytoSale = document.getElementById('mytoToggle')?.checked ?? true;
+        const mena = document.getElementById('menaSelect').value;
+        const kurz = getEuroRate();
+        let totalMytoCZK = 0;
+        document.querySelectorAll('.seg-toll').forEach(inp => {
+            let czk = parseFloat(inp.dataset.czk);
+            if (!Number.isFinite(czk)) {
+                const v = parseFloat(inp.value) || 0;
+                czk = mena === 'EUR' ? v * kurz : v;
+                inp.dataset.czk = String(czk);
+            }
+            totalMytoCZK += czk;
+        });
+
+        const typTrasyMulti = waypoints.length > 0 ? 1 : (document.getElementById('typTrasy').value === '2' ? 2 : 1);
+        // Vzdálenost v modrém poli je vždy CELKEM. Jednosměrná hodnota je držena v data-oneway-km,
+        // takže přepnutí na Kolečko ji zdvojnásobí jen jednou a náklady se nezdvojnásobí podruhé.
+        const kmEl = document.getElementById('vzdalenost');
+        const storedOneWay = parseFloat(kmEl?.dataset.onewayKm);
+        const displayedKm = parseFloat(kmEl?.value) || 0;
+        const baseKm = Number.isFinite(storedOneWay) ? storedOneWay : (typTrasyMulti === 2 ? displayedKm / 2 : displayedKm);
+        const dokladky = parseFloat(document.getElementById('dokladky').value) || 0;
+        const celkoveKm = baseKm * typTrasyMulti + dokladky;
+        if (kmEl && baseKm > 0) kmEl.value = celkoveKm.toFixed(1);
+
+        const zvedle = parseInt(document.getElementById('zvedleNapravy').value) || 0;
+        const baseCons = parseFloat(document.getElementById('spotrebaPrazdne').value) || 20;
+        const enteredCargoWeight = parseFloat(document.getElementById('vahaNakladu')?.value);
+        const loadWeight = Number.isFinite(enteredCargoWeight) ? enteredCargoWeight : 0;
+        const legacyWeight = document.getElementById('startVaha');
+        if (legacyWeight) legacyWeight.value = String(loadWeight);
+        const weightCons = loadWeight * SPOTREBA_NA_TUNU;
+        const avgCons = Math.max(0, baseCons + weightCons);
+        avgFuelConsumption = avgCons;
+        document.getElementById('resSpotrebaDynamicka').innerText = `${avgCons.toFixed(1)} L / 100 km`;
+
+        const dny = parseFloat(document.getElementById('dny').value) || 0;
+        const mzdaValue = parseFloat(document.getElementById('mzdaHodnota').value) || 0;
+        const nakladMzda = document.getElementById('typMzdy').value === 'fixni' ? mzdaValue : mzdaValue * dny;
+        const nakladFixAuto = (parseFloat(document.getElementById('nakladyAutoDen').value) || 0) * dny;
+
+        // Zvednutá náprava snižuje opotřebení pneumatik; základ je 10 jednotek na km.
+        const opotrebeniKoef = Math.max(0, 1 - (zvedle * 0.15));
+        const nakladPneu = celkoveKm * (10 * OPOTREBENI_PNEU_KOLO_KM) * opotrebeniKoef;
+        const nakladNafta = (celkoveKm / 100) * avgCons * (parseFloat(document.getElementById('cenaNafty').value) || 0);
+        const nakladyBezMyta = nakladNafta + nakladMzda + nakladFixAuto + nakladPneu;
+        const nakladyCelkem = nakladyBezMyta + (includesMytoSale ? totalMytoCZK : 0);
+
+        const marze = parseFloat(document.getElementById('marze').value) || 0;
+        const prodejniCena = nakladyCelkem * (1 + marze / 100);
+        document.getElementById('resNafta').innerText = formatMoney(nakladNafta * dphMulti);
+        document.getElementById('resMzda').innerText = formatMoney(nakladMzda * dphMulti);
+        document.getElementById('resFixPneu').innerText = formatMoney((nakladFixAuto + nakladPneu) * dphMulti);
+        document.getElementById('resMyto').innerText = formatMoney(totalMytoCZK * dphMulti);
+        document.getElementById('resNakladyCelkem').innerText = formatMoney(nakladyCelkem * dphMulti);
+        document.getElementById('resKmBezMyta').innerText = `${formatMoney(celkoveKm > 0 ? nakladyBezMyta*dphMulti/celkoveKm : 0)} / km`;
+        document.getElementById('resKmVcMyta').innerText = `${formatMoney(celkoveKm > 0 ? nakladyCelkem*dphMulti/celkoveKm : 0)} / km`;
+        document.getElementById('resProdejniCena').innerText = formatMoney(prodejniCena * dphMulti);
+        document.getElementById('resProdejniCenaKm').innerText = `${formatMoney(celkoveKm > 0 ? prodejniCena*dphMulti/celkoveKm : 0)} / km`;
+
+        const actualInput = parseFloat(document.getElementById('skutecnaCena').value) || 0;
+        const actualType = document.getElementById('realCenaTyp')?.value || 'celkem';
+        const actualCurrency = document.getElementById('realCenaMena')?.value || 'CZK';
+        const actualTotalEntered = actualType === 'km' ? actualInput * celkoveKm : actualInput;
+        const actualTotalCZKNet = actualCurrency === 'EUR' ? actualTotalEntered * kurz : actualTotalEntered;
+        const actualRevenuePerKmCZK = celkoveKm > 0 ? actualTotalCZKNet / celkoveKm : 0;
+        const realTrzbaEl = document.getElementById('realTrzbaKm');
+        const ziskBox = document.getElementById('ziskStatusBox');
+        const procBox = document.getElementById('ziskProcento');
+        if (actualInput > 0 && celkoveKm > 0) {
+            const actualRevenuePerKmEUR = actualRevenuePerKmCZK / kurz;
+            realTrzbaEl.innerText = `${formatMoney(actualRevenuePerKmCZK, 'CZK')} / km  |  ${formatMoney(actualRevenuePerKmEUR, 'EUR')} / km`;
+            const rozdilNet = actualTotalCZKNet - nakladyCelkem;
+            const shownDiff = rozdilNet * dphMulti;
+            if (rozdilNet >= 0) {
+                ziskBox.className='profit-status status-profit';
+                ziskBox.innerText=`ZISK: + ${formatMoney(shownDiff)}`;
+                procBox.innerText = `Rozdíl vůči kalkulačním nákladům: +${formatMoney(rozdilNet)} (${nakladyCelkem>0?(rozdilNet/nakladyCelkem*100).toFixed(1):'0.0'} %)`;
+            } else {
+                ziskBox.className='profit-status status-loss';
+                ziskBox.innerText=`PRODĚLEK: ${formatMoney(shownDiff)}`;
+                procBox.innerText = `Rozdíl vůči kalkulačním nákladům: ${formatMoney(rozdilNet)} (${nakladyCelkem>0?(rozdilNet/nakladyCelkem*100).toFixed(1):'0.0'} %)`;
+            }
+        } else {
+            realTrzbaEl.innerText=`${formatMoney(0)} / km`;
+            ziskBox.className='profit-status status-neutral'; ziskBox.innerText='Čekám na zadání ceny'; procBox.innerText='';
+        }
+        const dphLabel = document.getElementById('dphStatusLabel');
+        if (dphLabel) dphLabel.innerText = includesDph ? 'Zobrazit VČETNĚ DPH (21%)' : 'Zobrazit BEZ DPH';
+        const realLabel = document.getElementById('lblRealTrzba');
+        if (realLabel) realLabel.innerText = 'Reálná tržba na 1 km (CZK / EUR)';
+        const top = document.getElementById('menaTopSelect'); if (top) top.value = mena;
+    }
+
+    function openNav() {
+        if(!lastRouteData) { alert(T('Nejprve spočítejte trasu.')); return; }
+        let url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(lastRouteData.start)}&destination=${encodeURIComponent(lastRouteData.cil)}`;
+        if(lastRouteData.wps && lastRouteData.wps.length > 0) {
+            let wpsStr = lastRouteData.wps.filter(w=>w.trim()!=="").map(w => encodeURIComponent(w)).join('|');
+            if(wpsStr) url += `&waypoints=${wpsStr}`;
+        }
+        window.open(url, '_blank');
+    }
+
+    function shareSummary() {
+        if(!lastRouteData) { alert(T('Nejprve spočítejte trasu.')); return; }
+        let wpsText = lastRouteData.wps.filter(w=>w.trim()!=="").join(' -> ');
+        let routeText = `${lastRouteData.start} -> ${wpsText ? wpsText + ' -> ' : ''}${lastRouteData.cil}`;
+        let cena = document.getElementById('resProdejniCena').innerText;
+        let cenaKm = document.getElementById('resProdejniCenaKm').innerText;
+        let km = document.getElementById('vzdalenost').value;
+        
+        let text = `🚛 CONTROL POINT - ANALÝZA TRASY\nTrasa: ${routeText}\nVzdálenost: ${km} km\nCeníková cena: ${cena}\nCena za km: ${cenaKm}\n(Cena zahrnuje naftu, mzdu posádky a fixní náklady)`;
+        
+        navigator.clipboard.writeText(text).then(() => {
+            alert(T('Souhrn zkopírován do schránky! Můžete jej vložit do WhatsAppu.'));
+        });
+    }
+
+    document.querySelectorAll('#view-calculator input, #view-calculator select').forEach(el => {
+        el.addEventListener('input', (event) => { calculate(); });
+    });
+
+    // =======================================================================
+    // 4. ŠICHTOVNÍK, AETR SIMULÁTOR, DIETY
+    // =======================================================================
+    function switchApp(app) {
+        const calcBtn = document.getElementById('btnAppCalc');
+        const planBtn = document.getElementById('btnAppPlan');
+        const calcView = document.getElementById('view-calculator');
+        const planView = document.getElementById('view-planner');
+        if (calcBtn) calcBtn.className = 'app-btn' + (app === 'calc' ? ' active' : '');
+        if (planBtn) planBtn.className = 'app-btn' + (app === 'plan' ? ' active' : '');
+        if (calcView) calcView.style.display = app === 'calc' ? 'grid' : 'none';
+        if (planView) planView.style.display = app === 'plan' ? 'grid' : 'none';
+        if (app === 'plan') {
+            try { syncPlannerSelectors(); renderPlanner(); } catch (e) { console.error('Šichtovník se nepodařilo vykreslit:', e); }
+        }
+    }
+
+    function toggleDriver2() {
+        let crew = document.getElementById('planCrewSelect').value;
+        document.getElementById('driver2Container').style.display = (crew === '2') ? 'flex' : 'none';
+    }
+
+    const DIET_RATES = { 
+        'CZ': { rate: 300, curr: 'CZK' }, 'DE': { rate: 45, curr: 'EUR' }, 'AT': { rate: 45, curr: 'EUR' }, 
+        'IT': { rate: 50, curr: 'EUR' }, 'SK': { rate: 35, curr: 'EUR' }, 'PL': { rate: 40, curr: 'EUR' }, 
+        'HU': { rate: 40, curr: 'EUR' }, 'OSTATNÍ': { rate: 45, curr: 'EUR' } 
+    };
+
+    let plannerState = { drivers: [], shifts: {}, payrolls: {}, currentWeek: 1, currentYear: 2026, currentMonth: 8 };
+    let planWaypointsBefore = []; let planWaypointsAfter = [];
+    let editShiftContext = null; 
+
+    function getISOWeek(date) { 
+        let d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())); 
+        let dayNum = d.getUTCDay() || 7; d.setUTCDate(d.getUTCDate() + 4 - dayNum); 
+        let yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1)); 
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7); 
+    }
+    function parseTime(t) { let p = t.split(":"); return parseInt(p[0]) + (parseInt(p[1]) / 60); }
+    function formatTime(hDec) { 
+        let h = Math.floor(hDec); let m = Math.round((hDec - h) * 60); 
+        if (m === 60) { h++; m = 0; } 
+        return (h % 24).toString().padStart(2, '0') + ":" + m.toString().padStart(2, '0'); 
+    }
+
+    function normalizePlannerState(raw) {
+        const base = { drivers: [], shifts: {}, payrolls: {}, currentWeek: getISOWeek(new Date()), currentYear: new Date().getFullYear(), currentMonth: new Date().getMonth() };
+        if (!raw || typeof raw !== 'object') return base;
+        const drivers = Array.isArray(raw.drivers) ? raw.drivers : (Array.isArray(raw.driverList) ? raw.driverList : []);
+        base.drivers = drivers.filter(d => d && d.name).map((d,i)=>({id: Number(d.id)||Date.now()+i, name:String(d.name).trim()}));
+        base.shifts = raw.shifts && typeof raw.shifts==='object' ? raw.shifts : {};
+        base.payrolls = raw.payrolls && typeof raw.payrolls==='object' ? raw.payrolls : {};
+        base.currentWeek = Number(raw.currentWeek)||base.currentWeek;
+        base.currentYear = Number(raw.currentYear)||base.currentYear;
+        base.currentMonth = Number.isInteger(raw.currentMonth) ? raw.currentMonth : base.currentMonth;
+        return base;
+    }
+
+    function plannerLoadState() {
+        const candidates = recoverPlannerStateFromStorage();
+        let raw = candidates.find(v => Array.isArray(v.drivers) && v.drivers.length) ||
+                  candidates.find(v => Array.isArray(v.driverList) && v.driverList.length) ||
+                  candidates[0] || {};
+        // Prefer the richest state (shifts/payrolls) while preserving recovered drivers.
+        const richest = candidates.find(v => v && (v.shifts || v.payrolls));
+        if (richest) {
+            raw = {...richest};
+            if ((!Array.isArray(raw.drivers) || !raw.drivers.length) && candidates.some(v=>Array.isArray(v.drivers)&&v.drivers.length)) {
+                raw.drivers = candidates.find(v=>Array.isArray(v.drivers)&&v.drivers.length).drivers;
+            }
+        }
+        plannerState = normalizePlannerState(raw);
+        updateDriverSelects();
+        syncPlannerSelectors();
+        plannerSaveState();
+    }
+
+    function plannerSaveState() {
+        const clean = normalizePlannerState(plannerState);
+        plannerState = clean;
+        safeSetStorage('cpPlannerStateUltimate', clean);
+        // Záložní klíče kvůli aktualizacím aplikace / PWA cache.
+        safeSetStorage('cpPlannerState', clean);
+        safeSetStorage('cpDrivers', clean.drivers);
+        updateDriverSelects();
+    }
+
+    function getDateFromISOWeek(year, week) {
+        const jan4 = new Date(year, 0, 4);
+        const day = (jan4.getDay() + 6) % 7;
+        const monday = new Date(jan4);
+        monday.setDate(jan4.getDate() - day + (week - 1) * 7);
+        return monday;
+    }
+
+    function populatePlannerYears(centerYear = new Date().getFullYear()) {
+        const y = document.getElementById('yearSelect');
+        if (!y) return;
+        const current = Number(centerYear) || new Date().getFullYear();
+        const min = Math.min(current - 3, plannerState.currentYear - 1);
+        const max = Math.max(current + 8, plannerState.currentYear + 1);
+        y.innerHTML = '';
+        for (let yr=min; yr<=max; yr++) { const o=document.createElement('option'); o.value=String(yr); o.textContent=String(yr); y.appendChild(o); }
+    }
+
+    function syncPlannerSelectors() {
+        const y = document.getElementById('yearSelect'), m = document.getElementById('monthSelect');
+        if (!y || !m) return;
+        if (![...y.options].some(o=>Number(o.value)===plannerState.currentYear)) populatePlannerYears(plannerState.currentYear);
+        y.value = String(plannerState.currentYear);
+        m.value = String(plannerState.currentMonth);
+    }
+
+    function setPlannerDate(date) {
+        const d = date instanceof Date ? date : new Date(date);
+        plannerState.currentYear = d.getFullYear();
+        plannerState.currentMonth = d.getMonth();
+        plannerState.currentWeek = getISOWeek(d);
+        populatePlannerYears(plannerState.currentYear);
+        syncPlannerSelectors();
+    }
+
+    function changeYearMonth() {
+        const year = parseInt(document.getElementById('yearSelect').value,10);
+        const month = parseInt(document.getElementById('monthSelect').value,10);
+        plannerState.currentYear = year;
+        plannerState.currentMonth = month;
+        // Use the middle of the selected month so ISO week never jumps back into the previous month.
+        plannerState.currentWeek = getISOWeek(new Date(year, month, 15));
+        plannerSaveState();
+        syncPlannerSelectors();
+        renderPlanner();
+    }
+
+    function changeWeek(delta) {
+        let monday = getDateFromISOWeek(plannerState.currentYear, plannerState.currentWeek);
+        monday.setDate(monday.getDate() + delta*7);
+        plannerState.currentYear = monday.getFullYear();
+        plannerState.currentWeek = getISOWeek(monday);
+        plannerState.currentMonth = monday.getMonth();
+        plannerSaveState();
+        renderPlanner();
+    }
+
+    function addPlannerDriver() { 
+        let nameInput = document.getElementById('newDriverName').value; 
+        if (nameInput) { 
+            plannerState.drivers.push({id: Date.now(), name: nameInput}); 
+            plannerSaveState(); renderPlanner(); document.getElementById('newDriverName').value = ""; 
+        } 
+    }
+    function removePlannerDriver(id) {
+        if(confirm("Opravdu smazat tohoto řidiče?")) {
+            plannerState.drivers = plannerState.drivers.filter(d => d.id !== id);
+            plannerSaveState(); renderPlanner();
+        }
+    }
+    function updateDriverSelects() {
+        const s1=document.getElementById('planDriverSelect'), s2=document.getElementById('planDriverSelect2'), pSelect=document.getElementById('pdfDriverSelect');
+        if(!s1||!s2||!pSelect)return;
+        const old1=s1.value, old2=s2.value, oldP=pSelect.value;
+        s1.innerHTML=''; s2.innerHTML='<option value="">-- Nevybráno --</option>'; pSelect.innerHTML='';
+        plannerState.drivers.forEach(d=>{
+            [s1,pSelect].forEach(el=>{const o=document.createElement('option');o.value=d.id;o.textContent=d.name;el.appendChild(o);});
+            const o2=document.createElement('option');o2.value=d.id;o2.textContent=d.name;s2.appendChild(o2);
+        });
+        if([...s1.options].some(o=>o.value===old1))s1.value=old1;
+        if([...s2.options].some(o=>o.value===old2))s2.value=old2;
+        if([...pSelect.options].some(o=>o.value===oldP))pSelect.value=oldP;
+    }
+
+    function analyzeWeeklyRest(dId, week) {
+        let prevW = week - 1;
+        let lastShiftPrev = null;
+        let lastDayPrev = -1;
+        for(let d=6; d>=0; d--) {
+            if(plannerState.shifts[`${dId}_${prevW}_${d}`]) {
+                lastShiftPrev = plannerState.shifts[`${dId}_${prevW}_${d}`];
+                lastDayPrev = d; break;
+            }
+        }
+        let firstShiftCurr = null;
+        let firstDayCurr = -1;
+        for(let d=0; d<=6; d++) {
+            if(plannerState.shifts[`${dId}_${week}_${d}`]) {
+                firstShiftCurr = plannerState.shifts[`${dId}_${week}_${d}`];
+                firstDayCurr = d; break;
+            }
+        }
+        if(!lastShiftPrev || !firstShiftCurr) return { status: 'none' };
+
+        let endPrevAbs = (lastDayPrev * 24) + parseTime(lastShiftPrev.start) + lastShiftPrev.acts.reduce((sum,a)=>sum+a.d,0);
+        let startCurrAbs = ((firstDayCurr + 7) * 24) + parseTime(firstShiftCurr.start);
+        let gap = startCurrAbs - endPrevAbs;
+
+        if(gap >= 45) return { status: 'ok', text: `${T('Víkend:')} ${gap.toFixed(1)}h` };
+        if(gap >= 24) return { status: 'warn', text: `${T('Víkend:')} ${gap.toFixed(1)}h (${T('Dluh')} ${(45-gap).toFixed(1)}h)` };
+        return { status: 'err', text: `${T('Víkend:')} ${gap.toFixed(1)}h (<24h!)` };
+    }
+
+    function renderPlanner() {
+        syncPlannerSelectors();
+        document.getElementById('plannerWeekLabel').innerText = `${T('Týden')} ${plannerState.currentWeek} · ${plannerState.currentYear}`;
+        const driverListEl = document.getElementById('plannerDriverList'); driverListEl.innerHTML = '';
+        plannerState.drivers.forEach(d => {
+            const restAnalysis = analyzeWeeklyRest(d.id, plannerState.currentWeek);
+            let badgeHtml='';
+            if (restAnalysis.status !== 'none') {
+                const badgeClass = restAnalysis.status==='ok'?'aetr-ok':(restAnalysis.status==='warn'?'aetr-warn':'aetr-err');
+                badgeHtml=`<span class="aetr-badge ${badgeClass}">${restAnalysis.text}</span>`;
+            }
+            driverListEl.innerHTML += `<div class="driver-item"><div class="driver-item-header"><span style="font-size:14px;">${d.name}</span><div style="display:flex;gap:5px;"><button class="btn-secondary" style="background:var(--cp-blue);border:none;padding:6px 10px;margin:0;" onclick="openPayroll(${d.id})">💶 ${T('Mzdy / Diety')}</button><button class="btn-remove-wp" style="padding:6px 10px;margin:0;" onclick="removePlannerDriver(${d.id})">✕</button></div></div>${badgeHtml}</div>`;
+        });
+        const tbody = document.getElementById('plannerBody'); tbody.innerHTML='';
+        plannerState.drivers.forEach(driver=>{
+            const tr=document.createElement('tr'); tr.innerHTML=`<td class="driver-name-col">${driver.name}</td>`;
+            for(let day=0;day<7;day++){
+                const shift=plannerState.shifts[`${driver.id}_${plannerState.currentWeek}_${day}`];
+                const td=document.createElement('td');
+                if(shift?.acts?.length){
+                    let dDur=0,sDur=0; shift.acts.forEach(a=>{sDur+=Number(a.d)||0;if(a.t==='drive')dDur+=shift.crew==='2'?a.d/2:a.d;});
+                    const endTime=parseTime(shift.start)+sDur;
+                    let html=`<div class="shift-content" onclick="openShiftModal(${driver.id},${day})"><div class="shift-head">${shift.start} - ${formatTime(endTime)}</div><div>🚛 ${dDur.toFixed(1)}h | ⚒️ ${(sDur-dDur).toFixed(1)}h</div><div style="font-size:9px;color:#666;overflow:hidden;">📝 ${shift.note||''}</div><div class="timeline-bar-wrap">`;
+                    shift.acts.forEach(a=>{const pct=sDur>0?(a.d/sDur*100):0;const cls=a.t==='drive'?'tl-drive':(a.t==='work'?'tl-work':'tl-rest');html+=`<div class="${cls}" style="width:${pct}%"></div>`;});
+                    td.innerHTML=html+'</div></div>'; td.style.background='#fff9e6';
+                } else td.innerHTML=`<div class="shift-content" style="justify-content:center;color:#ccc;" onclick="openShiftModal(${driver.id},${day})">${T('Volno (Pauza)')}</div>`;
+                tr.appendChild(td);
+            }
+            tbody.appendChild(tr);
+        });
+    }
+
+    function addPlanWaypoint(target) {
+    // 1. Zjištění, kam se má zastávka přidat
+    let containerId = (target === 'before') ? 'planWpBeforeContainer' : 'planWpAfterContainer';
+    let container = document.getElementById(containerId);
+
+    if (!container) {
+        console.error("Kontejner pro přidání zastávky nebyl nalezen!");
+        return;
+    }
+
+    // 2. Vytvoření HTML kódu pro novou zastávku (včetně roletky pro Stát)
+    let html = `
+    <div class="waypoint-row" style="display:flex; gap:10px; margin-bottom:10px; flex-wrap: wrap; align-items: flex-end;">
+        <div class="input-group" style="margin:0; flex: 2; min-width: 150px;">
+            <label style="font-size:11px; color:#555;">Zastávka (${target === 'before' ? 'Před cílem' : 'Za cílem'})</label>
+            <input type="text" class="plan-wp-address" placeholder="Zadejte město/adresu...">
+        </div>
+        <div class="input-group" style="margin:0; flex: 1; min-width: 80px;">
+            <label style="font-size:11px; color:#555;">Stát</label>
+            <select class="plan-wp-stat">
+                <option value="">-- Auto --</option>
+                <option value="CZ">CZ</option>
+                <option value="DE">DE</option>
+                <option value="AT">AT</option>
+                <option value="PL">PL</option>
+                <option value="SK">SK</option>
+                <option value="IT">IT</option>
+            </select>
+        </div>
+        <!-- Tlačítko pro smazání zastávky, které rovnou znovu zkontroluje kolečko -->
+        <button class="btn-remove-wp" type="button" onclick="this.parentElement.remove(); checkPlanKolecko();" style="height:40px; margin-bottom:2px;">✕</button>
+    </div>`;
+    
+    // 3. Vložení HTML do správného kontejneru na konec
+    container.insertAdjacentHTML('beforeend', html);
+    
+    // 4. Kontrola a případná deaktivace zaškrtávátka "Kolečko"
+    if (typeof checkPlanKolecko === "function") {
+        checkPlanKolecko();
+    }
+    updatePlannerNavButton();
+    changeLanguage();
+}
+    function checkPlanKolecko() {
+    let beforeContainer = document.getElementById('planWpBeforeContainer');
+    let afterContainer = document.getElementById('planWpAfterContainer');
+    let koleckoToggle = document.getElementById('planKoleckoToggle');
+    
+    if (!koleckoToggle) return; // Pokud checkbox pro kolečko na stránce není, nic se neděje
+
+    let wpBeforeCount = beforeContainer ? beforeContainer.children.length : 0;
+    let wpAfterCount = afterContainer ? afterContainer.children.length : 0;
+    
+    if (wpBeforeCount > 0 || wpAfterCount > 0) {
+        koleckoToggle.checked = false;
+        koleckoToggle.disabled = true;
+        koleckoToggle.parentElement.style.opacity = "0.5"; // Vizuální zašednutí
+    } else {
+        koleckoToggle.disabled = false;
+        koleckoToggle.parentElement.style.opacity = "1"; // Vrácení do normálu
+    }
+}
+    
+    function renderPlanWaypoints() {
+        let bC = document.getElementById('planWpBeforeContainer'); bC.innerHTML = "";
+        planWaypointsBefore.forEach((w, i) => {
+            bC.innerHTML += `<div class="form-grid" style="margin-bottom:5px; background:white; padding:10px; border:1px solid #ccc;"><div class="input-group" style="margin:0;"><label>Zastávka</label><input type="text" placeholder="Adresa" oninput="planWaypointsBefore[${i}].address=this.value" value="${w.address}"></div><div class="input-group" style="margin:0;"><label>Zdržení (h)</label><input type="number" step="0.25" oninput="planWaypointsBefore[${i}].time=parseFloat(this.value)||0" value="${w.time}"></div><button class="btn-secondary" onclick="planWaypointsBefore.splice(${i},1); renderPlanWaypoints();" style="margin-top:auto; background:var(--cp-danger);">✕</button></div>`;
+        });
+        
+        let aC = document.getElementById('planWpAfterContainer'); aC.innerHTML = "";
+        planWaypointsAfter.forEach((w, i) => {
+            aC.innerHTML += `<div class="form-grid" style="margin-bottom:5px; background:white; padding:10px; border:1px solid #ccc;"><div class="input-group" style="margin:0;"><label>Zastávka</label><input type="text" placeholder="Adresa" oninput="planWaypointsAfter[${i}].address=this.value" value="${w.address}"></div><div class="input-group" style="margin:0;"><label>Zdržení (h)</label><input type="number" step="0.25" oninput="planWaypointsAfter[${i}].time=parseFloat(this.value)||0" value="${w.time}"></div><button class="btn-secondary" onclick="planWaypointsAfter.splice(${i},1); renderPlanWaypoints();" style="margin-top:auto; background:var(--cp-danger);">✕</button></div>`;
+        });
+    }
+
+    // Pomocná fce pro ověření plynulosti směny pro AutoPlanovač
+    function getAbsoluteLastEnd(dId, currentWeek, startDay) {
+        let dayToSearch = startDay - 1;
+        let weekToSearch = currentWeek;
+        if(dayToSearch < 0) { dayToSearch = 6; weekToSearch--; }
+        
+        let prevShift = plannerState.shifts[`${dId}_${weekToSearch}_${dayToSearch}`];
+        if(!prevShift) return null;
+        
+        let endPrev = parseTime(prevShift.start) + prevShift.acts.reduce((sum,a)=>sum+a.d,0);
+        return { w: weekToSearch, d: dayToSearch, end: endPrev };
+    }
+
+    function openPlannerNav() {
+        const start = document.getElementById('planStartRoute')?.value.trim();
+        const end = document.getElementById('planEndRoute')?.value.trim();
+        if (!start || !end) { alert(T('Nejprve zadejte Start a Cíl.')); return; }
+        const waypoints = [];
+        document.querySelectorAll('#planWpBeforeContainer .plan-wp-address, #planWpAfterContainer .plan-wp-address').forEach(el => { if(el.value.trim()) waypoints.push(el.value.trim()); });
+        let url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(start)}&destination=${encodeURIComponent(end)}`;
+        if (waypoints.length) url += `&waypoints=${encodeURIComponent(waypoints.join('|'))}`;
+        if (document.getElementById('planKoleckoToggle')?.checked) url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(start)}&destination=${encodeURIComponent(start)}&waypoints=${encodeURIComponent([end,...waypoints].join('|'))}`;
+        window.open(url, '_blank');
+    }
+
+    function updatePlannerNavButton() {
+        const btn=document.getElementById('btnPlanNav'); if(!btn) return;
+        const start=document.getElementById('planStartRoute')?.value.trim();
+        const end=document.getElementById('planEndRoute')?.value.trim();
+        btn.disabled=!(start && end);
+    }
+
+    async function executeAutoPlan() {
+        if (!navigator.onLine) {
+            let stat = document.getElementById('planStatus');
+            stat.innerText = `❌ ${T('Jste offline. Výpočet trasy přes OSRM nelze provést.')}`;
+            stat.style.display = "block";
+            return;
+        }
+
+        let drv1 = document.getElementById('planDriverSelect').value; 
+        let drv2 = document.getElementById('planDriverSelect2').value;
+        let crew = document.getElementById('planCrewSelect').value;
+        
+        let sDateStr = document.getElementById('planDateSelect').value;
+        let stat = document.getElementById('planStatus');
+        
+        if (!sDateStr) { stat.innerText = `❌ ${T('Vyberte přesné datum startu!')}`; stat.style.display="block"; return; }
+        
+        // Pevné načtení data bez vlivu časových pásem
+        let parts = sDateStr.split('-');
+        let sDate = new Date(parts[0], parts[1] - 1, parts[2]); 
+        let sDay = (sDate.getDay() + 6) % 7; 
+
+        
+        let sR = document.getElementById('planStartRoute').value; 
+        let eR = document.getElementById('planEndRoute').value;
+        let speed = parseFloat(document.getElementById('planSpeed').value) || 70;
+        let isKolecko = document.getElementById('planKoleckoToggle').checked;
+        
+        // POKA-YOKE 1: Striktní ověření dvojosádky
+        if (!drv1) { stat.innerText = `❌ ${T('Vyberte prvního řidiče!')}`; stat.style.display = "block"; return; }
+        if (crew === '2') {
+            if (!drv2 || drv2 === "") { stat.innerText = `❌ ${T('Režim 2 řidičů je aktivní, ale druhý řidič není vybrán!')}`; stat.style.display = "block"; return; }
+            if (drv1 === drv2) { stat.innerText = `❌ ${T('Chyba: Zvolili jste stejného řidiče dvakrát pro dvojosádku!')}`; stat.style.display = "block"; return; }
+        }
+        if (!sR || !eR) { stat.innerText = `❌ ${T('Vyplňte Start a Cíl!')}`; stat.style.display = "block"; return; }
+        
+        // Skok do týdne, který vybral uživatel
+        setPlannerDate(sDate);
+        
+        let driversToSave = crew === '2' ? [drv1, drv2] : [drv1];
+        let cTime = parseTime(document.getElementById('planTimeSelect').value); 
+        let reqRest = crew === '2' ? 9 : 11;
+
+        // POKA-YOKE 2: Ověření návaznosti směny
+        for(let dId of driversToSave) {
+            let lastShiftData = getAbsoluteLastEnd(dId, plannerState.currentWeek, sDay);
+            if(lastShiftData) {
+                let absLastEnd = lastShiftData.end; 
+                let absRequestedStart = cTime; 
+                if (sDay > lastShiftData.d) absRequestedStart += 24; 
+                let gap = absRequestedStart - absLastEnd;
+                
+                if (gap < reqRest && gap > 0.1) {
+                    let earliestStart = (absLastEnd + reqRest) % 24;
+                    stat.innerHTML = `❌ Nelze naplánovat! Řidič neměl pauzu ${reqRest}h.<br>Předchozí směna skončila v ${formatTime(absLastEnd%24)}.<br>Nejdříve lze vyjet v <b>${formatTime(earliestStart)}</b>.`;
+                    stat.style.display = "block";
+                    return;
+                }
+            }
+        }
+
+        stat.style.color = "var(--cp-blue)"; stat.innerText = T('Analyzuji trasu, body a AETR logiku...'); stat.style.display = "block";
+
+        try {
+            // Sestavení bodů trasy
+            let taskQueue = []; 
+            planWaypointsBefore.forEach(wp => taskQueue.push({action: 'work', time: wp.time, note: wp.address}));
+
+            // OSRM Jízdní segmenty
+            let coordStrings = [];
+            let c1 = await getCoordinates(sR); coordStrings.push(`${c1[0]},${c1[1]}`);
+            let c2 = await getCoordinates(eR); coordStrings.push(`${c2[0]},${c2[1]}`);
+            
+            let url = `https://router.project-osrm.org/route/v1/driving/${coordStrings.join(';')}?overview=full&geometries=geojson`;
+            let rRes = await fetch(url);
+            let rData = await rRes.json();
+            let distTotal = rData.routes[0].distance / 1000;
+            
+            let segments = await extractSegmentsFromCoords(rData.routes[0].geometry.coordinates, distTotal);
+            segments.forEach(seg => { taskQueue.push({action: 'drive', cc: seg.code, time: seg.km / speed}); });
+
+            let endDelay = parseFloat(document.getElementById('planEndDelay').value) || 1.5;
+            taskQueue.push({action: 'work', time: endDelay, note: 'Vykládka v cíli'});
+            
+            planWaypointsAfter.forEach(wp => taskQueue.push({action: 'work', time: wp.time, note: wp.address}));
+
+            if (isKolecko) {
+                let revQueue = [];
+                [...segments].reverse().forEach(seg => { revQueue.push({action: 'drive', cc: seg.code, time: seg.km / speed}); });
+                revQueue.push({action: 'work', time: endDelay, note: 'Nakládka v cíli pro cestu zpět'});
+                taskQueue = taskQueue.concat(revQueue);
+                document.getElementById('planEstKm').innerText = (distTotal * 2).toFixed(1) + " km";
+            } else {
+                document.getElementById('planEstKm').innerText = distTotal.toFixed(1) + " km";
+            }
+
+            // AETR LOOP - PŘESNÝ NA 4,5h BLOKY
+            let limit = crew === "2" ? 18 : 9; // Denní limit jízdy
+            let cDay = sDay; 
+            let dD = 0; // Daily Drive Accumulator
+            let dS = 0; // Daily Shift Accumulator (Total time in shift)
+            let contDrive = 0; // Continuous Drive Accumulator (Max 4.5)
+            
+            let currentWeekSave = plannerState.currentWeek; 
+            let totalElapsedHours = 0; let dailyDietTracker = {}; 
+            let absoluteTimeCounter = cTime + (cDay * 24); 
+            let generatedShifts = []; let acts = []; 
+
+            for (let task of taskQueue) {
+                if (task.action === 'drive') {
+                    let remTime = task.time;
+                    while (remTime > 0.01) { 
+                        let chunk = Math.min(remTime, 4.5 - contDrive, limit - dD);
+                        
+                        if (chunk > 0) {
+                            acts.push({t: 'drive', d: chunk});
+                            contDrive += chunk;
+                            dD += chunk;
+                            dS += chunk;
+                            remTime -= chunk;
+                            
+                            let calDayIndex = Math.floor(absoluteTimeCounter / 24);
+                            if (!dailyDietTracker[calDayIndex]) dailyDietTracker[calDayIndex] = {};
+                            dailyDietTracker[calDayIndex][task.cc] = (dailyDietTracker[calDayIndex][task.cc] || 0) + chunk;
+                            
+                            totalElapsedHours += chunk; absoluteTimeCounter += chunk;
+                        }
+
+                        // Konec směny (Limit denní jízdy)
+                        if (dD >= limit || limit - dD < 0.01) {
+                            generatedShifts.push({ w: currentWeekSave, d: cDay, shift: { start: formatTime(cTime), crew: crew, note: `Trasa (${sR} - ${eR})`, acts: JSON.parse(JSON.stringify(acts)) } });
+                            cDay++; if (cDay > 6) { cDay = 0; currentWeekSave++; }
+                            
+                            let restCalDayIndex = Math.floor(absoluteTimeCounter / 24);
+                            if (!dailyDietTracker[restCalDayIndex]) dailyDietTracker[restCalDayIndex] = {};
+                            dailyDietTracker[restCalDayIndex][task.cc] = (dailyDietTracker[restCalDayIndex][task.cc] || 0) + reqRest;
+
+                            cTime = (cTime + dS + reqRest) % 24; 
+                            totalElapsedHours += reqRest; absoluteTimeCounter += reqRest;
+                            dD = 0; dS = 0; contDrive = 0; acts = [];
+                        } 
+                        // Zastávka kvůli 4,5h limitu v kuse
+                        else if (contDrive >= 4.49 && remTime > 0) { 
+                            acts.push({t: 'rest', d: 0.75}); // PŘESNĚ 45 minut!
+                            dS += 0.75; 
+                            contDrive = 0; // Nulujeme jízdu v kuse
+                            
+                            totalElapsedHours += 0.75; absoluteTimeCounter += 0.75;
+                            let rIdx = Math.floor(absoluteTimeCounter / 24);
+                            if (!dailyDietTracker[rIdx]) dailyDietTracker[rIdx] = {};
+                            dailyDietTracker[rIdx][task.cc] = (dailyDietTracker[rIdx][task.cc] || 0) + 0.75;
+                        } 
+                    }
+                } 
+                else if (task.action === 'work') {
+                    acts.push({t: 'work', d: task.time});
+                    dS += task.time;
+                    totalElapsedHours += task.time; absoluteTimeCounter += task.time;
+                    
+                    // Inteligentní vyhodnocení práce jako přestávky
+                    if (task.time >= 0.75) {
+                        contDrive = 0; // Vykládka > 45 min nahrazuje pauzu!
+                    }
+
+                    let calDayIndex = Math.floor(absoluteTimeCounter / 24);
+                    if (!dailyDietTracker[calDayIndex]) dailyDietTracker[calDayIndex] = {};
+                    dailyDietTracker[calDayIndex]['CZ'] = (dailyDietTracker[calDayIndex]['CZ'] || 0) + task.time;
+                }
+            }
+
+            if (acts.length > 0) generatedShifts.push({ w: currentWeekSave, d: cDay, shift: { start: formatTime(cTime), crew: crew, note: `Dojetí do cíle (${sR}-${eR})`, acts: JSON.parse(JSON.stringify(acts)) } }); 
+            
+            // Textové doplnění času konce - výpočet přesného data
+            let endAbsoluteDate = new Date(sDate.getTime() + (totalElapsedHours * 60 * 60 * 1000));
+            let dniVMesici = ["Neděle", "Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek", "Sobota"];
+            document.getElementById('planArrivalText').innerText = `${dniVMesici[endAbsoluteDate.getDay()]} v ${formatTime(absoluteTimeCounter % 24)}`;
+
+            let cleanTime = absoluteTimeCounter + reqRest;
+            let cleanAbsoluteDate = new Date(sDate.getTime() + ((totalElapsedHours + reqRest) * 60 * 60 * 1000));
+            document.getElementById('planCleanText').innerText = `${dniVMesici[cleanAbsoluteDate.getDay()]} v ${formatTime(cleanTime % 24)}`;
+
+            // Vyčíslení tranzitních diet (rozpad do řádků)
+            let countryHoursCombined = {}; let totalDietsEst = 0; let kurz = parseFloat(document.getElementById('kurzEuro').value) || 25;
+            for (let dayIdx in dailyDietTracker) {
+                for (let cc in dailyDietTracker[dayIdx]) {
+                    countryHoursCombined[cc] = (countryHoursCombined[cc] || 0) + dailyDietTracker[dayIdx][cc];
+                    let h = dailyDietTracker[dayIdx][cc]; let fraction = 0;
+                    if (cc === 'CZ') { if (h >= 5 && h <= 12) fraction = 1/3; else if (h > 12 && h <= 18) fraction = 2/3; else if (h > 18) fraction = 1; } 
+                    else { if (h > 1 && h <= 12) fraction = 1/3; else if (h > 12 && h <= 18) fraction = 2/3; else if (h > 18) fraction = 1; }
+                    let dData = DIET_RATES[cc] || DIET_RATES['OSTATNÍ'];
+                    let val = dData.rate * fraction; if (dData.curr === 'EUR') val *= kurz; totalDietsEst += val;
+                }
+            }
+            
+            let planBreakHtml = `<div class="breakdown-row" style="font-weight:bold; border-bottom:2px solid #ccc; padding-bottom:5px;"><div>${T('Stát')}</div><div>${T('Hodiny Celkem')}</div></div>`;
+            let dRows = [];
+            for(let cc in countryHoursCombined) {
+                planBreakHtml += `<div class="breakdown-row" style="border-bottom: 1px dashed #ccc; padding:6px 0;"><div>${cc}</div><div>${countryHoursCombined[cc].toFixed(1)} h</div></div>`;
+                if(countryHoursCombined[cc] > 1) { dRows.push({cc: (DIET_RATES[cc] ? cc : 'OSTATNÍ'), hours: countryHoursCombined[cc].toFixed(1)}); }
+            }
+            planBreakHtml += `<div style="text-align:right; font-weight:900; font-size:15px; margin-top:10px; color:var(--cp-red);">${T('Přesný odhad diet (tranzit):')} ${Math.round(totalDietsEst)} Kč</div>`;
+            document.getElementById('planBreakdownList').innerHTML = planBreakHtml;
+            document.getElementById('planBreakdownContainer').style.display = "block";
+
+            // Zápis do kalendáře řidičům
+            for(let dId of driversToSave) {
+                generatedShifts.forEach(g => { plannerState.shifts[`${dId}_${g.w}_${g.d}`] = g.shift; });
+                if (!plannerState.payrolls[`${dId}_${currentWeekSave}`]) { plannerState.payrolls[`${dId}_${currentWeekSave}`] = { base:0, diets:0, bonus:0, dietRows:[], pType: 'incl', pRate:1500 }; }
+                plannerState.payrolls[`${dId}_${currentWeekSave}`].dietRows = dRows;
+            }
+
+            setPlannerDate(sDate);
+            plannerSaveState();
+            renderPlanner();
+            stat.style.color = "var(--cp-success)"; stat.innerText = T('Úspěšně naplánováno vč. tranzitních států a pauz!');
+        } catch(e) { stat.style.color = "var(--cp-danger)"; stat.innerText = "Chyba generátoru: " + e.message; }
+    }
+
+    let currentActs = [];
+    function openShiftModal(dId, day) {
+        editShiftContext = { dId: dId, day: day }; 
+        let shift = plannerState.shifts[`${dId}_${plannerState.currentWeek}_${day}`];
+        if (shift) { 
+            document.getElementById('editStart').value = shift.start; 
+            document.getElementById('editCrew').value = shift.crew; 
+            document.getElementById('editNote').value = shift.note || ""; 
+            currentActs = JSON.parse(JSON.stringify(shift.acts)); 
+        } else { 
+            document.getElementById('editStart').value = "06:00"; 
+            currentActs = [{t: 'drive', d: 4.5}, {t: 'rest', d: 0.75}, {t: 'drive', d: 4.5}]; 
+        }
+        
+        let navBtn = document.getElementById('btnNavShift');
+        let noteStr = shift ? (shift.note || "") : "";
+        let m = noteStr.match(/Trasa\s*\((.*?)\s*-\s*(.*?)\)/);
+        if(m) {
+            navBtn.style.display = 'block';
+            navBtn.onclick = function() { window.open(`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(m[1])}&destination=${encodeURIComponent(m[2])}`, '_blank'); };
+        } else {
+            navBtn.style.display = 'none';
+        }
+
+        document.getElementById('shiftModal').style.display = 'flex'; validateAndRenderShift();
+    }
+    
+    function closeShiftModal() { document.getElementById('shiftModal').style.display = 'none'; }
+    function addActivity() { currentActs.push({t: 'work', d: 1}); validateAndRenderShift(); }
+    
+    function validateAndRenderShift() {
+        let container = document.getElementById('editActContainer'); container.innerHTML = "";
+        let running = parseTime(document.getElementById('editStart').value || '06:00');
+        currentActs.forEach((act, i) => {
+            const dur = Number(act.d) || 0;
+            const from = formatTime(running);
+            const to = formatTime(running + dur);
+            const typeLabel = act.t === 'drive' ? T('🚛 Jízda') : (act.t === 'work' ? T('⚒️ Práce/Vykládka') : T('🛏️ Pauza'));
+            container.innerHTML += `
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) 92px 30px; gap:6px; margin-bottom:8px; align-items:center;">
+                <div class="activity-time">${T('Čas')}: <b>${from} – ${to}</b> · ${T('Délka')}: ${dur.toFixed(2)} h</div>
+                <select onchange="currentActs[${i}].t=this.value; validateAndRenderShift();" style="grid-column:1;">
+                    <option value="drive" ${act.t === 'drive' ? 'selected' : ''}>🚛 ${T('Jízda')}</option>
+                    <option value="work" ${act.t === 'work' ? 'selected' : ''}>⚒️ ${T('Práce/Vykládka')}</option>
+                    <option value="rest" ${act.t === 'rest' ? 'selected' : ''}>🛏️ ${T('Pauza')}</option>
+                </select>
+                <input type="number" step="0.25" value="${act.d}" aria-label="${T('Délka v hodinách')}" oninput="currentActs[${i}].d=parseFloat(this.value)||0; validateAndRenderShift();" style="grid-column:2;">
+                <button class="btn-secondary activity-delete" onclick="currentActs.splice(${i},1); validateAndRenderShift();" title="${T('Smazat blok')}" style="grid-column:3; background:var(--cp-danger);">✕</button>
+            </div>`;
+            running += dur;
+        });
+
+        // POKA-YOKE 3: Kontrola návaznosti směny přímo v modálním okně
+        let btn = document.getElementById('btnSaveShiftModal');
+        let warn = document.getElementById('aetrStrictWarning');
+        
+        let prevShiftData = getAbsoluteLastEnd(editShiftContext.dId, plannerState.currentWeek, editShiftContext.day);
+        if (prevShiftData) {
+            let currentStartAbs = parseTime(document.getElementById('editStart').value);
+            let prevEndToday = prevShiftData.end % 24;
+            
+            let actualGap = currentStartAbs - prevEndToday;
+            if(actualGap < 0) actualGap += 24; 
+            
+            let crewType = document.getElementById('editCrew').value;
+            let reqRest = crewType === '2' ? 9 : 11;
+            
+            if (actualGap < reqRest && actualGap > 0.1) {
+                let earliestStart = (prevEndToday + reqRest) % 24;
+                warn.style.display = 'block';
+                warn.innerHTML = `❌ Nedodržen denní odpočinek!<br>Předchozí směna skončila v ${formatTime(prevEndToday)}.<br>Nutná pauza ${reqRest}h. Nejdříve lze vyjet v <b>${formatTime(earliestStart)}</b>.`;
+                btn.disabled = true;
+            } else {
+                warn.style.display = 'none';
+                btn.disabled = false;
+            }
+        } else {
+            warn.style.display = 'none';
+            btn.disabled = false;
+        }
+    }
+    
+    function saveShiftModal() {
+        plannerState.shifts[`${editShiftContext.dId}_${plannerState.currentWeek}_${editShiftContext.day}`] = { start: document.getElementById('editStart').value, crew: document.getElementById('editCrew').value, note: document.getElementById('editNote').value, acts: currentActs };
+        plannerSaveState(); closeShiftModal(); renderPlanner();
+    }
+    function deleteShift() { delete plannerState.shifts[`${editShiftContext.dId}_${plannerState.currentWeek}_${editShiftContext.day}`]; plannerSaveState(); closeShiftModal(); renderPlanner(); }
+
+    let currentPayCtx = null; let dietRows = [];
+    
+    function openPayroll(dId) {
+        currentPayCtx={dId,w:plannerState.currentWeek};
+        const payroll=plannerState.payrolls[`${dId}_${plannerState.currentWeek}`]||{base:0,diets:0,bonus:0,dietRows:[],pType:'incl',pRate:1500,basis:'daily',monthlySalary:30000,salaryMonth:''};
+        document.getElementById('payType').value=payroll.pType||'incl';
+        document.getElementById('payDailyRate').value=payroll.pRate||1500;
+        document.getElementById('payBonus').value=payroll.bonus||0;
+        document.getElementById('payBasis').value=payroll.basis||'daily';
+        document.getElementById('payMonthlySalary').value=payroll.monthlySalary||30000;
+        const monthInput=document.getElementById('paySalaryMonth');
+        monthInput.value=payroll.salaryMonth||`${plannerState.currentYear}-${String(plannerState.currentMonth+1).padStart(2,'0')}`;
+        dietRows=Array.isArray(payroll.dietRows)?payroll.dietRows:[];
+        const data=getShiftsForExport();
+        document.getElementById('payShiftsCount').value=data.shiftsCount;
+        document.getElementById('payTotalHours').innerText=data.totalV.toFixed(1)+' h';
+        document.getElementById('payDriveHours').innerText=data.totalJ.toFixed(1)+' h';
+        toggleMonthlyPay();
+        document.getElementById('payrollModal').style.display='flex';
+        renderDietRows(); calcPayroll();
+    }
+
+    function toggleMonthlyPay() {
+        const monthly=document.getElementById('payBasis').value==='monthly';
+        document.getElementById('monthlyPayBox').hidden=!monthly;
+        document.getElementById('payDailyRate').disabled=monthly;
+        if(monthly){
+            const m=document.getElementById('paySalaryMonth').value;
+            if(m){const [y,mo]=m.split('-').map(Number);document.getElementById('payMonthDays').value=new Date(y,mo,0).getDate();}
+        }
+    }
+
+    function closePayroll() { document.getElementById('payrollModal').style.display = 'none'; }
+    function addDietRow() { dietRows.push({cc: 'DE', hours: 24}); renderDietRows(); calcPayroll(); }
+    
+    function renderDietRows() {
+        let container = document.getElementById('dietsListContainer'); container.innerHTML = "";
+        let kurz = parseFloat(document.getElementById('kurzEuro').value) || 25;
+        dietRows.forEach((r, i) => {
+            let opts = ""; for(let k in DIET_RATES) { opts += `<option value="${k}" ${r.cc === k ? 'selected' : ''}>${k}</option>`; }
+            container.innerHTML += `
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) 90px 30px; gap:8px; margin-bottom:6px; align-items:center;">
+                <select onchange="dietRows[${i}].cc=this.value; calcPayroll();" style="grid-column:1;">${opts}</select>
+                <input type="number" placeholder="${T('Hodin')}" aria-label="${T('Hodin')}" value="${r.hours}" oninput="dietRows[${i}].hours=parseFloat(this.value)||0; calcPayroll();" style="grid-column:2;">
+                <button class="btn-secondary diet-delete" onclick="dietRows.splice(${i},1); renderDietRows(); calcPayroll();" title="${T('Smazat řádek')}" style="grid-column:3; background:var(--cp-danger);">✕</button>
+            </div>`;
+        });
+    }
+
+    function calcPayroll() {
+        const type=document.getElementById('payType').value;
+        const sCnt=parseInt(document.getElementById('payShiftsCount').value)||0;
+        const basis=document.getElementById('payBasis').value;
+        let dailyRate=parseFloat(document.getElementById('payDailyRate').value)||0;
+        let monthlySalary=parseFloat(document.getElementById('payMonthlySalary').value)||0;
+        let salaryMonth=document.getElementById('paySalaryMonth').value;
+        let monthDays=0;
+        if(basis==='monthly' && salaryMonth){const [y,m]=salaryMonth.split('-').map(Number);monthDays=new Date(y,m,0).getDate();dailyRate=monthDays?monthlySalary/monthDays:0;document.getElementById('payMonthDays').value=monthDays;document.getElementById('payMonthlyDaily').value=dailyRate.toFixed(2);}
+        document.getElementById('payBase').value=Math.round(sCnt*dailyRate);
+        let tDiets=0, kurz=getEuroRate();
+        document.getElementById('dietsSection').style.opacity=type==='excl'?'1':'0.3';
+        if(type==='excl') dietRows.forEach(r=>{
+            const h=parseFloat(r.hours)||0;if(h<=0)return;const dData=DIET_RATES[r.cc]||DIET_RATES.OSTATNÍ;let fraction=0;
+            if(r.cc==='CZ'){if(h>=5&&h<=12)fraction=1/3;else if(h>12&&h<=18)fraction=2/3;else if(h>18)fraction=1;}else{if(h>1&&h<=12)fraction=1/3;else if(h>12&&h<=18)fraction=2/3;else if(h>18)fraction=1;}
+            let val=dData.rate*fraction;if(dData.curr==='EUR')val*=kurz;tDiets+=val;
+        });
+        document.getElementById('payDiets').value=Math.round(tDiets);
+        const bonus=parseFloat(document.getElementById('payBonus').value)||0;
+        document.getElementById('payTotal').innerText=formatMoney(sCnt*dailyRate+tDiets+bonus);
+        if(currentPayCtx){plannerState.payrolls[`${currentPayCtx.dId}_${currentPayCtx.w}`]={base:sCnt*dailyRate,diets:Math.round(tDiets),bonus,dietRows:JSON.parse(JSON.stringify(dietRows)),pType:type,pRate:dailyRate,basis,monthlySalary,salaryMonth};plannerSaveState();}
+    }
+
+    function getShiftsForExport() {
+        const drvId=currentPayCtx?currentPayCtx.dId:document.getElementById('pdfDriverSelect').value;
+        const drv=plannerState.drivers.find(d=>String(d.id)===String(drvId));
+        const period=document.getElementById('pdfPeriodSelect')?.value||'week';
+        let weeks=[]; let title='';
+        if(period==='week'){weeks=[plannerState.currentWeek];title=`Týden ${plannerState.currentWeek} / ${plannerState.currentYear}`;}
+        else if(period==='month'){
+            title=`${document.getElementById('monthSelect').options[plannerState.currentMonth].text} ${plannerState.currentYear}`;
+            const first=new Date(plannerState.currentYear,plannerState.currentMonth,1), last=new Date(plannerState.currentYear,plannerState.currentMonth+1,0);
+            const seen=new Set();for(let d=new Date(first);d<=last;d.setDate(d.getDate()+1)){const w=getISOWeek(d);seen.add(w);}weeks=[...seen];
+        } else {title=`Rok ${plannerState.currentYear}`;const seen=new Set();for(let m=0;m<12;m++){const first=new Date(plannerState.currentYear,m,1),last=new Date(plannerState.currentYear,m+1,0);for(let d=new Date(first);d<=last;d.setDate(d.getDate()+1))seen.add(getISOWeek(d));}weeks=[...seen];}
+        let rows=[],totalV=0,totalJ=0,totalDiety=0,totalZaklad=0,shiftsCount=0;const dny=['Pondělí','Úterý','Středa','Čtvrtek','Pátek','Sobota','Neděle'];
+        weeks.forEach(w=>{const pr=plannerState.payrolls[`${drvId}_${w}`];if(pr){totalDiety+=Number(pr.diets)||0;totalZaklad+=(Number(pr.base)||0)+(Number(pr.bonus)||0);}for(let d=0;d<7;d++){const s=plannerState.shifts[`${drvId}_${w}_${d}`];if(!s)continue;shiftsCount++;let v=0,j=0;(s.acts||[]).forEach(a=>{v+=Number(a.d)||0;if(a.t==='drive')j+=s.crew==='2'?(Number(a.d)||0)/2:(Number(a.d)||0);});totalV+=v;totalJ+=j;rows.push({week:w,day:dny[d],start:s.start,note:s.note||'-',v,j,shiftObj:s});}});
+        return {driver:drv?.name||'Řidič',title,rows,totalV,totalJ,totalP:totalZaklad+totalDiety,shiftsCount};
+    }
+
+    function openPdfExportModal() {
+        if(plannerState.drivers.length === 0) { alert(T('Nemáte přidané žádné řidiče.')); return; }
+        document.getElementById('pdfExportModal').style.display = 'flex';
+    }
+
+    function exportKnihaPrint() {
+        const data=getShiftsForExport();
+        const expType=document.getElementById('pdfTypeSelect').value;
+        let reportHtml=`<div style="font-family:Arial,sans-serif;padding:18px;color:#222;background:#fff;"><div style="border-bottom:4px solid #e3000f;padding-bottom:10px;margin-bottom:15px;display:flex;justify-content:space-between;gap:15px;"><div><h2 style="margin:0;">${expType==='mzdy'?'Mzdový výkaz':expType==='kniha'?'Kniha jízd':'Výkaz směn a kniha jízd'}</h2><div>Řidič: <b>${data.driver}</b></div></div><div>${data.title}</div></div>`;
+        if(expType==='both'||expType==='mzdy') reportHtml+=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;"><div style="flex:1;border:1px solid #ddd;padding:10px;text-align:center;min-width:110px;">Odpracováno<br><b>${data.totalV.toFixed(1)} h</b></div><div style="flex:1;border:1px solid #ddd;padding:10px;text-align:center;min-width:110px;">Čistá jízda<br><b>${data.totalJ.toFixed(1)} h</b></div><div style="flex:1;border:1px solid #ddd;padding:10px;text-align:center;min-width:110px;">Výplata<br><b>${formatMoney(data.totalP)}</b></div></div>`;
+        if(expType==='both'||expType==='kniha'){reportHtml+=`<table style="width:100%;border-collapse:collapse;font-size:11px;"><thead><tr><th style="border:1px solid #ccc;padding:6px;">Týden</th><th style="border:1px solid #ccc;padding:6px;">Den</th><th style="border:1px solid #ccc;padding:6px;">Start</th><th style="border:1px solid #ccc;padding:6px;">Trasa / účel</th><th style="border:1px solid #ccc;padding:6px;">Výkon</th><th style="border:1px solid #ccc;padding:6px;">Jízda</th></tr></thead><tbody>`;data.rows.forEach(r=>reportHtml+=`<tr><td style="border:1px solid #ccc;padding:6px;">T${r.week}</td><td style="border:1px solid #ccc;padding:6px;">${r.day}</td><td style="border:1px solid #ccc;padding:6px;">${r.start}</td><td style="border:1px solid #ccc;padding:6px;">${r.note}</td><td style="border:1px solid #ccc;padding:6px;">${r.v.toFixed(1)} h</td><td style="border:1px solid #ccc;padding:6px;">${r.j.toFixed(1)} h</td></tr>`);reportHtml+=`</tbody></table>`;}
+        reportHtml+=`</div>`;
+        document.getElementById('pdfExportModal').style.display='none';
+        let modal=document.getElementById('reportPreviewModal');
+        if(!modal){modal=document.createElement('div');modal.id='reportPreviewModal';modal.className='modal-overlay';modal.style.zIndex='300000';modal.innerHTML=`<div style="background:#fff;width:100%;max-width:800px;max-height:92vh;border-radius:8px;display:flex;flex-direction:column;overflow:hidden;"><div style="background:#1a1a1a;color:#fff;padding:12px 15px;font-weight:800;">📄 Náhled výkazu</div><div id="reportPreviewContent" style="padding:10px;overflow:auto;flex:1;"></div><div class="report-preview-actions" style="padding:12px;background:#eee;"><button class="btn-secondary" style="background:#107c41;" onclick="printCurrentReport()">🖨️ Tisk / Uložit PDF</button><button class="btn-secondary" style="background:#777;" onclick="document.getElementById('reportPreviewModal').style.display='none'">Zavřít</button></div></div>`;document.body.appendChild(modal);}
+        document.getElementById('reportPreviewContent').innerHTML=reportHtml;
+        modal.style.display='flex';
+    }
+
+    function printCurrentReport(){
+        const source=document.getElementById('reportPreviewContent'); if(!source) return;
+        const iosStandalone=/iPad|iPhone|iPod/.test(navigator.userAgent) && (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches);
+        document.getElementById('reportPreviewModal').style.display='none';
+        if(iosStandalone){
+            const w=window.open('','_blank');
+            if(w){
+                w.document.open();
+                w.document.write(`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Control Point</title><style>@page{margin:12mm}body{font-family:Arial,sans-serif;color:#222;background:#fff;margin:0;padding:0}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body>${source.innerHTML}</body></html>`);
+                w.document.close(); setTimeout(()=>{try{w.focus();w.print();}catch(e){}},250); return;
+            }
+        }
+        let host=document.getElementById('printReportHost');
+        if(!host){host=document.createElement('div');host.id='printReportHost';host.className='print-report-host';document.body.appendChild(host);}
+        host.innerHTML=source.innerHTML; document.body.classList.add('print-report-mode');
+        const cleanup=()=>{document.body.classList.remove('print-report-mode');host.innerHTML='';window.removeEventListener('afterprint',cleanup);};
+        window.addEventListener('afterprint',cleanup); setTimeout(()=>window.print(),100);
+    }
+
+    function exportKnihaCSV(){
+        const data=getShiftsForExport(); const type=document.getElementById('pdfTypeSelect').value;
+        let csv='\ufeffControl Point\nŘidič;'+data.driver+'\nObdobí;'+data.title+'\n';
+        if(type==='both'||type==='mzdy') csv+='\nMZDY\nOdpracováno (h);'+data.totalV.toFixed(1)+'\nČistá jízda (h);'+data.totalJ.toFixed(1)+'\nVýplata;'+data.totalP.toFixed(2)+'\n';
+        if(type==='both'||type==='kniha'){csv+='\nKNIHA JÍZD\nTýden;Den;Start;Trasa;Výkon (h);Jízda (h)\n';data.rows.forEach(r=>csv+=`${r.week};${r.day};${r.start};\"${String(r.note).replace(/\"/g,'\"\"')}\";${r.v.toFixed(1)};${r.j.toFixed(1)}\n`);}
+        const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`ControlPoint_${String(data.driver).replace(/\s+/g,'_')}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);document.getElementById('pdfExportModal').style.display='none';
+    }
+
+    function exportDriverWA(){
+        const data=getShiftsForExport();let text=`📅 Control Point - ${data.driver}\n📍 ${data.title}\n🗓️ Směny: ${data.shiftsCount}\n⏱️ Výkon: ${data.totalV.toFixed(1)} h\n🚛 Jízda: ${data.totalJ.toFixed(1)} h\n💰 Výplata: ${formatMoney(data.totalP)}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,'_blank');document.getElementById('pdfExportModal').style.display='none';
+    }
+
+</script>
+</body></html>
