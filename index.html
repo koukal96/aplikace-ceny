@@ -2844,26 +2844,44 @@
         modal.style.display='flex';
     }
 
-    function openReportPrintWindow(){
-        const source=document.getElementById('reportPreviewContent');
-        if(!source) return null;
-        const report=source.innerHTML;
-        const css=`@page{size:auto;margin:10mm}html,body{background:#fff!important;color:#222!important}body{font-family:Arial,sans-serif;margin:0;padding:18px}.print-actions{position:sticky;top:0;background:#fff;padding:0 0 14px;margin-bottom:14px;border-bottom:1px solid #ddd;display:flex;gap:8px;flex-wrap:wrap}.print-actions button{border:0;border-radius:7px;padding:12px 15px;font-weight:800;font-size:14px}.btn-print{background:#107c41;color:#fff}.btn-share{background:#1565c0;color:#fff}.btn-back{background:#777;color:#fff}.report{max-width:1000px;margin:0 auto}.report table{width:100%;border-collapse:collapse;font-size:11px}.report th,.report td{border:1px solid #ccc;padding:6px}.report tr{page-break-inside:avoid}.report thead{display:table-header-group}@media print{.print-actions{display:none!important}body{padding:0}.report{max-width:none}}`;
-        const w=window.open('', '_blank');
-        if(!w) return null;
-        w.document.open();
-        w.document.write(`<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Control Point – výkaz</title><style>${css}</style></head><body><div class="print-actions"><button class="btn-print" onclick="window.print()">🖨️ Otevřít tisk v iOS</button><button class="btn-share" onclick="shareFromPrintPage()">📤 Sdílet</button><button class="btn-back" onclick="window.close()">← Zpět do aplikace</button></div><main class="report">${report}</main><script>async function shareFromPrintPage(){try{if(navigator.share){await navigator.share({title:'Control Point – výkaz',text:'Výkaz Control Point'});return;}}catch(e){if(e&&e.name==='AbortError')return;}window.print();}<\/script></body></html>`);
-        w.document.close();
-        return w;
+      function printCurrentReport() {
+        const source = document.getElementById('reportPreviewContent');
+        if (!source) return;
+
+        let host = document.getElementById('printReportHost');
+        if (!host) {
+            host = document.createElement('div');
+            host.id = 'printReportHost';
+            document.body.appendChild(host);
+        }
+        host.innerHTML = source.innerHTML;
+
+        document.body.classList.add('print-report-mode');
+
+        setTimeout(() => {
+            window.print();
+            document.body.classList.remove('print-report-mode');
+        }, 300);
     }
-    function printCurrentReport(){
-        const w=openReportPrintWindow();
-        if(!w) alert('iOS zablokoval otevření tiskového dokumentu. Klepněte znovu na Tisk a povolte v Safari vyskakovací okna.');
+
+    async function shareCurrentReport() {
+        if (navigator.share) {
+            try {
+                const data = getShiftsForExport();
+                const text = `Výkaz Control Point - ${data.driver}\nOdpracováno: ${data.totalV.toFixed(1)} h\nČistá jízda: ${data.totalJ.toFixed(1)} h\nVýplata: ${data.totalP.toFixed(2)} Kč`;
+                
+                await navigator.share({
+                    title: 'Control Point – výkaz',
+                    text: text
+                });
+            } catch (e) {
+                if (e.name !== 'AbortError') console.error('Chyba sdílení:', e);
+            }
+        } else {
+            alert('Nativní sdílení není na tomto zařízení podporováno.');
+        }
     }
-    async function shareCurrentReport(){
-        const w=openReportPrintWindow();
-        if(!w) alert('iOS zablokoval otevření dokumentu. Zkuste Sdílet znovu.');
-    }
+
 
     function exportKnihaCSV(){
         const data=getShiftsForExport(); const type=document.getElementById('pdfTypeSelect').value;
