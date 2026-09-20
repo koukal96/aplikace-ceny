@@ -1327,9 +1327,9 @@
     }
 
     function removeFavorite() {
-        let name = document.getElementById('favSelect').value;
+        let name = document.getElementById('Oblíbené').value;
         if(!name) return;
-        if(confirm(`Opravdu smazat šablonu ${name}?`)) {
+        if(confirm("Opravdu smazat šablonu ${name}?")) {
             let favs = JSON.parse(localStorage.getItem('cpFavorites')) || {};
             delete favs[name];
             localStorage.setItem('cpFavorites', JSON.stringify(favs));
@@ -1371,13 +1371,13 @@
             row.className = 'waypoint-row';
             row.innerHTML = `
                 <div class="wp-inputs">
-                    <input type="text" id="wp_addr_${wp.id}" value="${wp.address}" placeholder="${T('wpPlaceholder')}" onchange="updateWaypoint(${wp.id})">
+                    <input type="text" id="wp_addr_${wp.id}" value="${wp.address}" placeholder="${T('Adresa')}" onchange="updateWaypoint(${wp.id})">
                     <select id="wp_type_${wp.id}" onchange="updateWaypoint(${wp.id})">
-                        <option value="transit" ${wp.type === 'transit' ? 'selected' : ''}>${T('wpTypeTransit')}</option>
-                        <option value="empty" ${wp.type === 'empty' ? 'selected' : ''}>${T('wpTypeEmpty')}</option>
-                        <option value="prejezd" ${wp.type === 'prejezd' ? 'selected' : ''}>${T('wpTypePrejezd')}</option>
-                        <option value="half" ${wp.type === 'half' ? 'selected' : ''}>${T('wpTypeHalf')}</option>
-                        <option value="full" ${wp.type === 'full' ? 'selected' : ''}>${T('wpTypeFull')}</option>
+                        <option value="transit" ${wp.type === 'transit' ? 'selected' : ''}>${T('Průjezdový bod')}</option>
+                        <option value="empty" ${wp.type === 'empty' ? 'selected' : ''}>${T('Prázdný')}</option>
+                        <option value="prejezd" ${wp.type === 'prejezd' ? 'selected' : ''}>${T('Přejezd')}</option>
+                        <option value="half" ${wp.type === 'half' ? 'selected' : ''}>${T('1/2 nákladu')}</option>
+                        <option value="full" ${wp.type === 'full' ? 'selected' : ''}>${T('Plný')}</option>
                     </select>
                 </div>
                 <button class="btn-remove-wp" onclick="removeWaypoint(${wp.id})">✕</button>
@@ -2976,10 +2976,10 @@
             row.className = 'waypoint-row';
             row.innerHTML = `
                 <div class="wp-inputs">
-                    <input type="text" id="wp_addr_${wp.id}" value="${wp.address}" placeholder="${T('wpPlaceholder')}" onchange="updateWaypoint(${wp.id})">
+                    <input type="text" id="wp_addr_${wp.id}" value="${wp.address}" placeholder="${T('Adresa')}" onchange="updateWaypoint(${wp.id})">
                     <select id="wp_type_${wp.id}" onchange="updateWaypoint(${wp.id})">
-                        <option value="transit" ${wp.type === 'transit' ? 'selected' : ''}>${T('wpTypeTransit')}</option>
-                        <option value="empty" ${wp.type === 'empty' ? 'selected' : ''}>${T('wpTypeEmpty')}</option>
+                        <option value="transit" ${wp.type === 'transit' ? 'selected' : ''}>${T('Přejezd')}</option>
+                        <option value="empty" ${wp.type === 'empty' ? 'selected' : ''}>${T('Prázdný')}</option>
                         <option value="prejezd" ${wp.type === 'prejezd' ? 'selected' : ''}>${T('wpTypePrejezd')}</option>
                         <option value="half" ${wp.type === 'half' ? 'selected' : ''}>${T('wpTypeHalf')}</option>
                         <option value="full" ${wp.type === 'full' ? 'selected' : ''}>${T('wpTypeFull')}</option>
