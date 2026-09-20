@@ -3941,6 +3941,21 @@
         }
     };
 
+        // --- POMOCNÁ FUNKCE PRO ZAVŘENÍ NÁHLEDU ---
+    window.closePrintPreview = function() {
+        let printContainer = document.getElementById('cp-mobile-print-container');
+        if(printContainer) {
+            document.body.removeChild(printContainer);
+        }
+        // Obnovíme zobrazení původní aplikace
+        let mainElements = document.querySelectorAll('.cp-app-element-to-hide');
+        mainElements.forEach(el => {
+            el.style.display = el.dataset.originalDisplay || '';
+            el.classList.remove('cp-app-element-to-hide');
+        });
+        document.body.style.background = '';
+    };
+
     // --- HLAVNÍ FUNKCE PRO TISK A EXPORT PDF ---
     function exportKnihaPrint() {
         let data = getShiftsForExport();
@@ -3949,14 +3964,17 @@
         let html = `
         <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; color: #333; background: white; min-height: 100vh;">
             
-            <!-- OVLÁDACÍ LIŠTA NÁHLEDU -->
+            <!-- OVLÁDACÍ LIŠTA NÁHLEDU (při samotném tisku zmizí) -->
+            <style>
+                @media print { .no-print-toolbar { display: none !important; } }
+            </style>
             <div class="no-print-toolbar" style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 25px; display: flex; gap: 10px; border: 2px solid #1565c0; position: sticky; top: 10px; z-index: 100000; box-shadow: 0 5px 15px rgba(0,0,0,0.2); flex-wrap: wrap;">
                 <div style="width: 100%; font-size: 13px; color: #0d47a1; font-weight: bold; text-align: center; margin-bottom: 5px;">Náhled je připraven. Vyberte akci:</div>
-                <button id="btnDoPrint" onclick="executePrint()" style="flex: 2; background: #107c41; color: white; border: none; padding: 15px; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">⚙️ Generovat PDF soubor</button>
-                <button onclick="closePrintPreview()" style="flex: 1; background: #c62828; color: white; border: none; padding: 15px; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🔙 Zpět</button>
+                <button onclick="window.print()" style="flex: 2; background: #107c41; color: white; border: none; padding: 15px; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🖨️ Tisk / Uložit PDF</button>
+                <button onclick="window.closePrintPreview()" style="flex: 1; background: #c62828; color: white; border: none; padding: 15px; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🔙 Zpět</button>
             </div>
 
-            <!-- OBSAH PRO EXPORT DO PDF -->
+            <!-- OBSAH PRO EXPORT -->
             <div id="printableContent" style="background: white; padding: 10px;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 4px solid #e3000f; padding-bottom: 10px; margin-bottom: 20px;">
                     <div>
@@ -4009,34 +4027,38 @@
         }
 
         html += `
-                <div style="margin-top: 50px; display: flex; justify-content: space-between;">
-                    <div style="border-top: 1px solid #333; width: 30%; padding-top: 10px; text-align: center; font-size: 12px;">Podpis dispečera</div>
-                    <div style="border-top: 1px solid #333; width: 30%; padding-top: 10px; text-align: center; font-size: 12px;">Podpis řidiče</div>
+                    <div style="margin-top: 50px; display: flex; justify-content: space-between;">
+                        <div style="border-top: 1px solid #333; width: 30%; padding-top: 10px; text-align: center; font-size: 12px;">Podpis dispečera</div>
+                        <div style="border-top: 1px solid #333; width: 30%; padding-top: 10px; text-align: center; font-size: 12px;">Podpis řidiče</div>
+                    </div>
                 </div>
-            </div>
-        </div>`;
+            </div>`;
         
+        // Zavřít modal s výběrem exportu
         document.getElementById('pdfExportModal').style.display = 'none';
 
+        // Vytvořit speciální tiskový kontejner na konci těla (body)
         let printContainer = document.createElement('div');
         printContainer.id = "cp-mobile-print-container";
         printContainer.innerHTML = html;
 
+        // Skrýt aplikaci, aby na obrazovce zůstal JEN náhled (bezpečná metoda)
         let mainElements = Array.from(document.body.children);
-        window.hiddenElements = [];
-        
         mainElements.forEach(el => {
-            if (el.style.display !== 'none' && el.tagName !== 'SCRIPT') {
-                window.hiddenElements.push({ element: el, originalDisplay: el.style.display });
+            if (el.style.display !== 'none' && el.tagName !== 'SCRIPT' && el.id !== 'pdfExportModal') {
+                el.classList.add('cp-app-element-to-hide');
+                el.dataset.originalDisplay = el.style.display;
                 el.style.display = 'none';
             }
         });
 
+        // Přidat tiskový kontejner do DOM
         document.body.appendChild(printContainer);
         window.originalBodyBackground = document.body.style.background;
         document.body.style.background = 'white';
         window.scrollTo(0, 0);
     }
+
 
 
     function exportKnihaCSV() {
