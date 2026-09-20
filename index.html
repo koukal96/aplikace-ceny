@@ -3336,13 +3336,27 @@
         return (h % 24).toString().padStart(2, '0') + ":" + m.toString().padStart(2, '0'); 
     }
 
-    function plannerLoadState() { 
+        function plannerLoadState() { 
         let savedState = localStorage.getItem('cpPlannerStateUltimate'); 
-        if (savedState) plannerState = JSON.parse(savedState);
-        else { let nd = new Date(); plannerState.currentYear = nd.getFullYear(); plannerState.currentWeek = getISOWeek(nd); }
-        document.getElementById('yearSelect').value = plannerState.currentYear;
+        if (savedState) {
+            plannerState = JSON.parse(savedState);
+        } else {
+            plannerState = { drivers: [], shifts: {}, payrolls: {} };
+        }
+        
+        // VŽDY po spuštění natvrdo nastavit aktuální datum
+        let nd = new Date();
+        plannerState.currentYear = nd.getFullYear();
+        plannerState.currentMonth = nd.getMonth();
+        plannerState.currentWeek = getISOWeek(nd);
+        
+        // Aktualizace roletek v horní liště
+        if(document.getElementById('yearSelect')) document.getElementById('yearSelect').value = plannerState.currentYear;
+        if(document.getElementById('monthSelect')) document.getElementById('monthSelect').value = plannerState.currentMonth;
+        
         updateDriverSelects(); 
     }
+
     function plannerSaveState() { localStorage.setItem('cpPlannerStateUltimate', JSON.stringify(plannerState)); updateDriverSelects(); }
     
     function changeYearMonth() {
@@ -3352,10 +3366,26 @@
         plannerState.currentWeek = getISOWeek(firstDay);
         renderPlanner();
     }
-    function changeWeek(delta) { 
+        function changeWeek(delta) { 
         plannerState.currentWeek += delta; 
-        if(plannerState.currentWeek > 52) { plannerState.currentWeek = 1; plannerState.currentYear++; document.getElementById('yearSelect').value = plannerState.currentYear; }
-        if(plannerState.currentWeek < 1) { plannerState.currentWeek = 52; plannerState.currentYear--; document.getElementById('yearSelect').value = plannerState.currentYear; }
+        
+        if (plannerState.currentWeek > 52) { 
+            plannerState.currentWeek = 1; 
+            plannerState.currentYear++; 
+        }
+        if (plannerState.currentWeek < 1) { 
+            plannerState.currentWeek = 52; 
+            plannerState.currentYear--; 
+        }
+        
+        // Změna UI roletky pro rok
+        if(document.getElementById('yearSelect')) document.getElementById('yearSelect').value = plannerState.currentYear;
+        
+        // Přibližný výpočet měsíce podle vybraného týdne a změna UI roletky
+        let simpleDate = new Date(plannerState.currentYear, 0, 1 + (plannerState.currentWeek - 1) * 7);
+        plannerState.currentMonth = simpleDate.getMonth();
+        if(document.getElementById('monthSelect')) document.getElementById('monthSelect').value = plannerState.currentMonth;
+
         renderPlanner(); 
     }
 
@@ -3981,12 +4011,22 @@
             </div>
         </body></html>`;
         
-        let printWin = window.open('', '', 'width=900,height=800');
-        printWin.document.write(html);
-        printWin.document.close();
-        printWin.focus();
-        setTimeout(() => { printWin.print(); printWin.close(); }, 500);
-        document.getElementById('pdfExportModal').style.display='none';
+                let iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+        iframe.contentWindow.document.open();
+        iframe.contentWindow.document.write(html);
+        iframe.contentWindow.document.close();
+        
+        iframe.onload = function() {
+            setTimeout(() => {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+                // Po tisku iframe odstraníme
+                setTimeout(() => { document.body.removeChild(iframe); }, 1000);
+            }, 500);
+        };
+        document.getElementById('pdfExportModal').style.display = 'none';
     }
 
     function exportKnihaCSV() {
