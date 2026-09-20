@@ -2844,106 +2844,83 @@
         modal.style.display='flex';
     }
 
+    function buildReportPdfBlob(){
+        const source=document.getElementById('reportPreviewContent');
+        if(!source) return null;
+        const text=(source.innerText||source.textContent||'').replace(/\r/g,'').trim();
+        const lines=[];
+        text.split('\n').forEach(line=>{
+            line=line.replace(/\t/g,'    ').trim();
+            if(!line){ lines.push(''); return; }
+            const max=105;
+            for(let i=0;i<line.length;i+=max) lines.push(line.slice(i,i+max));
+        });
+        const pageW=595,pageH=842,margin=40,lineH=15,usable=pageH-70;
+        const perPage=Math.max(1,Math.floor(usable/lineH));
+        const pages=[];
+        for(let i=0;i<lines.length;i+=perPage) pages.push(lines.slice(i,i+perPage));
+        if(!pages.length) pages.push(['']);
+        const esc=t=>String(t).replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)');
+        const objs=[];
+        const add=o=>{objs.push(o);return objs.length;};
+        const catalog=add('');
+        const pagesObj=add('');
+        const font=add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
+        const pageIds=[];
+        pages.forEach((pg,pi)=>{
+            let content='BT\n/F1 9 Tf\n';
+            let y=pageH-45;
+            pg.forEach((ln,idx)=>{
+                if(idx===0 && pi===0){ content+='/F1 13 Tf\n'; }
+                content+=`1 0 0 1 ${margin} ${y} Tm (${esc(ln)}) Tj\n`;
+                if(idx===0 && pi===0) content+='/F1 9 Tf\n';
+                y-=lineH;
+            });
+            content+='ET';
+            const stream=add(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
+            const page=add(`<< /Type /Page /Parent ${pagesObj} 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Resources << /Font << /F1 ${font} 0 R >> >> /Contents ${stream} 0 R >>`);
+            pageIds.push(page);
+        });
+        objs[pagesObj-1]=`<< /Type /Pages /Kids [${pageIds.map(id=>id+' 0 R').join(' ')}] /Count ${pageIds.length} >>`;
+        objs[catalog-1]=`<< /Type /Catalog /Pages ${pagesObj} 0 R >>`;
+        let pdf='%PDF-1.4\n%\xE2\xE3\xCF\xD3\n';
+        const offsets=[0];
+        objs.forEach((o,i)=>{offsets[i+1]=pdf.length;pdf+=`${i+1} 0 obj\n${o}\nendobj\n`;});
+        const xref=pdf.length;
+        pdf+=`xref\n0 ${objs.length+1}\n0000000000 65535 f \n`;
+        for(let i=1;i<=objs.length;i++) pdf+=String(offsets[i]).padStart(10,'0')+' 00000 n \n';
+        pdf+=`trailer\n<< /Size ${objs.length+1} /Root ${catalog} 0 R >>\nstartxref\n${xref}\n%%EOF`;
+        return new Blob([pdf],{type:'application/pdf'});
+    }
+
     function printCurrentReport(){
-        const source = document.getElementById('reportPreviewContent');
-        if (!source) return;
-        const report = source.innerHTML;
-        const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-        const printCss = `
-            @page{size:auto;margin:10mm}
-            html,body{background:#fff;color:#222;margin:0;padding:0}
-            body{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;font-size:14px}
-            .toolbar{position:sticky;top:0;z-index:10;background:#fff;padding:12px 14px 10px;border-bottom:1px solid #ddd;box-shadow:0 1px 4px rgba(0,0,0,.12)}
-            .toolbar button{border:0;border-radius:7px;padding:12px 15px;margin:0 7px 7px 0;font-size:15px;font-weight:700;background:#107c41;color:#fff}
-            .toolbar .back{background:#777}
-            .hint{font-size:12px;line-height:1.35;color:#555;margin-top:2px}
-            .report{padding:18px;color:#222;background:#fff}
-            table{width:100%;border-collapse:collapse;font-size:11px}
-            th,td{border:1px solid #ccc;padding:6px}
-            tr{page-break-inside:avoid}
-            thead{display:table-header-group}
-            @media print{
-                .toolbar{display:none!important}
-                .report{padding:0!important}
-            }`;
-
-        // iOS/PWA: do not use about:blank + automatic window.print().
-        // That combination can trap the installed PWA in a print/PDF document.
-        // Instead open a real Blob document in a new Safari/WebKit page and let
-        // the user press the native iOS Print button there. The Back button then
-        // returns to the application.
-        if (isiOS) {
-            const html = `<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Control Point – výkaz</title><style>${printCss}</style></head><body>
-                <div class="toolbar">
-                    <button onclick="window.print()">🖨️ Otevřít tisk v iOS</button>
-                    <button class="back" onclick="goBack()">← Zpět do aplikace</button>
-                    <div class="hint">Klepni na „Otevřít tisk v iOS“. Potom v iOS použij Sdílet → Uložit do Souborů pro PDF. Tento dokument zůstane samostatně otevřený.</div>
-                </div>
-                <main class="report">${report}</main>
-                <script>
-                    function goBack(){
-                        try { if(history.length>1){ history.back(); return; } } catch(e){}
-                        try { window.close(); } catch(e){}
-                    }
-                <\/script>
-            </body></html>`;
-            const blob = new Blob([html], {type:'text/html;charset=utf-8'});
-            const url = URL.createObjectURL(blob);
-            let opened = null;
-            try { opened = window.open(url, '_blank'); } catch(e) {}
-            if (!opened) {
-                const a = document.createElement('a');
-                a.href = url;
-                a.target = '_blank';
-                a.rel = 'noopener';
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-            }
-            setTimeout(() => URL.revokeObjectURL(url), 60000);
-            return;
+        const blob=buildReportPdfBlob();
+        if(!blob){alert('Výkaz se nepodařilo vytvořit.');return;}
+        const url=URL.createObjectURL(blob);
+        const w=window.open(url,'_blank');
+        if(!w){
+            const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.textContent='Otevřít PDF';
+            a.style.cssText='position:fixed;left:20px;bottom:20px;z-index:999999;padding:14px 18px;background:#107c41;color:#fff;border-radius:8px;font-weight:800;';
+            document.body.appendChild(a);
+            alert('iOS zablokoval nové okno. Klepněte na „Otevřít PDF“.');
         }
-
-        let host = document.getElementById('printReportHost');
-        if (!host) {
-            host = document.createElement('div');
-            host.id='printReportHost';
-            host.className='print-report-host';
-            document.body.appendChild(host);
-        }
-        host.innerHTML = report;
-        document.body.classList.add('print-report-mode');
-        const modal = document.getElementById('reportPreviewModal');
-        if (modal) modal.style.display='none';
-        const cleanup = () => {
-            document.body.classList.remove('print-report-mode');
-            host.innerHTML='';
-        };
-        window.addEventListener('afterprint', cleanup, {once:true});
-        window.print();
+        setTimeout(()=>URL.revokeObjectURL(url),120000);
     }
 
     async function shareCurrentReport(){
-        // iOS share of an HTML file is intentionally not used anymore:
-        // Files/Safari receive an .html document, not the requested PDF.
-        // The reliable iOS workflow is native Print -> Share -> Save as PDF.
-        const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-        if (isiOS) {
-            printCurrentReport();
-            return;
-        }
-        const source=document.getElementById('reportPreviewContent');
-        if(!source) return;
-        try {
-            if(navigator.share) {
-                await navigator.share({title:'Control Point – výkaz', text:source.innerText});
-            } else {
-                printCurrentReport();
+        const blob=buildReportPdfBlob();
+        if(!blob){alert('Výkaz se nepodařilo vytvořit.');return;}
+        const file=new File([blob],`ControlPoint_${new Date().toISOString().slice(0,10)}.pdf`,{type:'application/pdf'});
+        try{
+            if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+                await navigator.share({title:'Control Point – výkaz',files:[file]});
+                return;
             }
-        } catch(e) {}
+        }catch(e){ if(e && e.name==='AbortError') return; }
+        const url=URL.createObjectURL(blob);
+        const w=window.open(url,'_blank');
+        if(!w){const a=document.createElement('a');a.href=url;a.download=file.name;a.click();}
+        setTimeout(()=>URL.revokeObjectURL(url),120000);
     }
 
 
