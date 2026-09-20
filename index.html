@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#e3000f">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <!-- iOS standalone mode intentionally disabled: native Safari print UI is required. -->
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Control Point">
     <title>Control Point - Transport Analytics & ERP</title>
     
     <!-- PWA Manifest pro instalaci na plochu -->
-    <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Control%20Point%22%2C%22short_name%22%3A%22CP%20Analytics%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f4f4f4%22%2C%22theme_color%22%3A%22%23e3000f%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22IMG_9552.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image/png%22%2C%22purpose%22%3A%22any%20maskable%22%7D%2C%7B%22src%22%3A%22data%3Aimage/svg%2Bxml%2C%253Csvg%20xmlns%3D%2522http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2522%20width%3D%2522512%2522%20height%3D%2522512%2522%20viewBox%3D%25220%200%20512%20512%2522%253E%253Crect%20width%3D%2522512%2522%20height%3D%2522512%2522%20fill%3D%2522white%2522%252F%253E%253Ctext%20x%3D%2522256%2522%20y%3D%2522305%2522%20text-anchor%3D%2522middle%2522%20font-family%3D%2522Arial%2522%20font-size%3D%2522200%2522%20font-weight%3D%2522700%2522%20fill%3D%2522%2523e3000f%2522%253ECP%253C%252Ftext%253E%253C%252Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image/svg%2Bxml%22%2C%22purpose%22%3A%22any%22%7D%5D%7D">
     <link rel="apple-touch-icon" sizes="180x180" href="IMG_9552.png">
     <link rel="icon" type="image/png" sizes="512x512" href="IMG_9552.png">
 
@@ -2846,12 +2845,31 @@
     }
 
     let reportPrintStarted=false;
-    let reportPrintFallbackTimer=null;
-    window.addEventListener('beforeprint',()=>{ reportPrintStarted=true; });
+
+    function isIOSStandalone(){
+        return !!(window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches);
+    }
+
+    function openReportInSafari(){
+        const url=window.location.href;
+        if(/^https:\/\//i.test(url)){
+            // iOS URL scheme: hand the current page back to Safari.
+            window.location.href='x-safari-https://'+url.slice(8);
+            return;
+        }
+        alert('Tisk na iPhonu musí být spuštěný v Safari. Tento soubor je otevřený jako lokální HTML, takže Safari nelze automaticky přepnout. Otevři ho prosím v Safari.');
+    }
 
     function printCurrentReport(){
         const source=document.getElementById('reportPreviewContent');
         if(!source) return;
+
+        // PWA/standalone režim iOS nemá spolehlivý přístup k systémovému tisku.
+        if(isIOSStandalone()){
+            const ok=confirm('Aplikace je právě otevřená jako ikona na ploše iPhonu. Pro systémový Tisk ji musíme otevřít v Safari.\n\nOK = otevřít v Safari\nZrušit = zůstat zde');
+            if(ok) openReportInSafari();
+            return;
+        }
 
         let host=document.getElementById('printReportHost');
         if(!host){
@@ -2864,45 +2882,18 @@
         document.body.classList.add('print-report-mode');
         reportPrintStarted=false;
 
-        // 1) Normální Safari/iOS cesta: musí být synchronně v reakci na klepnutí.
-        try { window.print(); } catch(e) {}
-
-        // 2) Fallback pro některé verze WebKitu, kde window.print() nereaguje.
-        // Pokud se do chvíle neaktivuje tisk, zkusíme starší WebKit print command.
-        clearTimeout(reportPrintFallbackTimer);
-        reportPrintFallbackTimer=setTimeout(()=>{
-            if(reportPrintStarted) return;
-            try {
-                if(document.execCommand) document.execCommand('print');
-            } catch(e) {}
-
-            // 3) Poslední webový fallback: tisk z iframe, bez popupu/window.open().
-            setTimeout(()=>{
-                if(reportPrintStarted) return;
-                let frame=document.getElementById('reportPrintFrame');
-                if(!frame){
-                    frame=document.createElement('iframe');
-                    frame.id='reportPrintFrame';
-                    frame.setAttribute('aria-hidden','true');
-                    frame.style.cssText='position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0;';
-                    document.body.appendChild(frame);
-                }
-                const doc=frame.contentDocument || frame.contentWindow.document;
-                doc.open();
-                doc.write('<!doctype html><html><head><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><style>@page{margin:10mm}body{font-family:Arial,sans-serif;color:#222}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px}thead{display:table-header-group}tr{break-inside:avoid}</style></head><body>'+source.innerHTML+'</body></html>');
-                doc.close();
-                try { frame.contentWindow.print(); } catch(e) {}
-            },300);
-        },500);
+        // Safari iOS podporuje window.print(); Apple jej uvádí mezi podporovanými dialogy.
+        // Voláme jej přímo v reakci na klepnutí, bez timeoutu, RAF, popupu nebo iframe.
+        try { window.print(); } catch(e) {
+            document.body.classList.remove('print-report-mode');
+            alert('Safari odmítlo otevřít tisk. Zkus stránku otevřít přímo v Safari, ne jako aplikaci na ploše.');
+        }
     }
 
     window.addEventListener('afterprint',()=>{
-        clearTimeout(reportPrintFallbackTimer);
         document.body.classList.remove('print-report-mode');
         const host=document.getElementById('printReportHost');
         if(host) host.innerHTML='';
-        const frame=document.getElementById('reportPrintFrame');
-        if(frame) frame.remove();
     });
 
     function exportKnihaCSV(){
