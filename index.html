@@ -322,7 +322,7 @@
                 </div>
                 <div class="input-group">
                     <label id="lblTypTrasy">Typ trasy <span class="icon-help" onclick="showInfo(T('helpTypTrasy'))">i</span></label>
-                    <select id="typTrasy" onchange="spocitatTrasu(); autoSave();">
+                    <select id="typTrasy" onchange="applyRoundTripDistance(); spocitatTrasu(); autoSave();">
                         <option value="1" id="optNaprimo">Napřímo</option>
                         <option value="2" id="optKolecko">Kolečko</option>
                     </select>
@@ -1176,6 +1176,14 @@
         return key;
     }
     let map, routeLayer, markerGroup;
+    // Stav kalkulačky – musí být inicializován před každou funkcí, která jej používá.
+    let waypoints = [];
+    let wpCounter = 0;
+    let excludedCountries = [];
+    let totalPrejezdKm = 0;
+    let lastRouteData = null;
+    let globalBreakdown = [];
+    let avgFuelConsumption = 20;
 
     function initMap() {
         if(!map) {
@@ -1339,8 +1347,12 @@
             if (document.getElementById('realCenaTyp')) document.getElementById('realCenaTyp').value = d.realCenaTyp || 'celkem';
             if (document.getElementById('realCenaMena')) document.getElementById('realCenaMena').value = d.realCenaMena || 'CZK';
             if (Array.isArray(d.waypoints)) { waypoints = d.waypoints; wpCounter = Math.max(0, ...waypoints.map(w => Number(w.id) || 0)); }
+            else { waypoints = []; wpCounter = 0; }
             excludedCountries = Array.isArray(d.excludedCountries) ? d.excludedCountries : [];
         }
+        // Vždy inicializovat, i když není uložený draft.
+        if (!Array.isArray(waypoints)) waypoints = [];
+        if (!Array.isArray(excludedCountries)) excludedCountries = [];
         const top = document.getElementById('menaTopSelect');
         if (top) top.value = document.getElementById('menaSelect').value;
         renderWaypoints();
@@ -1524,9 +1536,18 @@
         if(wp) {
             wp.address = document.getElementById(`wp_addr_${id}`).value;
             wp.type = document.getElementById(`wp_type_${id}`).value;
+            // Stav nákladu na začátku/po nakládce: prázdný=0 t, 1/2=12 t, plný=24 t.
+            const startVaha = document.getElementById('startVaha');
+            const loadMap = { empty: 0, prejezd: 0, half: 12, full: 24 };
+            if (startVaha && Object.prototype.hasOwnProperty.call(loadMap, wp.type)) {
+                startVaha.value = loadMap[wp.type];
+                const cargo = document.getElementById('vahaNakladu');
+                if (cargo) cargo.value = loadMap[wp.type];
+            }
         }
         autoSave();
-        if(wp.address && document.getElementById('vzdalenost').value > 0) spocitatTrasu();
+        calculate();
+        if(wp?.address && document.getElementById('vzdalenost').value > 0) spocitatTrasu();
     }
 
     function renderWaypoints() {
@@ -1656,6 +1677,15 @@
         return finalSegments;
     }
 
+    function applyRoundTripDistance() {
+        const kmEl = document.getElementById('vzdalenost');
+        if (!kmEl) return;
+        const base = parseFloat(kmEl.dataset.onewayKm);
+        if (!Number.isFinite(base) || base <= 0) return;
+        const round = waypoints.length === 0 && document.getElementById('typTrasy')?.value === '2';
+        kmEl.value = (base * (round ? 2 : 1)).toFixed(1);
+    }
+
         async function spocitatTrasu() {
         if (!navigator.onLine) { setStatus('❌ Jste offline. Výpočet trasy z OSRM není dostupný.', 'error'); return; }
         const startStr = document.getElementById('startAdresa').value.trim();
@@ -1708,13 +1738,14 @@
             globalBreakdown = selectedSegments;
             const vMulti = waypoints.length > 0 ? 1 : ((document.getElementById('typTrasy').value === '2') ? 2 : 1);
             const routeKmForCalc = distTotal * vMulti;
-            document.getElementById('vzdalenost').value = distTotal.toFixed(1);
+            const kmEl = document.getElementById('vzdalenost');
+            if (kmEl) { kmEl.dataset.onewayKm = distTotal.toFixed(1); kmEl.value = routeKmForCalc.toFixed(1); }
 
             // Přejezd = součet úseků, které končí v waypointu označeném jako Přejezd.
             let prejezd = 0;
             if (waypoints.length && Array.isArray(selected.legs)) {
                 for (let i=0; i<waypoints.length; i++) {
-                    if (waypoints[i].type === 'prejezd' && selected.legs[i]) prejezd += Number(selected.legs[i].distance || 0) / 1000;
+                    if ((waypoints[i].type === 'prejezd' || waypoints[i].type === 'empty') && selected.legs[i]) prejezd += Number(selected.legs[i].distance || 0) / 1000;
                 }
             }
             totalPrejezdKm = Math.min(distTotal * vMulti, prejezd * vMulti);
@@ -1835,13 +1866,22 @@
         });
 
         const typTrasyMulti = waypoints.length > 0 ? 1 : (document.getElementById('typTrasy').value === '2' ? 2 : 1);
-        const baseKm = parseFloat(document.getElementById('vzdalenost').value) || 0;
+        // Vzdálenost v modrém poli je vždy CELKEM. Jednosměrná hodnota je držena v data-oneway-km,
+        // takže přepnutí na Kolečko ji zdvojnásobí jen jednou a náklady se nezdvojnásobí podruhé.
+        const kmEl = document.getElementById('vzdalenost');
+        const storedOneWay = parseFloat(kmEl?.dataset.onewayKm);
+        const displayedKm = parseFloat(kmEl?.value) || 0;
+        const baseKm = Number.isFinite(storedOneWay) ? storedOneWay : (typTrasyMulti === 2 ? displayedKm / 2 : displayedKm);
         const dokladky = parseFloat(document.getElementById('dokladky').value) || 0;
         const celkoveKm = baseKm * typTrasyMulti + dokladky;
+        if (kmEl && baseKm > 0) kmEl.value = celkoveKm.toFixed(1);
 
         const zvedle = parseInt(document.getElementById('zvedleNapravy').value) || 0;
         const baseCons = parseFloat(document.getElementById('spotrebaPrazdne').value) || 20;
-        const weightCons = (parseFloat(document.getElementById('vahaNakladu').value) || 0) * SPOTREBA_NA_TUNU;
+        const enteredStartWeight = parseFloat(document.getElementById('startVaha')?.value);
+        const enteredCargoWeight = parseFloat(document.getElementById('vahaNakladu')?.value) || 0;
+        const loadWeight = Number.isFinite(enteredStartWeight) ? enteredStartWeight : enteredCargoWeight;
+        const weightCons = loadWeight * SPOTREBA_NA_TUNU;
         const avgCons = Math.max(0, baseCons + weightCons);
         avgFuelConsumption = avgCons;
         document.getElementById('resSpotrebaDynamicka').innerText = `${avgCons.toFixed(1)} L / 100 km`;
@@ -1880,7 +1920,8 @@
         const ziskBox = document.getElementById('ziskStatusBox');
         const procBox = document.getElementById('ziskProcento');
         if (actualInput > 0 && celkoveKm > 0) {
-            realTrzbaEl.innerText = `${formatMoney(actualRevenuePerKmCZK, mena)} / km`;
+            const actualRevenuePerKmEUR = actualRevenuePerKmCZK / kurz;
+            realTrzbaEl.innerText = `${formatMoney(actualRevenuePerKmCZK, 'CZK')} / km  |  ${formatMoney(actualRevenuePerKmEUR, 'EUR')} / km`;
             const rozdilNet = actualTotalCZKNet - nakladyCelkem;
             const shownDiff = rozdilNet * dphMulti;
             if (rozdilNet >= 0) {
@@ -1899,7 +1940,7 @@
         const dphLabel = document.getElementById('dphStatusLabel');
         if (dphLabel) dphLabel.innerText = includesDph ? 'Zobrazit VČETNĚ DPH (21%)' : 'Zobrazit BEZ DPH';
         const realLabel = document.getElementById('lblRealTrzba');
-        if (realLabel) realLabel.innerText = `Reálná tržba na 1 km (${mena})`;
+        if (realLabel) realLabel.innerText = 'Reálná tržba na 1 km (CZK / EUR)';
         const top = document.getElementById('menaTopSelect'); if (top) top.value = mena;
     }
 
