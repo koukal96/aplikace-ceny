@@ -10,9 +10,7 @@
     <title>Control Point - Transport Analytics & ERP</title>
     
     <!-- PWA Manifest pro instalaci na plochu -->
-    <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Control%20Point%22%2C%22short_name%22%3A%22CP%20Analytics%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f4f4f4%22%2C%22theme_color%22%3A%22%23e3000f%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22IMG_9552.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image/png%22%2C%22purpose%22%3A%22any%20maskable%22%7D%2C%7B%22src%22%3A%22data%3Aimage/svg%2Bxml%2C%253Csvg%20xmlns%3D%2522http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2522%20width%3D%2522512%2522%20height%3D%2522512%2522%20viewBox%3D%25220%200%20512%20512%2522%253E%253Crect%20width%3D%2522512%2522%20height%3D%2522512%2522%20fill%3D%2522white%2522%252F%253E%253Ctext%20x%3D%2522256%2522%20y%3D%2522305%2522%20text-anchor%3D%2522middle%2522%20font-family%3D%2522Arial%2522%20font-size%3D%2522200%2522%20font-weight%3D%2522700%2522%20fill%3D%2522%2523e3000f%2522%253ECP%253C%252Ftext%253E%253C%252Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image/svg%2Bxml%22%2C%22purpose%22%3A%22any%22%7D%5D%7D">
-    <link rel="apple-touch-icon" sizes="180x180" href="IMG_9552.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="IMG_9552.png">
+    <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Control%20Point%22%2C%22short_name%22%3A%22CP%20Analytics%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f4f4f4%22%2C%22theme_color%22%3A%22%23e3000f%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII%3D%22%2C%22sizes%22%3A%221x1%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D'>
 
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -164,31 +162,6 @@
         .pdf-hide { display: block; }
         @media print { .pdf-hide { display: none !important; } body{background:white;} }
 
-
-        /* Shift modal – compact top controls for iPhone/iPad */
-        #shiftModal .shift-top-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; width:100%; }
-        #shiftModal .shift-top-grid .input-group { min-width:0; margin-bottom:0; }
-        #shiftModal .shift-top-grid label { min-height:22px; line-height:1.15; font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        #shiftModal .shift-top-grid input, #shiftModal .shift-top-grid select { width:100% !important; min-width:0 !important; max-width:100% !important; height:42px; padding:8px 7px; font-size:13px; }
-        @media (max-width:390px) { #shiftModal .shift-top-grid { gap:6px; } #shiftModal .shift-top-grid label { font-size:10px; } }
-        #shiftModal .shift-top-grid input[type="time"], #shiftModal .shift-top-grid select { box-sizing:border-box !important; width:100% !important; max-width:100% !important; min-width:0 !important; height:38px !important; min-height:38px !important; padding:5px 4px !important; font-size:12px !important; }
-        #shiftModal .shift-top-grid .input-group { overflow:hidden; }
-        #planDateSelect { box-sizing:border-box !important; width:100% !important; max-width:100% !important; min-width:0 !important; height:42px !important; padding:7px 8px !important; font-size:13px !important; }
-        #planDateSelect::-webkit-date-and-time-value { text-align:left; }
-        #planDateSelect::-webkit-calendar-picker-indicator { margin-left:0; }
-
-
-        /* iOS print/share report - tisk je záměrně v aktuální stránce, bez window.open() */
-        @page { size:auto; margin:10mm; }
-        @media print {
-            html, body { width:100% !important; background:#fff !important; }
-            body.print-report-mode { overflow:visible !important; }
-            body.print-report-mode .print-report-host { display:block !important; width:100% !important; }
-            body.print-report-mode .print-report-host table { page-break-inside:auto; }
-            body.print-report-mode .print-report-host tr { page-break-inside:avoid; page-break-after:auto; }
-            body.print-report-mode .print-report-host thead { display:table-header-group; }
-        }
-
         /* === OPRAVY 2026: čistší mobilní UI === */
         .shift-top-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
         .shift-top-grid .input-group { margin-bottom:0; }
@@ -198,11 +171,9 @@
         .breakdown-input-group { min-width:0; }
         .breakdown-input-group label { font-size:10px; font-weight:800; color:#0d47a1; display:block; margin-bottom:3px; text-transform:uppercase; }
         .btn-avoid-country { width:40px; height:40px; border:0; border-radius:4px; background:#c62828; color:#fff; font-size:20px; font-weight:900; cursor:pointer; align-self:end; }
-        .aetr-info-clean { display:none !important; font-size:11px; color:#555; background:#f5f6f7; padding:7px 9px; border-radius:4px; margin-top:6px; display:none; font-weight:700; text-align:center; border:1px solid #dfe3e6; line-height:1.35; }
+        .aetr-info-clean { font-size:11px; color:#555; background:#f5f6f7; padding:7px 9px; border-radius:4px; margin-top:6px; display:none; font-weight:700; text-align:center; border:1px solid #dfe3e6; line-height:1.35; }
         .monthly-pay-box { background:#fff; border:1px solid #ddd; border-radius:5px; padding:10px; margin-top:10px; }
         .monthly-pay-box[hidden] { display:none !important; }
-        #editActContainer .activity-time { font-size:12px; font-weight:900; color:var(--cp-blue); margin:2px 0 4px; }
-        #editActContainer .activity-delete, #dietsListContainer .diet-delete { width:30px !important; height:30px !important; min-width:30px !important; padding:0 !important; margin:0 !important; border-radius:4px !important; font-size:15px !important; line-height:30px !important; }
         .report-preview-actions { display:flex; gap:10px; }
         /* === 2026 UI cleanup === */
         .shift-top-grid .input-group label,
@@ -219,37 +190,10 @@
         .planner-gen-grid .input-group:nth-child(6) { grid-column: span 1; }
         .print-report-host { display:none; }
         @media print {
-            @page { size:auto; margin:10mm; }
-            html, body { width:100% !important; background:#fff !important; }
-            body.print-report-mode { overflow:visible !important; }
             body.print-report-mode > *:not(#printReportHost) { display:none !important; }
-            body.print-report-mode #printReportHost {
-                display:block !important;
-                position:static !important;
-                width:100% !important;
-                max-width:none !important;
-                margin:0 !important;
-                padding:0 !important;
-                background:#fff !important;
-                color:#222 !important;
-            }
-            body.print-report-mode #printReportHost table {
-                width:100% !important;
-                border-collapse:collapse !important;
-                font-size:11px;
-            }
-            body.print-report-mode #printReportHost th,
-            body.print-report-mode #printReportHost td {
-                border:1px solid #ccc !important;
-                padding:6px !important;
-            }
-            body.print-report-mode #printReportHost tr {
-                page-break-inside:avoid;
-                break-inside:avoid;
-            }
-            body.print-report-mode #printReportHost thead {
-                display:table-header-group;
-            }
+            body.print-report-mode #printReportHost { display:block !important; position:static !important; width:100% !important; }
+            body.print-report-mode #printReportHost table { width:100%; border-collapse:collapse; }
+            body.print-report-mode #printReportHost th, body.print-report-mode #printReportHost td { border:1px solid #ccc; padding:6px; }
         }
         @media (max-width: 600px) {
             .shift-top-grid { grid-template-columns:1fr 1fr; gap:8px; }
@@ -257,9 +201,7 @@
             .btn-avoid-country { width:100%; grid-column:span 2; }
             .report-preview-actions { flex-direction:column; }
             .info-box { padding:14px; margin:10px auto; }
-            #editActContainer > div { display:grid !important; grid-template-columns:minmax(0,1fr) 92px 30px; gap:6px !important; align-items:center; }
-            #editActContainer .activity-time { grid-column:1 / -1; font-size:12px; font-weight:900; color:var(--cp-blue); margin-bottom:-2px; }
-            #editActContainer .activity-delete, #dietsListContainer .diet-delete { width:30px !important; height:30px !important; min-width:30px !important; padding:0 !important; margin:0 !important; border-radius:4px !important; font-size:15px !important; line-height:30px !important; }
+            #editActContainer > div { display:grid !important; grid-template-columns:1fr 90px 42px; gap:6px !important; }
             .planner-gen-grid { grid-template-columns:1fr 1fr; gap:8px; }
             .planner-gen-grid .input-group:nth-child(5), .planner-gen-grid .input-group:nth-child(6) { grid-column:span 1; }
         }
@@ -269,23 +211,11 @@
         @media print {
             .pdf-hide { display:none !important; }
         }
-
-        /* FINAL iPhone sizing fix: native date/time controls must stay inside their grid cell. */
-        #shiftModal .shift-top-grid { grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important; gap:8px !important; }
-        #shiftModal .shift-top-grid .input-group { min-width:0 !important; width:100% !important; overflow:hidden !important; }
-        #shiftModal .shift-top-grid input[type="time"],
-        #shiftModal .shift-top-grid select { box-sizing:border-box !important; display:block !important; width:100% !important; max-width:100% !important; min-width:0 !important; height:38px !important; min-height:38px !important; padding:4px 3px !important; font-size:12px !important; }
-        #shiftModal .shift-top-grid label { font-size:10px !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; }
-        #planDateSelect { box-sizing:border-box !important; display:block !important; width:100% !important; max-width:100% !important; min-width:0 !important; height:40px !important; min-height:40px !important; padding:6px 6px !important; font-size:12px !important; }
-        @media (max-width:390px) { #shiftModal .shift-top-grid { grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important; gap:5px !important; } }
     </style>
 </head>
 <body>
 
 <div id="offlineBanner">⚠️ Jste Offline - OSRM Trasování a Geolokace jsou vypnuté</div>
-
-<!-- iOS PRINT HOST: tisk probíhá v aktuální stránce, bez popup okna a bez PDF generování -->
-<div id="printReportHost" class="print-report-host" aria-hidden="true"></div>
 
 <div id="loading-screen">
     <div class="loader-content">
@@ -392,7 +322,7 @@
                 </div>
                 <div class="input-group">
                     <label id="lblTypTrasy">Typ trasy <span class="icon-help" onclick="showInfo(T('helpTypTrasy'))">i</span></label>
-                    <select id="typTrasy" onchange="applyRoundTripDistance(); spocitatTrasu(); autoSave();">
+                    <select id="typTrasy" onchange="spocitatTrasu(); autoSave();">
                         <option value="1" id="optNaprimo">Napřímo</option>
                         <option value="2" id="optKolecko">Kolečko</option>
                     </select>
@@ -438,10 +368,13 @@
                     <label id="lblSpotreba">Spotřeba prázdné <span class="icon-help" onclick="showInfo(T('Výchozí spotřeba prázdného vozidla'))">i</span></label>
                     <input type="number" id="spotrebaPrazdne" value="20" step="0.1" oninput="calculate(); autoSave();">
                 </div>
-                <input type="hidden" id="startVaha" value="10">
                 <div class="input-group">
-                    <label id="lblNaklad">Hmotnost nákladu (t) <span class="icon-help" onclick="showInfo(T('Váha má vliv na spotřebu. (Každá tuna 0,2 l/100 km)'))">i</span></label>
-                    <input type="number" id="vahaNakladu" value="10" min="0" step="0.1" oninput="calculate(); autoSave();">
+                    <label id="lblStartVaha">Startovní váha (t) <span class="icon-help" onclick="showInfo('Váha vozidla/soupravy na začátku zakázky.')">i</span></label>
+                    <input type="number" id="startVaha" value="0" min="0" step="0.1" oninput="calculate(); autoSave();">
+                </div>
+                <div class="input-group">
+                    <label id="lblNaklad">Start. Náklad (t) <span class="icon-help" onclick="showInfo(T('Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)'))">i</span></label>
+                    <input type="number" id="vahaNakladu" value="10" step="0.1" oninput="calculate(); autoSave();">
                 </div>
                 <div class="input-group">
                     <label id="lblNaftaCena">Cena nafty / L</label>
@@ -698,7 +631,12 @@
         <div class="week-controls pdf-hide">
             <button class="btn-secondary" style="width:auto; padding:10px 20px;" onclick="changeWeek(-1)">◀</button>
             <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:center;">
-                <select id="yearSelect" onchange="changeYearMonth()"></select>
+                <select id="yearSelect" onchange="changeYearMonth()">
+                    <option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option>
+                    <option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option>
+                    <option value="2030">2030</option><option value="2031">2031</option><option value="2032">2032</option>
+                    <option value="2033">2033</option><option value="2034">2034</option><option value="2035">2035</option>
+                </select>
                 <select id="monthSelect" onchange="changeYearMonth()">
                     <option value="0">Leden</option><option value="1">Únor</option><option value="2">Březen</option><option value="3">Duben</option>
                     <option value="4">Květen</option><option value="5">Červen</option><option value="6">Červenec</option><option value="7">Srpen</option>
@@ -729,8 +667,8 @@
         <div id="aetrStrictWarning" style="background: #ffebee; color: #c62828; padding: 12px; border-radius: 4px; margin-bottom: 15px; font-size: 12px; font-weight: 800; display: none; border: 1px solid #ffcdd2; text-align:center;"></div>
 
         <div class="shift-top-grid">
-            <div class="input-group"><label id="lblEditStart">Začátek Směny <span class="icon-help" onclick="showInfo(T('helpShiftStart'))">i</span></label><input type="time" id="editStart" value="06:00" onchange="validateAndRenderShift()"></div>
-            <div class="input-group"><label id="lblEditCrew">Režim</label><select id="editCrew" onchange="validateAndRenderShift()"><option value="1">1 Řidič</option><option value="2">Dvojosádka</option></select></div>
+            <div class="input-group"><label>Začátek Směny <span class="icon-help" onclick="showInfo(T('helpShiftStart'))">i</span></label><input type="time" id="editStart" value="06:00" onchange="validateAndRenderShift()"></div>
+            <div class="input-group"><label>Režim</label><select id="editCrew" onchange="validateAndRenderShift()"><option value="1">1 Řidič</option><option value="2">Dvojosádka</option></select></div>
         </div>
         <div class="input-group" style="margin-top: 10px;"><label>Poznámka k dni (Trasa)</label><input type="text" id="editNote" placeholder="Např. Trasa (Ostrava - Berlín)"></div>
         
@@ -831,7 +769,7 @@
         </div>
         
         <div style="display:flex; gap:10px; margin-bottom:15px; flex-direction:column;">
-            <button class="btn-secondary" style="background:#107c41; padding:15px; font-size:15px;" onclick="exportKnihaPrint()">🖨️ Tisk / Sdílet / Uložit PDF</button>
+            <button class="btn-secondary" style="background:#107c41; padding:15px; font-size:15px;" onclick="exportKnihaPrint()">📄 Náhled / Tisk / Uložit PDF</button>
             <button class="btn-secondary" style="background:#1565c0; padding:12px;" onclick="exportKnihaCSV()">📊 Stáhnout data do Excelu (CSV)</button>
             <button class="btn-secondary" style="background:#25D366; padding:12px;" onclick="exportDriverWA()">💬 Odeslat přehled na WhatsApp</button>
         </div>
@@ -884,7 +822,6 @@
     // 1. JAZYKOVÁ LOKALIZACE A PŘEKLADY (VYLEPŠENO PRO CELOU APLIKACI)
     // =======================================================================
     let originalTexts = new Map(); // Pamatuje si české texty pro přepínání zpět
-    let originalAttrs = new Map(); // Pamatuje české placeholdery/title/aria-label
 
     const TRANSLATIONS = {
         en: {
@@ -958,34 +895,7 @@
             "Kolečko": "Roundtrip",
             "Denní sazba (VČETNĚ diet)": "Daily rate (INCL. diets)",
             "Základ (BEZ diet) + Diety": "Base (EXCL. diets) + Diets",
-            "Paušál (za točku)": "Flat fee (per trip)",
-            "Úprava Směny": "Edit Shift", "Začátek Směny": "Shift Start", "Režim": "Mode",
-            "Poznámka k dni (Trasa)": "Day note (Route)", "Rozpis bloků (Jízda/Práce/Pauza)": "Blocks (Driving/Work/Rest)",
-            "+ Přidat blok (Jízda / Práce / Pauza)": "+ Add block (Driving / Work / Rest)", "Smazat Den": "Delete Day", "Uložit Směnu": "Save Shift", "Zrušit": "Cancel",
-            "Rychlé Nastavení Sazby a Diet": "Quick Pay & Diet Settings", "Odpracovaný výkon:": "Worked time:", "Z toho čistá jízda:": "Driving time:",
-            "1. ZÁKLADNÍ MZDA PRO TENTO TÝDEN": "1. BASE PAY FOR THIS WEEK", "Typ Sazby": "Rate Type", "Sazba / Den (Kč)": "Rate / Day (CZK)",
-            "Odjeto směn": "Shifts completed", "Typ mzdy": "Pay type", "Základ (Kč)": "Base (CZK)", "Denní sazba": "Daily rate", "Měsíční mzda": "Monthly salary",
-            "Měsíc": "Month", "Dnů v měsíci": "Days in month", "Poměrná denní sazba": "Daily equivalent",
-            "2. ZAHRANIČNÍ DIETY V TÝDNU": "2. FOREIGN DIETS THIS WEEK", "+ Přidat zemi k výpočtu diety": "+ Add country for diet calculation",
-            "Zahraniční diety celkem (Kč)": "Total foreign diets (CZK)", "Bonusy / Srážky (Kč)": "Bonuses / Deductions (CZK)",
-            "ODHADOVANÁ VÝPLATA ZA TENTO TÝDEN:": "ESTIMATED PAY FOR THIS WEEK:", "Uložit Nastavení Mzdy": "Save Pay Settings",
-            "Export Data (Kniha / Mzdy)": "Export Data (Logbook / Payroll)", "Vyberte Řidiče": "Select Driver", "Období Exportu": "Export Period",
-            "Aktuální zobrazený týden": "Currently displayed week", "Aktuální vybraný měsíc": "Currently selected month", "Celý vybraný rok": "Entire selected year",
-            "Typ Exportu (Co se má vygenerovat)": "Export Type (What to generate)", "Kompletní přehled (Kniha jízd + Mzdy)": "Complete overview (Logbook + Payroll)",
-            "Pouze Kniha jízd (Bez financí)": "Logbook only (No finances)", "Pouze Mzdový výměr (Bez rozpisu tras)": "Payroll only (No route details)",
-            "🖨️ Tisk / Sdílet / Uložit PDF": "📄 Preview / Print / Save PDF", "📊 Stáhnout data do Excelu (CSV)": "📊 Download data to Excel (CSV)",
-            "💬 Odeslat přehled na WhatsApp": "💬 Send overview to WhatsApp", "🚛 Jízda": "🚛 Driving", "⚒️ Práce/Vykládka": "⚒️ Work/Unloading", "🛏️ Pauza": "🛏️ Rest",
-            "Jízda": "Driving", "Práce/Vykládka": "Work/Unloading", "Pauza": "Rest", "Čas": "Time", "Délka": "Duration", "Délka v hodinách": "Duration in hours",
-            "Hodin": "Hours", "Smazat blok": "Delete block", "Smazat řádek": "Delete row", "Jízdní doba": "Driving time",
-            "Váha vozidla/soupravy na začátku zakázky.": "Vehicle/combination weight at the start of the job.",
-            "Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)": "Weight affects consumption. (Each tonne adds 0.2 L/100 km)",
-            "Výchozí spotřeba prázdného vozidla": "Base consumption of empty vehicle",
-            "Režim jízdy 1 nebo 2 řidiči": "Driving mode: 1 or 2 drivers",
-            "Trasa se pojede v kolečku": "The route will be driven as a round trip",
-            "Cílová destinace (Pokud se zadá jakákoliv mezizastávka nebude fungovat kolečko)": "Destination (adding any intermediate stop disables round trip)",
-            "Kurz (Kč/EUR)": "Exchange rate (CZK/EUR)", "helpTypTrasy": "Route type determines whether the distance is one-way or round trip.",
-            "helpEuro": "Euro emission class affects the toll calculation.", "helpPayType": "Choose whether the daily rate already includes foreign diets.",
-            "helpShiftStart": "Start time of the shift.", "aetrWarn1": "An AETR extension is required: {e}.", "aetrWarn2": "An AETR crew extension is required: {e}."
+            "Paušál (za točku)": "Flat fee (per trip)"
         },
         de: {
             "ANALÝZA": "ANALYSE",
@@ -1204,53 +1114,9 @@
             "Kolečko": "Giro di ritorno",
             "Denní sazba (VČETNĚ diet)": "Tariffa giornaliera (CON diarie)",
             "Základ (BEZ diet) + Diety": "Base (SENZA diarie) + Diarie",
-            "Paušál (za točku)": "Forfait (a viaggio)",
-            "Úprava Směny":"Modifica turno","Začátek Směny":"Inizio turno","Režim":"Modalità","Poznámka k dni (Trasa)":"Nota del giorno (percorso)","Rozpis bloků (Jízda/Práce/Pauza)":"Blocchi (guida/lavoro/pausa)","Zrušit":"Annulla","Uložit Směnu":"Salva turno","Smazat Den":"Elimina giorno","Jízda":"Guida","Práce/Vykládka":"Lavoro/Scarico","Pauza":"Pausa","Čas":"Ora","Délka":"Durata","Hodin":"Ore","Smazat blok":"Elimina blocco","Smazat řádek":"Elimina riga","Jízdní doba":"Tempo di guida","Režim jízdy 1 nebo 2 řidiči":"Modalità: 1 o 2 autisti","Kurz (Kč/EUR)":"Cambio (CZK/EUR)"
+            "Paušál (za točku)": "Forfait (a viaggio)"
         }
     };
-
-    // Doplňkové překlady pro modální okna, nápovědy a dynamicky generované řádky.
-    const EXTRA_TRANSLATIONS = {
-      en: {
-        "Úprava Směny":"Edit Shift","Začátek Směny":"Shift Start","Režim":"Mode","Poznámka k dni (Trasa)":"Day note (Route)",
-        "Rozpis bloků (Jízda/Práce/Pauza)":"Blocks (Driving/Work/Rest)","+ Přidat blok (Jízda / Práce / Pauza)":"+ Add block (Driving / Work / Rest)",
-        "Smazat Den":"Delete Day","Uložit Směnu":"Save Shift","Zrušit":"Cancel","Rychlé Nastavení Sazby a Diet":"Quick Pay & Diet Settings",
-        "Odpracovaný výkon:":"Worked time:","Z toho čistá jízda:":"Driving time:","1. ZÁKLADNÍ MZDA PRO TENTO TÝDEN":"1. BASE PAY FOR THIS WEEK",
-        "Typ Sazby":"Rate Type","Sazba / Den (Kč)":"Rate / Day (CZK)","Odjeto směn":"Shifts completed","Typ mzdy":"Pay type","Základ (Kč)":"Base (CZK)",
-        "Denní sazba":"Daily rate","Měsíční mzda":"Monthly salary","Měsíc":"Month","Dnů v měsíci":"Days in month","Poměrná denní sazba":"Daily equivalent",
-        "2. ZAHRANIČNÍ DIETY V TÝDNU":"2. FOREIGN DIETS THIS WEEK","+ Přidat zemi k výpočtu diety":"+ Add country for diet calculation",
-        "Zahraniční diety celkem (Kč)":"Total foreign diets (CZK)","Bonusy / Srážky (Kč)":"Bonuses / Deductions (CZK)",
-        "ODHADOVANÁ VÝPLATA ZA TENTO TÝDEN:":"ESTIMATED PAY FOR THIS WEEK:","Uložit Nastavení Mzdy":"Save Pay Settings",
-        "Export Data (Kniha / Mzdy)":"Export Data (Logbook / Payroll)","Vyberte Řidiče":"Select Driver","Období Exportu":"Export Period",
-        "Aktuální zobrazený týden":"Currently displayed week","Aktuální vybraný měsíc":"Currently selected month","Celý vybraný rok":"Entire selected year",
-        "Typ Exportu (Co se má vygenerovat)":"Export Type (What to generate)","Kompletní přehled (Kniha jízd + Mzdy)":"Complete overview (Logbook + Payroll)",
-        "Pouze Kniha jízd (Bez financí)":"Logbook only (No finances)","Pouze Mzdový výměr (Bez rozpisu tras)":"Payroll only (No route details)",
-        "🖨️ Tisk / Sdílet / Uložit PDF":"📄 Preview / Print / Save PDF","📊 Stáhnout data do Excelu (CSV)":"📊 Download data to Excel (CSV)",
-        "💬 Odeslat přehled na WhatsApp":"💬 Send overview to WhatsApp","Jízda":"Driving","Práce/Vykládka":"Work/Unloading","Pauza":"Rest",
-        "Čas":"Time","Délka":"Duration","Délka v hodinách":"Duration in hours","Hodin":"Hours","Smazat blok":"Delete block","Smazat řádek":"Delete row",
-        "Jízdní doba":"Driving time","Váha vozidla/soupravy na začátku zakázky.":"Vehicle/combination weight at the start of the job.",
-        "Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)":"Weight affects consumption. (Each tonne adds 0.2 L/100 km)",
-        "Výchozí spotřeba prázdného vozidla":"Base consumption of empty vehicle","Režim jízdy 1 nebo 2 řidiči":"Driving mode: 1 or 2 drivers",
-        "Trasa se pojede v kolečku":"The route will be driven as a round trip","Cílová destinace (Pokud se zadá jakákoliv mezizastávka nebude fungovat kolečko)":"Destination (adding any intermediate stop disables round trip)",
-        "Kurz (Kč/EUR)":"Exchange rate (CZK/EUR)","helpTypTrasy":"Route type determines whether the distance is one-way or round trip.",
-        "helpEuro":"Euro emission class affects the toll calculation.","helpPayType":"Choose whether the daily rate already includes foreign diets.","helpShiftStart":"Start time of the shift."
-      },
-      de: {
-        "Úprava Směny":"Schicht bearbeiten","Začátek Směny":"Schichtbeginn","Režim":"Modus","Poznámka k dni (Trasa)":"Tagesnotiz (Route)","Rozpis bloků (Jízda/Práce/Pauza)":"Blöcke (Fahren/Arbeit/Pause)","+ Přidat blok (Jízda / Práce / Pauza)":"+ Block hinzufügen (Fahren / Arbeit / Pause)","Smazat Den":"Tag löschen","Uložit Směnu":"Schicht speichern","Zrušit":"Abbrechen",
-        "Rychlé Nastavení Sazby a Diet":"Schnelle Lohn- und Speseneinstellung","Odpracovaný výkon:":"Arbeitszeit:","Z toho čistá jízda:":"Fahrzeit:","1. ZÁKLADNÍ MZDA PRO TENTO TÝDEN":"1. GRUNDLOHN FÜR DIESE WOCHE","Typ Sazby":"Tariftyp","Sazba / Den (Kč)":"Satz / Tag (CZK)","Odjeto směn":"Gefahrene Schichten","Typ mzdy":"Lohnart","Základ (Kč)":"Grundlohn (CZK)","Denní sazba":"Tagessatz","Měsíční mzda":"Monatslohn","Měsíc":"Monat","Dnů v měsíci":"Tage im Monat","Poměrná denní sazba":"Täglicher Anteil",
-        "2. ZAHRANIČNÍ DIETY V TÝDNU":"2. AUSLANDSSPESEN DIESE WOCHE","+ Přidat zemi k výpočtu diety":"+ Land für Spesen hinzufügen","Zahraniční diety celkem (Kč)":"Auslandsspesen gesamt (CZK)","Bonusy / Srážky (Kč)":"Boni / Abzüge (CZK)","ODHADOVANÁ VÝPLATA ZA TENTO TÝDEN:":"GESCHÄTZTER WOCHENLOHN:","Uložit Nastavení Mzdy":"Lohneinstellungen speichern",
-        "Export Data (Kniha / Mzdy)":"Datenexport (Fahrtenbuch / Lohn)","Vyberte Řidiče":"Fahrer auswählen","Období Exportu":"Exportzeitraum","Aktuální zobrazený týden":"Aktuell angezeigte Woche","Aktuální vybraný měsíc":"Aktuell ausgewählter Monat","Celý vybraný rok":"Gesamtes ausgewähltes Jahr","Typ Exportu (Co se má vygenerovat)":"Exporttyp","Kompletní přehled (Kniha jízd + Mzdy)":"Komplettübersicht (Fahrtenbuch + Lohn)","Pouze Kniha jízd (Bez financí)":"Nur Fahrtenbuch (ohne Finanzen)","Pouze Mzdový výměr (Bez rozpisu tras)":"Nur Lohnabrechnung (ohne Routen)","🖨️ Tisk / Sdílet / Uložit PDF":"📄 Vorschau / Drucken / PDF speichern","📊 Stáhnout data do Excelu (CSV)":"📊 Daten als Excel (CSV) herunterladen","💬 Odeslat přehled na WhatsApp":"💬 Übersicht per WhatsApp senden","Jízda":"Fahren","Práce/Vykládka":"Arbeit/Entladen","Pauza":"Pause","Čas":"Zeit","Délka":"Dauer","Délka v hodinách":"Dauer in Stunden","Hodin":"Stunden","Smazat blok":"Block löschen","Smazat řádek":"Zeile löschen","Jízdní doba":"Fahrzeit","Kurz (Kč/EUR)":"Wechselkurs (CZK/EUR)"
-      },
-      pl: {
-        "Úprava Směny":"Edycja zmiany","Začátek Směny":"Początek zmiany","Režim":"Tryb","Poznámka k dni (Trasa)":"Notatka dnia (trasa)","Rozpis bloků (Jízda/Práce/Pauza)":"Bloki (jazda/praca/przerwa)","+ Přidat blok (Jízda / Práce / Pauza)":"+ Dodaj blok (jazda / praca / przerwa)","Smazat Den":"Usuń dzień","Uložit Směnu":"Zapisz zmianę","Zrušit":"Anuluj","Rychlé Nastavení Sazby a Diet":"Szybkie ustawienia płacy i diet","Odpracovaný výkon:":"Czas pracy:","Z toho čistá jízda:":"Czas jazdy:","1. ZÁKLADNÍ MZDA PRO TENTO TÝDEN":"1. PŁACA PODSTAWOWA NA TEN TYDZIEŃ","Typ Sazby":"Typ stawki","Sazba / Den (Kč)":"Stawka / dzień (CZK)","Odjeto směn":"Liczba zmian","Typ mzdy":"Typ płacy","Základ (Kč)":"Podstawa (CZK)","Denní sazba":"Stawka dzienna","Měsíční mzda":"Pensja miesięczna","Měsíc":"Miesiąc","Dnů v měsíci":"Dni w miesiącu","Poměrná denní sazba":"Stawka dzienna proporcjonalna","2. ZAHRANIČNÍ DIETY V TÝDNU":"2. DIETY ZAGRANICZNE W TYGODNIU","+ Přidat zemi k výpočtu diety":"+ Dodaj kraj do wyliczenia diety","Zahraniční diety celkem (Kč)":"Diety zagraniczne razem (CZK)","Bonusy / Srážky (Kč)":"Premie / Potrącenia (CZK)","ODHADOVANÁ VÝPLATA ZA TENTO TÝDEN:":"SZACOWANA WYPŁATA ZA TEN TYDZIEŃ:","Uložit Nastavení Mzdy":"Zapisz ustawienia płacy","Export Data (Kniha / Mzdy)":"Eksport danych (Ewidencja / Płace)","Vyberte Řidiče":"Wybierz kierowcę","Období Exportu":"Okres eksportu","Aktuální zobrazený týden":"Aktualnie wyświetlany tydzień","Aktuální vybraný měsíc":"Aktualnie wybrany miesiąc","Celý vybraný rok":"Cały wybrany rok","Typ Exportu (Co se má vygenerovat)":"Typ eksportu","Kompletní přehled (Kniha jízd + Mzdy)":"Pełne zestawienie (Ewidencja + Płace)","Pouze Kniha jízd (Bez financí)":"Tylko ewidencja (bez finansów)","Pouze Mzdový výměr (Bez rozpisu tras)":"Tylko płace (bez tras)","🖨️ Tisk / Sdílet / Uložit PDF":"📄 Podgląd / Drukuj / Zapisz PDF","📊 Stáhnout data do Excelu (CSV)":"📊 Pobierz dane do Excel (CSV)","💬 Odeslat přehled na WhatsApp":"💬 Wyślij zestawienie przez WhatsApp","Jízda":"Jazda","Práce/Vykládka":"Praca/Rozładunek","Pauza":"Przerwa","Čas":"Czas","Délka":"Czas trwania","Délka v hodinách":"Czas trwania w godzinach","Hodin":"Godziny","Smazat blok":"Usuń blok","Smazat řádek":"Usuń wiersz","Jízdní doba":"Czas jazdy","Kurz (Kč/EUR)":"Kurs (CZK/EUR)"
-      },
-      it: {
-        "Úprava Směny":"Modifica turno","Začátek Směny":"Inizio turno","Režim":"Modalità","Poznámka k dni (Trasa)":"Nota del giorno (percorso)","Rozpis bloků (Jízda/Práce/Pauza)":"Blocchi (guida/lavoro/pausa)","+ Přidat blok (Jízda / Práce / Pauza)":"+ Aggiungi blocco (guida / lavoro / pausa)","Smazat Den":"Elimina giorno","Uložit Směnu":"Salva turno","Zrušit":"Annulla","Rychlé Nastavení Sazby a Diet":"Impostazioni rapide paga e diarie","Odpracovaný výkon:":"Tempo lavorato:","Z toho čistá jízda:":"Tempo di guida:","1. ZÁKLADNÍ MZDA PRO TENTO TÝDEN":"1. PAGA BASE DI QUESTA SETTIMANA","Typ Sazby":"Tipo tariffa","Sazba / Den (Kč)":"Tariffa / giorno (CZK)","Odjeto směn":"Turni effettuati","Typ mzdy":"Tipo di paga","Základ (Kč)":"Base (CZK)","Denní sazba":"Tariffa giornaliera","Měsíční mzda":"Stipendio mensile","Měsíc":"Mese","Dnů v měsíci":"Giorni nel mese","Poměrná denní sazba":"Equivalente giornaliero","2. ZAHRANIČNÍ DIETY V TÝDNU":"2. DIARIE ESTERE DELLA SETTIMANA","+ Přidat zemi k výpočtu diety":"+ Aggiungi paese per il calcolo delle diarie","Zahraniční diety celkem (Kč)":"Diarie estere totali (CZK)","Bonusy / Srážky (Kč)":"Bonus / Trattenute (CZK)","ODHADOVANÁ VÝPLATA ZA TENTO TÝDEN:":"STIMA PAGA DI QUESTA SETTIMANA:","Uložit Nastavení Mzdy":"Salva impostazioni paga","Export Data (Kniha / Mzdy)":"Esporta dati (Registro / Paghe)","Vyberte Řidiče":"Seleziona autista","Období Exportu":"Periodo export","Aktuální zobrazený týden":"Settimana visualizzata","Aktuální vybraný měsíc":"Mese selezionato","Celý vybraný rok":"Intero anno selezionato","Typ Exportu (Co se má vygenerovat)":"Tipo di export","Kompletní přehled (Kniha jízd + Mzdy)":"Riepilogo completo (Registro + Paghe)","Pouze Kniha jízd (Bez financí)":"Solo registro (senza finanze)","Pouze Mzdový výměr (Bez rozpisu tras)":"Solo paghe (senza percorsi)","🖨️ Tisk / Sdílet / Uložit PDF":"📄 Anteprima / Stampa / Salva PDF","📊 Stáhnout data do Excelu (CSV)":"📊 Scarica dati Excel (CSV)","💬 Odeslat přehled na WhatsApp":"💬 Invia riepilogo su WhatsApp","Jízda":"Guida","Práce/Vykládka":"Lavoro/Scarico","Pauza":"Pausa","Čas":"Ora","Délka":"Durata","Délka v hodinách":"Durata in ore","Hodin":"Ore","Smazat blok":"Elimina blocco","Smazat řádek":"Elimina riga","Jízdní doba":"Tempo di guida","Kurz (Kč/EUR)":"Cambio (CZK/EUR)"}
-    };
-    Object.keys(EXTRA_TRANSLATIONS).forEach(lang => Object.assign(TRANSLATIONS[lang], EXTRA_TRANSLATIONS[lang]));
-    const EXTRA_TRANSLATIONS_2026 = {"en": {"Hmotnost nákladu (t)": "Cargo weight (t)", "Váha má vliv na spotřebu. (Každá tuna 0,2 l/100 km)": "Weight affects fuel consumption. (Each tonne adds 0.2 L/100 km)", "📤 Sdílet": "📤 Share", "Tisk / Uložit PDF": "Print / Save PDF", "Navigovat trasu směny v Mapách": "Navigate shift route in Maps"}, "de": {"Hmotnost nákladu (t)": "Ladungsgewicht (t)", "Váha má vliv na spotřebu. (Každá tuna 0,2 l/100 km)": "Das Gewicht beeinflusst den Verbrauch. (Je Tonne +0,2 l/100 km)", "📤 Sdílet": "📤 Teilen", "Tisk / Uložit PDF": "Drucken / PDF speichern", "Navigovat trasu směny v Mapách": "Schichtroute in Karten öffnen"}, "pl": {"Hmotnost nákladu (t)": "Masa ładunku (t)", "Váha má vliv na spotřebu. (Každá tuna 0,2 l/100 km)": "Masa wpływa na spalanie. (Każda tona +0,2 l/100 km)", "📤 Sdílet": "📤 Udostępnij", "Tisk / Uložit PDF": "Drukuj / Zapisz PDF", "Navigovat trasu směny v Mapách": "Nawiguj trasę zmiany w Mapach"}, "it": {"Hmotnost nákladu (t)": "Peso del carico (t)", "Váha má vliv na spotřebu. (Každá tuna 0,2 l/100 km)": "Il peso influisce sui consumi. (Ogni tonnellata +0,2 l/100 km)", "📤 Sdílet": "📤 Condividi", "Tisk / Uložit PDF": "Stampa / Salva PDF", "Navigovat trasu směny v Mapách": "Naviga il percorso del turno nelle Mappe"}};
-    Object.keys(EXTRA_TRANSLATIONS_2026).forEach(lang => Object.assign(TRANSLATIONS[lang], EXTRA_TRANSLATIONS_2026[lang]));
-
 
     function changeLanguage() {
         let lang = document.getElementById('langSelect').value;
@@ -1264,14 +1130,8 @@
                     textNode.nodeValue = originalText + trailingSpace;
                 }
             });
-            // Obnovit i původní placeholdery/title/aria-labely.
-            originalAttrs.forEach((attrs, element) => {
-                Object.keys(attrs).forEach(attr => element.setAttribute(attr, attrs[attr]));
-            });
             // Samostatně horní banner, který má pevné ID
             if(document.getElementById('lblHeaderAnalytik')) document.getElementById('lblHeaderAnalytik').innerText = "ANALÝZA";
-            if (typeof validateAndRenderShift === 'function' && document.getElementById('shiftModal')?.style.display === 'flex') validateAndRenderShift();
-            if (typeof renderDietRows === 'function' && document.getElementById('payrollModal')?.style.display === 'flex') renderDietRows();
             return;
         }
 
@@ -1302,30 +1162,10 @@
             }
         });
 
-        const editStartLabel = document.getElementById('lblEditStart');
-        if (editStartLabel && dict['Začátek Směny']) editStartLabel.childNodes[0].nodeValue = dict['Začátek Směny'] + ' ';
-        const editCrewLabel = document.getElementById('lblEditCrew');
-        if (editCrewLabel && dict['Režim']) editCrewLabel.childNodes[0].nodeValue = dict['Režim'] + ' ';
-
-        // Překlad placeholderů, title a aria-labelů uvnitř vstupních polí a tlačítek.
-        document.querySelectorAll('[placeholder],[title],[aria-label]').forEach(el => {
-            ['placeholder','title','aria-label'].forEach(attr => {
-                const val = el.getAttribute(attr);
-                if (!val) return;
-                if (!originalAttrs.has(el)) originalAttrs.set(el, {});
-                const saved = originalAttrs.get(el);
-                if (saved[attr] === undefined) saved[attr] = val;
-                const original = saved[attr];
-                if (dict[original]) el.setAttribute(attr, dict[original]);
-            });
-        });
-
         // Manuální oprava pro horní label (který je uvnitř flexboxu bez vlastního tagu)
         if(document.getElementById('lblHeaderAnalytik') && dict["ANALÝZA"]) {
             document.getElementById('lblHeaderAnalytik').innerText = dict["ANALÝZA"];
         }
-        if (typeof validateAndRenderShift === 'function' && document.getElementById('shiftModal')?.style.display === 'flex') validateAndRenderShift();
-        if (typeof renderDietRows === 'function' && document.getElementById('payrollModal')?.style.display === 'flex') renderDietRows();
     }
 
 
@@ -1333,19 +1173,9 @@
     // 2. INICIALIZACE MAPY A GEOLOKACE
     // =======================================================================
         function T(key) {
-        const lang = document.getElementById('langSelect')?.value || 'cs';
-        if (lang === 'cs') return key;
-        return (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) ? TRANSLATIONS[lang][key] : key;
+        return key;
     }
     let map, routeLayer, markerGroup;
-    // Stav kalkulačky – musí být inicializován před každou funkcí, která jej používá.
-    let waypoints = [];
-    let wpCounter = 0;
-    let excludedCountries = [];
-    let totalPrejezdKm = 0;
-    let lastRouteData = null;
-    let globalBreakdown = [];
-    let avgFuelConsumption = 20;
 
     function initMap() {
         if(!map) {
@@ -1364,7 +1194,6 @@
         let latlngs = coordsGeoJson.map(c => [c[1], c[0]]);
         routeLayer = L.polyline(latlngs, {color: '#e3000f', weight: 4}).addTo(map);
         map.fitBounds(routeLayer.getBounds(), {padding: [20,20]});
-        setTimeout(() => { try { map.invalidateSize(true); map.fitBounds(routeLayer.getBounds(), {padding:[20,20]}); } catch(e) {} }, 120);
 
         L.marker(latlngs[0]).addTo(markerGroup).bindPopup("Start");
         L.marker(latlngs[latlngs.length-1]).addTo(markerGroup).bindPopup("Cíl");
@@ -1510,12 +1339,8 @@
             if (document.getElementById('realCenaTyp')) document.getElementById('realCenaTyp').value = d.realCenaTyp || 'celkem';
             if (document.getElementById('realCenaMena')) document.getElementById('realCenaMena').value = d.realCenaMena || 'CZK';
             if (Array.isArray(d.waypoints)) { waypoints = d.waypoints; wpCounter = Math.max(0, ...waypoints.map(w => Number(w.id) || 0)); }
-            else { waypoints = []; wpCounter = 0; }
             excludedCountries = Array.isArray(d.excludedCountries) ? d.excludedCountries : [];
         }
-        // Vždy inicializovat, i když není uložený draft.
-        if (!Array.isArray(waypoints)) waypoints = [];
-        if (!Array.isArray(excludedCountries)) excludedCountries = [];
         const top = document.getElementById('menaTopSelect');
         if (top) top.value = document.getElementById('menaSelect').value;
         renderWaypoints();
@@ -1532,7 +1357,7 @@
         if (!anchor || !anchor.parentElement || !anchor.parentElement.parentElement) return;
         const group = document.createElement('div');
         group.className = 'input-group';
-        group.innerHTML = '<input type="hidden" id="startVaha" value="10">';
+        group.innerHTML = '<label id="lblStartVaha">Startovní váha (t)</label><input type="number" id="startVaha" value="0" min="0" step="0.1">';
         anchor.parentElement.parentElement.insertBefore(group, anchor.parentElement);
         const el = document.getElementById('startVaha');
         if (el) el.addEventListener('input', () => { try { calculate(); autoSave(); } catch(e) { console.error(e); } });
@@ -1553,7 +1378,6 @@
         }, 1000); 
         loadAutoSave();
         plannerLoadState();
-        syncPlannerStartDate();
         renderPlanner();
         calculate(); 
     });
@@ -1594,11 +1418,10 @@
     }
 
     function recalcAETR() {
-        // #vzdalenost je již CELKEM km (u Kolečko je již 2x).
-        // AETR nesmí Kolečko násobit podruhé.
         let distTotal = parseFloat(document.getElementById('vzdalenost').value) || 0;
         if(distTotal > 0) {
-            let celkoveKm = distTotal + (parseFloat(document.getElementById('dokladky').value) || 0);
+            let typTrasyMulti = waypoints.length > 0 ? 1 : (parseFloat(document.getElementById('typTrasy').value) || 1);
+            let celkoveKm = (distTotal * typTrasyMulti) + (parseFloat(document.getElementById('dokladky').value) || 0);
             let posadka = parseInt(document.getElementById('posadka').value) || 1;
             let hoursDrive = celkoveKm / 70; 
 
@@ -1615,7 +1438,7 @@
                     aetrBox.innerHTML = baseText;
                     aetrBox.style.background = "#d4edda";
                 }
-                aetrBox.style.display = 'none';
+                aetrBox.style.display = 'block';
             }
         }
         calculate();
@@ -1701,19 +1524,9 @@
         if(wp) {
             wp.address = document.getElementById(`wp_addr_${id}`).value;
             wp.type = document.getElementById(`wp_type_${id}`).value;
-            // Stav nákladu na začátku/po nakládce: prázdný=0 t, 1/2=12 t, plný=24 t.
-            const startVaha = document.getElementById('startVaha');
-            const loadMap = { empty: 0, prejezd: 0, half: 12, full: 24 };
-            if (startVaha && Object.prototype.hasOwnProperty.call(loadMap, wp.type)) {
-                startVaha.value = loadMap[wp.type];
-                const cargo = document.getElementById('vahaNakladu');
-                if (cargo) cargo.value = loadMap[wp.type];
-                if (cargo) startVaha.value = cargo.value;
-            }
         }
         autoSave();
-        calculate();
-        if(wp?.address && document.getElementById('vzdalenost').value > 0) spocitatTrasu();
+        if(wp.address && document.getElementById('vzdalenost').value > 0) spocitatTrasu();
     }
 
     function renderWaypoints() {
@@ -1843,15 +1656,6 @@
         return finalSegments;
     }
 
-    function applyRoundTripDistance() {
-        const kmEl = document.getElementById('vzdalenost');
-        if (!kmEl) return;
-        const base = parseFloat(kmEl.dataset.onewayKm);
-        if (!Number.isFinite(base) || base <= 0) return;
-        const round = waypoints.length === 0 && document.getElementById('typTrasy')?.value === '2';
-        kmEl.value = (base * (round ? 2 : 1)).toFixed(1);
-    }
-
         async function spocitatTrasu() {
         if (!navigator.onLine) { setStatus('❌ Jste offline. Výpočet trasy z OSRM není dostupný.', 'error'); return; }
         const startStr = document.getElementById('startAdresa').value.trim();
@@ -1904,14 +1708,13 @@
             globalBreakdown = selectedSegments;
             const vMulti = waypoints.length > 0 ? 1 : ((document.getElementById('typTrasy').value === '2') ? 2 : 1);
             const routeKmForCalc = distTotal * vMulti;
-            const kmEl = document.getElementById('vzdalenost');
-            if (kmEl) { kmEl.dataset.onewayKm = distTotal.toFixed(1); kmEl.value = routeKmForCalc.toFixed(1); }
+            document.getElementById('vzdalenost').value = distTotal.toFixed(1);
 
             // Přejezd = součet úseků, které končí v waypointu označeném jako Přejezd.
             let prejezd = 0;
             if (waypoints.length && Array.isArray(selected.legs)) {
                 for (let i=0; i<waypoints.length; i++) {
-                    if ((waypoints[i].type === 'prejezd' || waypoints[i].type === 'empty') && selected.legs[i]) prejezd += Number(selected.legs[i].distance || 0) / 1000;
+                    if (waypoints[i].type === 'prejezd' && selected.legs[i]) prejezd += Number(selected.legs[i].distance || 0) / 1000;
                 }
             }
             totalPrejezdKm = Math.min(distTotal * vMulti, prejezd * vMulti);
@@ -2032,22 +1835,13 @@
         });
 
         const typTrasyMulti = waypoints.length > 0 ? 1 : (document.getElementById('typTrasy').value === '2' ? 2 : 1);
-        // Vzdálenost v modrém poli je vždy CELKEM. Jednosměrná hodnota je držena v data-oneway-km,
-        // takže přepnutí na Kolečko ji zdvojnásobí jen jednou a náklady se nezdvojnásobí podruhé.
-        const kmEl = document.getElementById('vzdalenost');
-        const storedOneWay = parseFloat(kmEl?.dataset.onewayKm);
-        const displayedKm = parseFloat(kmEl?.value) || 0;
-        const baseKm = Number.isFinite(storedOneWay) ? storedOneWay : (typTrasyMulti === 2 ? displayedKm / 2 : displayedKm);
+        const baseKm = parseFloat(document.getElementById('vzdalenost').value) || 0;
         const dokladky = parseFloat(document.getElementById('dokladky').value) || 0;
         const celkoveKm = baseKm * typTrasyMulti + dokladky;
-        if (kmEl && baseKm > 0) kmEl.value = celkoveKm.toFixed(1);
 
         const zvedle = parseInt(document.getElementById('zvedleNapravy').value) || 0;
         const baseCons = parseFloat(document.getElementById('spotrebaPrazdne').value) || 20;
-        const enteredCargoWeight = parseFloat(document.getElementById('vahaNakladu')?.value);
-        const enteredStartWeight = parseFloat(document.getElementById('startVaha')?.value);
-        const loadWeight = Number.isFinite(enteredCargoWeight) ? enteredCargoWeight : (Number.isFinite(enteredStartWeight) ? enteredStartWeight : 0);
-        const weightCons = loadWeight * SPOTREBA_NA_TUNU;
+        const weightCons = (parseFloat(document.getElementById('vahaNakladu').value) || 0) * SPOTREBA_NA_TUNU;
         const avgCons = Math.max(0, baseCons + weightCons);
         avgFuelConsumption = avgCons;
         document.getElementById('resSpotrebaDynamicka').innerText = `${avgCons.toFixed(1)} L / 100 km`;
@@ -2086,8 +1880,7 @@
         const ziskBox = document.getElementById('ziskStatusBox');
         const procBox = document.getElementById('ziskProcento');
         if (actualInput > 0 && celkoveKm > 0) {
-            const actualRevenuePerKmEUR = actualRevenuePerKmCZK / kurz;
-            realTrzbaEl.innerText = `${formatMoney(actualRevenuePerKmCZK, 'CZK')} / km  |  ${formatMoney(actualRevenuePerKmEUR, 'EUR')} / km`;
+            realTrzbaEl.innerText = `${formatMoney(actualRevenuePerKmCZK, mena)} / km`;
             const rozdilNet = actualTotalCZKNet - nakladyCelkem;
             const shownDiff = rozdilNet * dphMulti;
             if (rozdilNet >= 0) {
@@ -2106,7 +1899,7 @@
         const dphLabel = document.getElementById('dphStatusLabel');
         if (dphLabel) dphLabel.innerText = includesDph ? 'Zobrazit VČETNĚ DPH (21%)' : 'Zobrazit BEZ DPH';
         const realLabel = document.getElementById('lblRealTrzba');
-        if (realLabel) realLabel.innerText = 'Reálná tržba na 1 km (CZK / EUR)';
+        if (realLabel) realLabel.innerText = `Reálná tržba na 1 km (${mena})`;
         const top = document.getElementById('menaTopSelect'); if (top) top.value = mena;
     }
 
@@ -2167,8 +1960,7 @@
         'HU': { rate: 40, curr: 'EUR' }, 'OSTATNÍ': { rate: 45, curr: 'EUR' } 
     };
 
-    const _plannerToday = new Date();
-    let plannerState = { drivers: [], shifts: {}, payrolls: {}, currentWeek: getISOWeek(_plannerToday), currentYear: _plannerToday.getFullYear(), currentMonth: _plannerToday.getMonth() };
+    let plannerState = { drivers: [], shifts: {}, payrolls: {}, currentWeek: 1, currentYear: 2026, currentMonth: 8 };
     let planWaypointsBefore = []; let planWaypointsAfter = [];
     let editShiftContext = null; 
 
@@ -2197,8 +1989,6 @@
         base.currentMonth = Number.isInteger(raw.currentMonth) ? raw.currentMonth : base.currentMonth;
         return base;
     }
-
-    function syncPlannerStartDate(){ const el=document.getElementById('planDateSelect'); if(!el) return; const d=new Date(); el.value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 
     function plannerLoadState() {
         const candidates = recoverPlannerStateFromStorage();
@@ -2240,16 +2030,8 @@
     function syncPlannerSelectors() {
         const y = document.getElementById('yearSelect'), m = document.getElementById('monthSelect');
         if (!y || !m) return;
-        const currentYear = new Date().getFullYear();
-        const minYear = Math.min(currentYear - 5, plannerState.currentYear - 2);
-        const maxYear = Math.max(currentYear + 5, plannerState.currentYear + 2);
-        const selectedYear = plannerState.currentYear;
-        y.innerHTML = '';
-        for (let yr=minYear; yr<=maxYear; yr++) {
-            const o=document.createElement('option'); o.value=String(yr); o.textContent=String(yr);
-            if (yr===selectedYear) o.selected=true; y.appendChild(o);
-        }
-        m.value = String(plannerState.currentMonth);
+        if ([...y.options].some(o=>Number(o.value)===plannerState.currentYear)) y.value = plannerState.currentYear;
+        if ([...m.options].some(o=>Number(o.value)===plannerState.currentMonth)) m.value = plannerState.currentMonth;
     }
 
     function changeYearMonth() {
@@ -2488,7 +2270,7 @@
         plannerState.currentYear = sDate.getFullYear();
         plannerState.currentMonth = sDate.getMonth();
         plannerState.currentWeek = getISOWeek(sDate);
-        syncPlannerSelectors();
+        document.getElementById('yearSelect').value = plannerState.currentYear;
         
         let driversToSave = crew === '2' ? [drv1, drv2] : [drv1];
         let cTime = parseTime(document.getElementById('planTimeSelect').value); 
@@ -2681,26 +2463,14 @@
             currentActs = [{t: 'drive', d: 4.5}, {t: 'rest', d: 0.75}, {t: 'drive', d: 4.5}]; 
         }
         
-        // Navigace je záměrně dostupná POUZE v detailu konkrétního dne.
-        // Po kliknutí na pondělí/úterý/... se otevře Úprava směny a teprve zde
-        // se podle trasy daného dne zobrazí tlačítko Navigovat. Na iOS nepoužíváme
-        // window.open(), protože v PWA může být zablokované; použijeme přímou
-        // navigační URL, kterou iPhone předá Mapám / prohlížeči.
         let navBtn = document.getElementById('btnNavShift');
-        let noteStr = shift ? String(shift.note || "") : "";
-        let routeMatch = noteStr.match(/\(([^()]+?)\s*-\s*([^()]+?)\)/);
-        if(routeMatch && routeMatch[1].trim() && routeMatch[2].trim()) {
-            const origin = routeMatch[1].trim();
-            const destination = routeMatch[2].trim();
-            navBtn.style.display = 'flex';
-            navBtn.textContent = `🧭 ${T('Navigovat trasu směny v Mapách')}`;
-            navBtn.onclick = function() {
-                const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`;
-                window.location.href = mapsUrl;
-            };
+        let noteStr = shift ? (shift.note || "") : "";
+        let m = noteStr.match(/Trasa\s*\((.*?)\s*-\s*(.*?)\)/);
+        if(m) {
+            navBtn.style.display = 'block';
+            navBtn.onclick = function() { window.open(`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(m[1])}&destination=${encodeURIComponent(m[2])}`, '_blank'); };
         } else {
             navBtn.style.display = 'none';
-            navBtn.onclick = null;
         }
 
         document.getElementById('shiftModal').style.display = 'flex'; validateAndRenderShift();
@@ -2711,24 +2481,17 @@
     
     function validateAndRenderShift() {
         let container = document.getElementById('editActContainer'); container.innerHTML = "";
-        let running = parseTime(document.getElementById('editStart').value || '06:00');
         currentActs.forEach((act, i) => {
-            const dur = Number(act.d) || 0;
-            const from = formatTime(running);
-            const to = formatTime(running + dur);
-            const typeLabel = act.t === 'drive' ? T('🚛 Jízda') : (act.t === 'work' ? T('⚒️ Práce/Vykládka') : T('🛏️ Pauza'));
             container.innerHTML += `
-            <div style="display:grid; grid-template-columns:minmax(0,1fr) 92px 30px; gap:6px; margin-bottom:8px; align-items:center;">
-                <div class="activity-time">${T('Čas')}: <b>${from} – ${to}</b> · ${T('Délka')}: ${dur.toFixed(2)} h</div>
-                <select onchange="currentActs[${i}].t=this.value; validateAndRenderShift();" style="grid-column:1;">
-                    <option value="drive" ${act.t === 'drive' ? 'selected' : ''}>🚛 ${T('Jízda')}</option>
-                    <option value="work" ${act.t === 'work' ? 'selected' : ''}>⚒️ ${T('Práce/Vykládka')}</option>
-                    <option value="rest" ${act.t === 'rest' ? 'selected' : ''}>🛏️ ${T('Pauza')}</option>
+            <div style="display:flex; gap:10px; margin-bottom:5px;">
+                <select onchange="currentActs[${i}].t=this.value; validateAndRenderShift();" style="flex:2;">
+                    <option value="drive" ${act.t === 'drive' ? 'selected' : ''}>🚛 Jízda</option>
+                    <option value="work" ${act.t === 'work' ? 'selected' : ''}>⚒️ Práce/Vykládka</option>
+                    <option value="rest" ${act.t === 'rest' ? 'selected' : ''}>🛏️ Pauza</option>
                 </select>
-                <input type="number" step="0.25" value="${act.d}" aria-label="${T('Délka v hodinách')}" oninput="currentActs[${i}].d=parseFloat(this.value)||0; validateAndRenderShift();" style="grid-column:2;">
-                <button class="btn-secondary activity-delete" onclick="currentActs.splice(${i},1); validateAndRenderShift();" title="${T('Smazat blok')}" style="grid-column:3; background:var(--cp-danger);">✕</button>
+                <input type="number" step="0.25" value="${act.d}" oninput="currentActs[${i}].d=parseFloat(this.value)||0; validateAndRenderShift();" style="flex:1;"> 
+                <button class="btn-secondary" onclick="currentActs.splice(${i},1); validateAndRenderShift();" style="background:var(--cp-danger); margin:0; width: 40px; flex-shrink: 0; padding: 10px 0;">✕</button>
             </div>`;
-            running += dur;
         });
 
         // POKA-YOKE 3: Kontrola návaznosti směny přímo v modálním okně
@@ -2808,10 +2571,10 @@
         dietRows.forEach((r, i) => {
             let opts = ""; for(let k in DIET_RATES) { opts += `<option value="${k}" ${r.cc === k ? 'selected' : ''}>${k}</option>`; }
             container.innerHTML += `
-            <div style="display:grid; grid-template-columns:minmax(0,1fr) 90px 30px; gap:8px; margin-bottom:6px; align-items:center;">
-                <select onchange="dietRows[${i}].cc=this.value; calcPayroll();" style="grid-column:1;">${opts}</select>
-                <input type="number" placeholder="${T('Hodin')}" aria-label="${T('Hodin')}" value="${r.hours}" oninput="dietRows[${i}].hours=parseFloat(this.value)||0; calcPayroll();" style="grid-column:2;">
-                <button class="btn-secondary diet-delete" onclick="dietRows.splice(${i},1); renderDietRows(); calcPayroll();" title="${T('Smazat řádek')}" style="grid-column:3; background:var(--cp-danger);">✕</button>
+            <div style="display:flex; gap:10px; margin-bottom:5px;">
+                <select onchange="dietRows[${i}].cc=this.value; calcPayroll();" style="flex:2;">${opts}</select>
+                <input type="number" placeholder="Hodin" value="${r.hours}" oninput="dietRows[${i}].hours=parseFloat(this.value)||0; calcPayroll();" style="flex:1;">
+                <button class="btn-secondary" onclick="dietRows.splice(${i},1); renderDietRows(); calcPayroll();" style="background:var(--cp-danger); margin:0;">✕</button>
             </div>`;
         });
     }
@@ -2861,94 +2624,39 @@
     }
 
     function exportKnihaPrint() {
-        const data = getShiftsForExport();
-        const expType = document.getElementById('pdfTypeSelect').value;
+        const data=getShiftsForExport();
+        const expType=document.getElementById('pdfTypeSelect').value;
+        let reportHtml=`<div style="font-family:Arial,sans-serif;padding:18px;color:#222;background:#fff;"><div style="border-bottom:4px solid #e3000f;padding-bottom:10px;margin-bottom:15px;display:flex;justify-content:space-between;gap:15px;"><div><h2 style="margin:0;">${expType==='mzdy'?'Mzdový výkaz':expType==='kniha'?'Kniha jízd':'Výkaz směn a kniha jízd'}</h2><div>Řidič: <b>${data.driver}</b></div></div><div>${data.title}</div></div>`;
+        if(expType==='both'||expType==='mzdy') reportHtml+=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;"><div style="flex:1;border:1px solid #ddd;padding:10px;text-align:center;min-width:110px;">Odpracováno<br><b>${data.totalV.toFixed(1)} h</b></div><div style="flex:1;border:1px solid #ddd;padding:10px;text-align:center;min-width:110px;">Čistá jízda<br><b>${data.totalJ.toFixed(1)} h</b></div><div style="flex:1;border:1px solid #ddd;padding:10px;text-align:center;min-width:110px;">Výplata<br><b>${formatMoney(data.totalP)}</b></div></div>`;
+        if(expType==='both'||expType==='kniha'){reportHtml+=`<table style="width:100%;border-collapse:collapse;font-size:11px;"><thead><tr><th style="border:1px solid #ccc;padding:6px;">Týden</th><th style="border:1px solid #ccc;padding:6px;">Den</th><th style="border:1px solid #ccc;padding:6px;">Start</th><th style="border:1px solid #ccc;padding:6px;">Trasa / účel</th><th style="border:1px solid #ccc;padding:6px;">Výkon</th><th style="border:1px solid #ccc;padding:6px;">Jízda</th></tr></thead><tbody>`;data.rows.forEach(r=>reportHtml+=`<tr><td style="border:1px solid #ccc;padding:6px;">T${r.week}</td><td style="border:1px solid #ccc;padding:6px;">${r.day}</td><td style="border:1px solid #ccc;padding:6px;">${r.start}</td><td style="border:1px solid #ccc;padding:6px;">${r.note}</td><td style="border:1px solid #ccc;padding:6px;">${r.v.toFixed(1)} h</td><td style="border:1px solid #ccc;padding:6px;">${r.j.toFixed(1)} h</td></tr>`);reportHtml+=`</tbody></table>`;}
+        reportHtml+=`</div>`;
+        document.getElementById('pdfExportModal').style.display='none';
+        let modal=document.getElementById('reportPreviewModal');
+        if(!modal){modal=document.createElement('div');modal.id='reportPreviewModal';modal.className='modal-overlay';modal.style.zIndex='300000';modal.innerHTML=`<div style="background:#fff;width:100%;max-width:800px;max-height:92vh;border-radius:8px;display:flex;flex-direction:column;overflow:hidden;"><div style="background:#1a1a1a;color:#fff;padding:12px 15px;font-weight:800;">📄 Náhled výkazu</div><div id="reportPreviewContent" style="padding:10px;overflow:auto;flex:1;"></div><div class="report-preview-actions" style="padding:12px;background:#eee;"><button class="btn-secondary" style="background:#107c41;" onclick="printCurrentReport()">🖨️ Tisk / Uložit PDF</button><button class="btn-secondary" style="background:#777;" onclick="document.getElementById('reportPreviewModal').style.display='none'">Zavřít</button></div></div>`;document.body.appendChild(modal);}
+        document.getElementById('reportPreviewContent').innerHTML=reportHtml;
+        modal.style.display='flex';
+    }
 
-        let reportHtml = `<div style="font-family:Arial,sans-serif;padding:0;color:#222;background:#fff;">
-            <div style="border-bottom:4px solid #e3000f;padding-bottom:10px;margin-bottom:15px;display:flex;justify-content:space-between;gap:15px;">
-                <div>
-                    <h2 style="margin:0 0 5px 0;">${expType==='mzdy'?'Mzdový výkaz':expType==='kniha'?'Kniha jízd':'Výkaz směn a kniha jízd'}</h2>
-                    <div>Řidič: <b>${data.driver}</b></div>
-                </div>
-                <div>${data.title}</div>
-            </div>`;
-
-        if(expType==='both'||expType==='mzdy') {
-            reportHtml += `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;">
-                <div style="flex:1;border:1px solid #ddd;padding:10px;text-align:center;min-width:110px;">Odpracováno<br><b>${data.totalV.toFixed(1)} h</b></div>
-                <div style="flex:1;border:1px solid #ddd;padding:10px;text-align:center;min-width:110px;">Čistá jízda<br><b>${data.totalJ.toFixed(1)} h</b></div>
-                <div style="flex:1;border:1px solid #ddd;padding:10px;text-align:center;min-width:110px;">Výplata<br><b>${formatMoney(data.totalP)}</b></div>
-            </div>`;
+    function printCurrentReport(){
+        const source = document.getElementById('reportPreviewContent');
+        if (!source) return;
+        let host = document.getElementById('printReportHost');
+        if (!host) {
+            host = document.createElement('div');
+            host.id = 'printReportHost';
+            host.className = 'print-report-host';
+            document.body.appendChild(host);
         }
-
-        if(expType==='both'||expType==='kniha') {
-            reportHtml += `<table style="width:100%;border-collapse:collapse;font-size:11px;">
-                <thead><tr>
-                    <th style="border:1px solid #ccc;padding:6px;">Týden</th>
-                    <th style="border:1px solid #ccc;padding:6px;">Den</th>
-                    <th style="border:1px solid #ccc;padding:6px;">Start</th>
-                    <th style="border:1px solid #ccc;padding:6px;">Trasa / účel</th>
-                    <th style="border:1px solid #ccc;padding:6px;">Výkon</th>
-                    <th style="border:1px solid #ccc;padding:6px;">Jízda</th>
-                </tr></thead><tbody>`;
-            data.rows.forEach(r => {
-                reportHtml += `<tr>
-                    <td style="border:1px solid #ccc;padding:6px;">T${r.week}</td>
-                    <td style="border:1px solid #ccc;padding:6px;">${r.day}</td>
-                    <td style="border:1px solid #ccc;padding:6px;">${r.start}</td>
-                    <td style="border:1px solid #ccc;padding:6px;">${r.note}</td>
-                    <td style="border:1px solid #ccc;padding:6px;">${r.v.toFixed(1)} h</td>
-                    <td style="border:1px solid #ccc;padding:6px;">${r.j.toFixed(1)} h</td>
-                </tr>`;
-            });
-            reportHtml += `</tbody></table>`;
-        }
-
-        reportHtml += `</div>`;
-
-        // Zavřít exportní dialog a tisknout přímo z aktuální aplikace.
-        document.getElementById('pdfExportModal').style.display = 'none';
-
-        const host = document.getElementById('printReportHost');
-        if(!host) {
-            alert('Tiskový modul se nepodařilo připravit.');
-            return;
-        }
-
-        host.innerHTML = reportHtml;
-        host.setAttribute('aria-hidden', 'false');
-
-        const finishPrint = () => {
-            document.body.classList.remove('print-report-mode');
-            host.setAttribute('aria-hidden', 'true');
-            host.innerHTML = '';
-        };
-
-        window.onafterprint = finishPrint;
+        host.innerHTML = source.innerHTML;
         document.body.classList.add('print-report-mode');
-
-        // Dvojité překreslení pomáhá iOS před otevřením nativního tiskového panelu.
-        void host.offsetHeight;
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                try {
-                    window.print();
-                } catch(e) {
-                    finishPrint();
-                    alert('Tisk se nepodařilo otevřít. Zkuste tlačítko Tisk znovu.');
-                }
-            });
-        });
-    }
-
-    // Na iOS má „Sdílet“ otevřít stejný nativní tiskový panel.
-    // Z něj lze zvolit Sdílet, Uložit do Souborů/PDF nebo tiskárnu.
-    function printCurrentReport() {
-        exportKnihaPrint();
-    }
-
-    function shareCurrentReport() {
-        exportKnihaPrint();
+        const cleanup = () => {
+            document.body.classList.remove('print-report-mode');
+            host.innerHTML = '';
+            window.removeEventListener('afterprint', cleanup);
+        };
+        window.addEventListener('afterprint', cleanup);
+        document.getElementById('reportPreviewModal').style.display='none';
+        setTimeout(() => window.print(), 100);
     }
 
     function exportKnihaCSV(){
