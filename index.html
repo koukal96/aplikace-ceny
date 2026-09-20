@@ -11,7 +11,7 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         :root { 
@@ -3856,14 +3856,13 @@
         if(plannerState.drivers.length === 0) { alert("Nemáte přidané žádné řidiče."); return; }
         document.getElementById('pdfExportModal').style.display = 'flex';
     }
-
-        // --- POMOCNÉ FUNKCE PRO TISKOVÝ NÁHLED ---
+        // --- POMOCNÉ FUNKCE PRO TISKOVÝ NÁHLED A EXPORT PDF ---
     window.hiddenElements = [];
     window.originalBodyBackground = "";
 
     window.closePrintPreview = function() {
         let printContainer = document.getElementById('cp-mobile-print-container');
-        if(printContainer) {
+        if (printContainer) {
             document.body.removeChild(printContainer);
         }
         document.body.style.background = window.originalBodyBackground;
@@ -3873,12 +3872,49 @@
         window.hiddenElements = [];
     };
 
-    window.executePrint = function() {
-        // Malé zpoždění je nutné pro mobilní zařízení (PWA), 
-        // aby systém korektně zaregistroval kliknutí a nevyhodnotil to jako blokovaný spam
-        setTimeout(() => {
+    window.executePrint = async function() {
+        const btn = document.getElementById('btnDoPrint');
+        const printArea = document.getElementById('printableContent');
+        const originalBtnText = btn.innerText;
+
+        btn.innerText = "⏳ Generuji PDF...";
+        btn.disabled = true;
+
+        const opt = {
+            margin:       10,
+            filename:     `Vykaz_${document.getElementById('pdfDriverSelect')?.value || 'Ridic'}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        try {
+            // Vygenerování PDF jako souboru v paměti
+            const pdfBlob = await html2pdf().set(opt).from(printArea).output('blob');
+            const pdfFile = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
+
+            // Nativní iOS / Android sdílení – umožní Uložit do Souborů, AirPrint i odeslání
+            if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+                await navigator.share({
+                    files: [pdfFile],
+                    title: 'Výkaz směn a Kniha jízd'
+                });
+            } else {
+                // Fallback pro klasické prohlížeče
+                const fileURL = URL.createObjectURL(pdfBlob);
+                const link = document.createElement('a');
+                link.href = fileURL;
+                link.download = opt.filename;
+                link.click();
+                URL.revokeObjectURL(fileURL);
+            }
+        } catch (err) {
+            // Pokud systém nepovolí soubor, zavolá standardní print
             window.print();
-        }, 200);
+        } finally {
+            btn.innerText = originalBtnText;
+            btn.disabled = false;
+        }
     };
 
     // --- HLAVNÍ FUNKCE PRO TISK A EXPORT PDF ---
@@ -3889,50 +3925,48 @@
         let html = `
         <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; color: #333; background: white; min-height: 100vh;">
             
-            <!-- OVLÁDACÍ LIŠTA NÁHLEDU (při samotném tisku zmizí) -->
-            <style>
-                @media print { .no-print-toolbar { display: none !important; } }
-            </style>
+            <!-- OVLÁDACÍ LIŠTA NÁHLEDU -->
             <div class="no-print-toolbar" style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 25px; display: flex; gap: 10px; border: 2px solid #1565c0; position: sticky; top: 10px; z-index: 100000; box-shadow: 0 5px 15px rgba(0,0,0,0.2); flex-wrap: wrap;">
                 <div style="width: 100%; font-size: 13px; color: #0d47a1; font-weight: bold; text-align: center; margin-bottom: 5px;">Náhled je připraven. Vyberte akci:</div>
-                <button onclick="executePrint()" style="flex: 2; background: #107c41; color: white; border: none; padding: 15px; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🖨️ Tisk / Uložit PDF</button>
+                <button id="btnDoPrint" onclick="executePrint()" style="flex: 2; background: #107c41; color: white; border: none; padding: 15px; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">💾 Uložit PDF / Tisk</button>
                 <button onclick="closePrintPreview()" style="flex: 1; background: #c62828; color: white; border: none; padding: 15px; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🔙 Zpět</button>
             </div>
 
-            <!-- OBSAH DOKUMENTU -->
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 4px solid #e3000f; padding-bottom: 10px; margin-bottom: 20px;">
-                <div>
-                    <h1 style="margin: 0; font-size: 24px; text-transform: uppercase; color: #1a1a1a;">${expType === 'mzdy' ? 'Mzdový Výměr' : (expType === 'kniha' ? 'Kniha Jízd' : 'Výkaz Směn a Kniha Jízd')}</h1>
-                    <div style="font-size: 16px; margin-top: 5px;"><b>Řidič:</b> ${data.driver}</div>
-                </div>
-                <div style="text-align: right; font-size: 14px; font-weight: bold; color: #666;">
-                    Období: ${data.title}
-                </div>
-            </div>`;
+            <!-- OBSAH PRO EXPORT DO PDF -->
+            <div id="printableContent" style="background: white; padding: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 4px solid #e3000f; padding-bottom: 10px; margin-bottom: 20px;">
+                    <div>
+                        <h1 style="margin: 0; font-size: 24px; text-transform: uppercase; color: #1a1a1a;">${expType === 'mzdy' ? 'Mzdový Výměr' : (expType === 'kniha' ? 'Kniha Jízd' : 'Výkaz Směn a Kniha Jízd')}</h1>
+                        <div style="font-size: 16px; margin-top: 5px;"><b>Řidič:</b> ${data.driver}</div>
+                    </div>
+                    <div style="text-align: right; font-size: 14px; font-weight: bold; color: #666;">
+                        Období: ${data.title}
+                    </div>
+                </div>`;
 
         if (expType === 'both' || expType === 'mzdy') {
             html += `
-            <div style="display: flex; gap: 20px; margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 6px; border: 1px solid #ddd;">
-                <div style="flex: 1; text-align: center;"><div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: bold;">Odpracováno celkem</div><div style="font-size: 22px; font-weight: 900; color: #1a1a1a;">${data.totalV.toFixed(1)} h</div></div>
-                <div style="flex: 1; text-align: center;"><div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: bold;">Z toho čistá jízda</div><div style="font-size: 22px; font-weight: 900; color: #1565c0;">${data.totalJ.toFixed(1)} h</div></div>
-                <div style="flex: 1; text-align: center;"><div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: bold;">Celkem mzdový základ + Diety</div><div style="font-size: 22px; font-weight: 900; color: #2e7d32;">${data.totalP} CZK</div></div>
-            </div>`;
+                <div style="display: flex; gap: 20px; margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 6px; border: 1px solid #ddd;">
+                    <div style="flex: 1; text-align: center;"><div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: bold;">Odpracováno celkem</div><div style="font-size: 22px; font-weight: 900; color: #1a1a1a;">${data.totalV.toFixed(1)} h</div></div>
+                    <div style="flex: 1; text-align: center;"><div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: bold;">Z toho čistá jízda</div><div style="font-size: 22px; font-weight: 900; color: #1565c0;">${data.totalJ.toFixed(1)} h</div></div>
+                    <div style="flex: 1; text-align: center;"><div style="font-size: 12px; color: #666; text-transform: uppercase; font-weight: bold;">Celkem mzdový základ + Diety</div><div style="font-size: 22px; font-weight: 900; color: #2e7d32;">${data.totalP} CZK</div></div>
+                </div>`;
         }
 
         if (expType === 'both' || expType === 'kniha') {
             html += `
-            <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px;">
-                <thead>
-                    <tr>
-                        <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background: #f0f0f0; text-transform: uppercase; font-size: 11px; width:50px;">Týden</th>
-                        <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background: #f0f0f0; text-transform: uppercase; font-size: 11px; width:80px;">Den</th>
-                        <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background: #f0f0f0; text-transform: uppercase; font-size: 11px; width:60px;">Start</th>
-                        <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background: #f0f0f0; text-transform: uppercase; font-size: 11px;">Trasa / Poznámka (Účel cesty)</th>
-                        <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background: #f0f0f0; text-transform: uppercase; font-size: 11px; width:80px;">Výkon</th>
-                        <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background: #f0f0f0; text-transform: uppercase; font-size: 11px; width:80px;">Jízda</th>
-                    </tr>
-                </thead>
-                <tbody>`;
+                <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px;">
+                    <thead>
+                        <tr>
+                            <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background: #f0f0f0; text-transform: uppercase; font-size: 11px; width:50px;">Týden</th>
+                            <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background: #f0f0f0; text-transform: uppercase; font-size: 11px; width:80px;">Den</th>
+                            <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background: #f0f0f0; text-transform: uppercase; font-size: 11px; width:60px;">Start</th>
+                            <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background: #f0f0f0; text-transform: uppercase; font-size: 11px;">Trasa / Poznámka (Účel cesty)</th>
+                            <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background: #f0f0f0; text-transform: uppercase; font-size: 11px; width:80px;">Výkon</th>
+                            <th style="border: 1px solid #ddd; padding: 10px; text-align: left; background: #f0f0f0; text-transform: uppercase; font-size: 11px; width:80px;">Jízda</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
             
             data.rows.forEach(r => { 
                 html += `<tr>
@@ -3946,26 +3980,24 @@
             });
 
             html += `
-                </tbody>
-            </table>`;
+                    </tbody>
+                </table>`;
         }
 
         html += `
-            <div style="margin-top: 50px; display: flex; justify-content: space-between;">
-                <div style="border-top: 1px solid #333; width: 30%; padding-top: 10px; text-align: center; font-size: 12px;">Podpis dispečera</div>
-                <div style="border-top: 1px solid #333; width: 30%; padding-top: 10px; text-align: center; font-size: 12px;">Podpis řidiče</div>
+                <div style="margin-top: 50px; display: flex; justify-content: space-between;">
+                    <div style="border-top: 1px solid #333; width: 30%; padding-top: 10px; text-align: center; font-size: 12px;">Podpis dispečera</div>
+                    <div style="border-top: 1px solid #333; width: 30%; padding-top: 10px; text-align: center; font-size: 12px;">Podpis řidiče</div>
+                </div>
             </div>
         </div>`;
         
-        // 1. Zavřít modální okno výběru
-        document.getElementById('pdfExportModal').style.display='none';
+        document.getElementById('pdfExportModal').style.display = 'none';
 
-        // 2. Vytvořit speciální tiskový kontejner na konci těla (body)
         let printContainer = document.createElement('div');
         printContainer.id = "cp-mobile-print-container";
         printContainer.innerHTML = html;
 
-        // 3. Dočasně skrýt všechny ostatní prvky aplikace
         let mainElements = Array.from(document.body.children);
         window.hiddenElements = [];
         
@@ -3976,11 +4008,10 @@
             }
         });
 
-        // 4. Přidat tiskový kontejner do DOM a změnit pozadí na bílé
         document.body.appendChild(printContainer);
         window.originalBodyBackground = document.body.style.background;
         document.body.style.background = 'white';
-        window.scrollTo(0, 0); // Vyskočíme nahoru, ať je vidět lišta
+        window.scrollTo(0, 0);
     }
 
     function exportKnihaCSV() {
