@@ -490,18 +490,18 @@
                     <select id="planDriverSelect2"></select>
                 </div>
                 <div class="input-group">
-                    <label id="lblPlanCrew">Režim Osádky <span class="icon-help" onclick="showInfo(T('helpPlanCrew'))">i</span></label>
+                    <label id="lblPlanCrew">Režim Osádky <span class="icon-help" onclick="showInfo(T('režim řidičů'))">i</span></label>
                     <select id="planCrewSelect" onchange="toggleDriver2()">
                         <option value="1">1 Řidič (Max 15h výkon)</option>
                         <option value="2">Dvojosádka (Max 21h výkon)</option>
                     </select>
                 </div>
                 <div class="input-group">
-                    <label id="lblPlanSpeed">Prům. rychlost (km/h)</label>
+                    <label id="lblPlanSpeed">Prům. rychlost (km/h) <span class="icon-help" onclick="showInfo(T('průměrná rychlost dálnice 80 km/h, silnice 60 km/h'))">i</span></label>
                     <input type="number" id="planSpeed" value="70">
                 </div>
                 <div class="input-group">
-                    <label id="lblPlanDay">Datum Startu (Přesný den) <span class="icon-help" onclick="showInfo('Vyberte přesné datum, aplikace sama určí týden a rok.')">i</span></label>
+                    <label id="lblPlanDay">Datum Startu <span class="icon-help" onclick="showInfo('Vyberte přesné datum, aplikace sama určí týden a rok.')">i</span></label>
                     <input type="date" id="planDateSelect">
                 </div>
                 <div class="input-group">
@@ -806,7 +806,7 @@
             "2. Řidič (Dvojosádka)": "2. Driver (Crew)",
             "Režim Osádky": "Crew Mode",
             "Prům. rychlost (km/h)": "Avg. speed (km/h)",
-            "Datum Startu (Přesný den)": "Start Date",
+            "Datum Startu ": "Start Date",
             "Čas Startu": "Start Time",
             "1. Start (Odkud)": "1. Start (From)",
             "2. Cíl (Kam)": "2. Destination (To)",
@@ -879,7 +879,7 @@
             "2. Řidič (Dvojosádka)": "2. Fahrer (Besatzung)",
             "Režim Osádky": "Besatzungsmodus",
             "Prům. rychlost (km/h)": "Ø Geschw. (km/h)",
-            "Datum Startu (Přesný den)": "Startdatum",
+            "Datum Startu ": "Startdatum",
             "Čas Startu": "Startzeit",
             "1. Start (Odkud)": "1. Start (Von)",
             "2. Cíl (Kam)": "2. Ziel (Nach)",
@@ -952,7 +952,7 @@
             "2. Řidič (Dvojosádka)": "2. Kierowca (Załoga)",
             "Režim Osádky": "Tryb Załogi",
             "Prům. rychlost (km/h)": "Śr. prędkość (km/h)",
-            "Datum Startu (Přesný den)": "Data Startu",
+            "Datum Startu": "Data Startu",
             "Čas Startu": "Czas Startu",
             "1. Start (Odkud)": "1. Start (Skąd)",
             "2. Cíl (Kam)": "2. Cel (Dokąd)",
@@ -1025,7 +1025,7 @@
             "2. Řidič (Dvojosádka)": "2. Autista (Equipaggio)",
             "Režim Osádky": "Modalità Equipaggio",
             "Prům. rychlost (km/h)": "Velocità media (km/h)",
-            "Datum Startu (Přesný den)": "Data di Partenza",
+            "Datum Startu": "Data di Partenza",
             "Čas Startu": "Ora di Partenza",
             "1. Start (Odkud)": "1. Partenza (Da)",
             "2. Cíl (Kam)": "2. Destinazione (A)",
@@ -2514,7 +2514,7 @@
             "04. Analýza reality": "04. Reality Analysis", "Typ zadání ceny": "Price input type", "Měna sjednané ceny": "Agreed price currency",
             "Sjednaná cena (bez DPH)": "Agreed price (excl. VAT)", "Reálná tržba na 1 km (CZK):": "Real revenue per km:", "Seznam Řidičů": "Driver List",
             "🤖 Auto-Plánovač Trasy a Diet": "🤖 Auto-Planner & Diets", "1. Řidič (Hlavní)": "1. Driver (Main)", "2. Řidič (Dvojosádka)": "2. Driver (Crew)",
-            "Režim Osádky": "Crew Mode", "Prům. rychlost (km/h)": "Avg. speed (km/h)", "Datum Startu (Přesný den)": "Start Date",
+            "Režim Osádky": "Crew Mode", "Prům. rychlost (km/h)": "Avg. speed (km/h)", "Datum Startu": "Start Date",
             "Čas Startu": "Start Time", "1. Start (Odkud)": "1. Start (From)", "2. Cíl (Kam)": "2. Destination (To)",
             "Zdržení v Cíli (h)": "Delay at Dest. (h)", "Zpáteční trasa (Kolečko)": "Return Trip (Roundtrip)", "Rozpad trasy a odhad diet": "Route Breakdown & Diets",
             "🚀 Vypočítat a Zapsat do Kalendáře!": "🚀 Calculate & Save to Calendar!", "Stát": "Country", "Km": "Km", "Kč Mýto": "Toll",
@@ -2539,7 +2539,7 @@
             "04. Analýza reality": "04. Realitätsanalyse", "Typ zadání ceny": "Preisangabetyp", "Měna sjednané ceny": "Währung des Preises",
             "Sjednaná cena (bez DPH)": "Vereinbarter Preis (netto)", "Reálná tržba na 1 km (CZK):": "Realer Umsatz pro km:", "Seznam Řidičů": "Fahrerliste",
             "🤖 Auto-Plánovač Trasy a Diet": "🤖 Auto-Planer & Spesen", "1. Řidič (Hlavní)": "1. Fahrer (Haupt)", "2. Řidič (Dvojosádka)": "2. Fahrer (Besatzung)",
-            "Režim Osádky": "Besatzungsmodus", "Prům. rychlost (km/h)": "Ø Geschw. (km/h)", "Datum Startu (Přesný den)": "Startdatum",
+            "Režim Osádky": "Besatzungsmodus", "Prům. rychlost (km/h)": "Ø Geschw. (km/h)", "Datum Startu": "Startdatum",
             "Čas Startu": "Startzeit", "1. Start (Odkud)": "1. Start (Von)", "2. Cíl (Kam)": "2. Ziel (Nach)",
             "Zdržení v Cíli (h)": "Aufenthalt am Ziel (h)", "Zpáteční trasa (Kolečko)": "Rückfahrt (Rundtrip)", "Rozpad trasy a odhad diet": "Routenaufschlüsselung & Spesen",
             "🚀 Vypočítat a Zapsat do Kalendáře!": "🚀 Berechnen & Speichern!", "Stát": "Land", "Km": "Km", "Kč Mýto": "Maut",
@@ -2564,7 +2564,7 @@
             "04. Analýza reality": "04. Analiza Rzeczywistości", "Typ zadání ceny": "Typ podania ceny", "Měna sjednané ceny": "Waluta uzgodnionej ceny",
             "Sjednaná cena (bez DPH)": "Uzgodniona cena (bez VAT)", "Reálná tržba na 1 km (CZK):": "Rzeczywisty przychód na 1km:", "Seznam Řidičů": "Lista Kierowców",
             "🤖 Auto-Plánovač Trasy a Diet": "🤖 Auto-Planer Tras i Diet", "1. Řidič (Hlavní)": "1. Kierowca (Główny)", "2. Řidič (Dvojosádka)": "2. Kierowca (Załoga)",
-            "Režim Osádky": "Tryb Załogi", "Prům. rychlost (km/h)": "Śr. prędkość (km/h)", "Datum Startu (Přesný den)": "Data Startu",
+            "Režim Osádky": "Tryb Załogi", "Prům. rychlost (km/h)": "Śr. prędkość (km/h)", "Datum Startu": "Data Startu",
             "Čas Startu": "Czas Startu", "1. Start (Odkud)": "1. Start (Skąd)", "2. Cíl (Kam)": "2. Cel (Dokąd)",
             "Zdržení v Cíli (h)": "Opóźnienie w Celu (h)", "Zpáteční trasa (Kolečko)": "Trasa powrotna (Kółko)", "Rozpad trasy a odhad diet": "Podział trasy i szacunek diet",
             "🚀 Vypočítat a Zapsat do Kalendáře!": "🚀 Oblicz i Zapisz w Kalendarzu!", "Stát": "Kraj", "Km": "Km", "Kč Mýto": "Myto",
@@ -2589,7 +2589,7 @@
             "04. Analýza reality": "04. Analisi della Realtà", "Typ zadání ceny": "Tipo inserimento prezzo", "Měna sjednané ceny": "Valuta prezzo concordato",
             "Sjednaná cena (bez DPH)": "Prezzo concordato (senza IVA)", "Reálná tržba na 1 km (CZK):": "Ricavo reale al km:", "Seznam Řidičů": "Elenco Autisti",
             "🤖 Auto-Plánovač Trasy a Diet": "🤖 Pianificatore & Diarie", "1. Řidič (Hlavní)": "1. Autista (Principale)", "2. Řidič (Dvojosádka)": "2. Autista (Equipaggio)",
-            "Režim Osádky": "Modalità Equipaggio", "Prům. rychlost (km/h)": "Velocità media (km/h)", "Datum Startu (Přesný den)": "Data di Partenza",
+            "Režim Osádky": "Modalità Equipaggio", "Prům. rychlost (km/h)": "Velocità media (km/h)", "Datum Startu": "Data di Partenza",
             "Čas Startu": "Ora di Partenza", "1. Start (Odkud)": "1. Partenza (Da)", "2. Cíl (Kam)": "2. Destinazione (A)",
             "Zdržení v Cíli (h)": "Sosta a Destinazione (h)", "Zpáteční trasa (Kolečko)": "Viaggio di Ritorno (Giro)", "Rozpad trasy a odhad diet": "Dettaglio Percorso & Diarie",
             "🚀 Vypočítat a Zapsat do Kalendáře!": "🚀 Calcola e Salva!", "Stát": "Paese", "Km": "Km", "Kč Mýto": "Pedaggio",
