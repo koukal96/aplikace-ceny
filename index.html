@@ -348,7 +348,7 @@
                     <input type="number" id="mzdaHodnota" value="3000" oninput="calculate(); autoSave();">
                 </div>
                 <div class="input-group" id="dnyContainer">
-                    <label id="lblTrvani">Trvání (Dny z AETR) <span class="icon-help" onclick="showInfo(T('helpTrvani'))">i</span></label>
+                    <label id="lblTrvani">Doba (Dny z AETR) <span class="icon-help" onclick="showInfo(T('Jízdní doba'))">i</span></label>
                     <input type="number" id="dny" value="1" step="0.5" oninput="calculate(); autoSave();" class="readonly-highlight">
                     <div id="aetrInfo" style="font-size: 11px; color: #155724; background: #d4edda; padding: 8px; border-radius: 4px; margin-top: 6px; display: none; font-weight: 600; text-align: center; border: 1px solid #c3e6cb; line-height: 1.4;"></div>
                 </div>
@@ -779,7 +779,7 @@
             "Složení posádky": "Crew setup",
             "Odměňování řidiče": "Driver payment",
             "Odměna CELKEM": "TOTAL Reward",
-            "Trvání (Dny z AETR)": "Duration (AETR Days)",
+            "Doba (Dny z AETR)": "Duration (AETR Days)",
             "Fix auto/den": "Fix cost/day",
             "Zobrazit VČETNĚ DPH (21%)": "Show INCL. VAT (21%)",
             "Kalkulace ceny VČETNĚ MÝTA": "Calc INCL. TOLL",
@@ -852,7 +852,7 @@
             "Složení posádky": "Besatzung",
             "Odměňování řidiče": "Fahrerlohn",
             "Odměna CELKEM": "Gesamtlohn",
-            "Trvání (Dny z AETR)": "Dauer (AETR Tage)",
+            "Doba (Dny z AETR)": "Dauer (AETR Tage)",
             "Fix auto/den": "Fixkosten/Tag",
             "Zobrazit VČETNĚ DPH (21%)": "Inkl. MwSt. (21%)",
             "Kalkulace ceny VČETNĚ MÝTA": "Kalkulation INKL. MAUT",
@@ -925,7 +925,7 @@
             "Složení posádky": "Załoga",
             "Odměňování řidiče": "Wynagrodzenie",
             "Odměna CELKEM": "Wynagrodzenie CAŁKOWITE",
-            "Trvání (Dny z AETR)": "Czas trwania (Dni AETR)",
+            "Doba (Dny z AETR)": "Czas trwania (Dni AETR)",
             "Fix auto/den": "Koszt stały/dzień",
             "Zobrazit VČETNĚ DPH (21%)": "Pokaż Z VAT (21%)",
             "Kalkulace ceny VČETNĚ MÝTA": "Kalkulacja Z MYTEM",
@@ -998,7 +998,7 @@
             "Složení posádky": "Equipaggio",
             "Odměňování řidiče": "Retribuzione",
             "Odměna CELKEM": "Retribuzione TOTALE",
-            "Trvání (Dny z AETR)": "Durata (Giorni AETR)",
+            "Doba (Dny z AETR)": "Durata (Giorni AETR)",
             "Fix auto/den": "Costo fisso/giorno",
             "Zobrazit VČETNĚ DPH (21%)": "Mostra CON IVA (21%)",
             "Kalkulace ceny VČETNĚ MÝTA": "Calcolo CON PEDAGGIO",
@@ -1282,7 +1282,7 @@
             
             let aetrBox = document.getElementById('aetrInfo');
             if(aetrBox) {
-                let baseText = T('aetrText').replace('{h}', hoursDrive.toFixed(1)).replace('{d}', aetrData.shifts);
+                let baseText = T('').replace('{h}', hoursDrive.toFixed(1)).replace('{d}', aetrData.shifts);
                 if (aetrData.warning) {
                     aetrBox.innerHTML = baseText + "<br><span style='color:#c62828; font-weight:800; font-size:10px;'>" + aetrData.warning + "</span>";
                     aetrBox.style.background = "#ffebee";
@@ -2505,7 +2505,7 @@
             "02. Technika vozidla": "02. Vehicle specs", "Euro Norma": "Euro Standard", "Nápravy celkem": "Total Axles",
             "Zvednuté nápravy": "Lifted Axles", "Spotřeba prázdné": "Empty Consumption", "Start. Náklad (t)": "Initial Cargo (t)",
             "Cena nafty / L": "Fuel price / L", "03. Náklady & Řidič": "03. Costs & Driver", "Složení posádky": "Crew setup",
-            "Odměňování řidiče": "Driver payment", "Odměna CELKEM": "TOTAL Reward", "Trvání (Dny z AETR)": "Duration (AETR Days)",
+            "Odměňování řidiče": "Driver payment", "Odměna CELKEM": "TOTAL Reward", "Doba (Dny z AETR)": "Duration (AETR Days)",
             "Fix auto/den": "Fix cost/day", "Zobrazit VČETNĚ DPH (21%)": "Show INCL. VAT (21%)", "Kalkulace ceny VČETNĚ MÝTA": "Calc INCL. TOLL",
             "Ceníková Kalkulace": "Price Calculation", "Prům. spotřeba trasy:": "Avg. consumption:", "Nafta celkem:": "Total Fuel:",
             "Odměna posádky:": "Crew reward:", "Fixní náklady & Pneu:": "Fixed costs & Tires:", "Mýto celkem:": "Total Toll:",
@@ -2530,7 +2530,7 @@
             "02. Technika vozidla": "02. Fahrzeugtechnik", "Euro Norma": "Euro Norm", "Nápravy celkem": "Achsen gesamt",
             "Zvednuté nápravy": "Liftachsen", "Spotřeba prázdné": "Verbrauch leer", "Start. Náklad (t)": "Ladung (t)",
             "Cena nafty / L": "Spritpreis / L", "03. Náklady & Řidič": "03. Kosten & Fahrer", "Složení posádky": "Besatzung",
-            "Odměňování řidiče": "Fahrerlohn", "Odměna CELKEM": "Gesamtlohn", "Trvání (Dny z AETR)": "Dauer (AETR Tage)",
+            "Odměňování řidiče": "Fahrerlohn", "Odměna CELKEM": "Gesamtlohn", "Doba (Dny z AETR)": "Dauer (AETR Tage)",
             "Fix auto/den": "Fixkosten/Tag", "Zobrazit VČETNĚ DPH (21%)": "Inkl. MwSt. (21%)", "Kalkulace ceny VČETNĚ MÝTA": "Kalkulation INKL. MAUT",
             "Ceníková Kalkulace": "Preiskalkulation", "Prům. spotřeba trasy:": "Ø Verbrauch:", "Nafta celkem:": "Sprit gesamt:",
             "Odměna posádky:": "Lohn Besatzung:", "Fixní náklady & Pneu:": "Fixkosten & Reifen:", "Mýto celkem:": "Maut gesamt:",
@@ -2555,7 +2555,7 @@
             "02. Technika vozidla": "02. Technika Pojazdu", "Euro Norma": "Norma Euro", "Nápravy celkem": "Osie ogółem",
             "Zvednuté nápravy": "Podniesione osie", "Spotřeba prázdné": "Spalanie na pusto", "Start. Náklad (t)": "Początkowy Ładunek (t)",
             "Cena nafty / L": "Cena paliwa / L", "03. Náklady & Řidič": "03. Koszty i Kierowca", "Složení posádky": "Załoga",
-            "Odměňování řidiče": "Wynagrodzenie", "Odměna CELKEM": "Wynagrodzenie CAŁKOWITE", "Trvání (Dny z AETR)": "Czas trwania (Dni AETR)",
+            "Odměňování řidiče": "Wynagrodzenie", "Odměna CELKEM": "Wynagrodzenie CAŁKOWITE", "Doba (Dny z AETR)": "Czas trwania (Dni AETR)",
             "Fix auto/den": "Koszt stały/dzień", "Zobrazit VČETNĚ DPH (21%)": "Pokaż Z VAT (21%)", "Kalkulace ceny VČETNĚ MÝTA": "Kalkulacja Z MYTEM",
             "Ceníková Kalkulace": "Kalkulacja Cenowa", "Prům. spotřeba trasy:": "Śr. spalanie:", "Nafta celkem:": "Paliwo razem:",
             "Odměna posádky:": "Wynagrodzenie załogi:", "Fixní náklady & Pneu:": "Koszty stałe i Opony:", "Mýto celkem:": "Myto razem:",
@@ -2580,7 +2580,7 @@
             "02. Technika vozidla": "02. Tecnica Veicolo", "Euro Norma": "Standard Euro", "Nápravy celkem": "Assi Totali",
             "Zvednuté nápravy": "Assi Sollevati", "Spotřeba prázdné": "Consumo a vuoto", "Start. Náklad (t)": "Carico (t)",
             "Cena nafty / L": "Prezzo carburante / L", "03. Náklady & Řidič": "03. Costi e Autista", "Složení posádky": "Equipaggio",
-            "Odměňování řidiče": "Retribuzione", "Odměna CELKEM": "Retribuzione TOTALE", "Trvání (Dny z AETR)": "Durata (Giorni AETR)",
+            "Odměňování řidiče": "Retribuzione", "Odměna CELKEM": "Retribuzione TOTALE", "Doba (Dny z AETR)": "Durata (Giorni AETR)",
             "Fix auto/den": "Costo fisso/giorno", "Zobrazit VČETNĚ DPH (21%)": "Mostra CON IVA (21%)", "Kalkulace ceny VČETNĚ MÝTA": "Calcolo CON PEDAGGIO",
             "Ceníková Kalkulace": "Calcolo Prezzo", "Prům. spotřeba trasy:": "Consumo medio:", "Nafta celkem:": "Carburante totale:",
             "Odměna posádky:": "Retribuzione equipaggio:", "Fixní náklady & Pneu:": "Costi fissi e pneumatici:", "Mýto celkem:": "Pedaggio totale:",
@@ -2831,7 +2831,7 @@
             
             let aetrBox = document.getElementById('aetrInfo');
             if(aetrBox) {
-                let baseText = T('aetrText').replace('{h}', hoursDrive.toFixed(1)).replace('{d}', aetrData.shifts);
+                let baseText = T('').replace('{h}', hoursDrive.toFixed(1)).replace('{d}', aetrData.shifts);
                 if (aetrData.warning) {
                     aetrBox.innerHTML = baseText + "<br><span style='color:#c62828; font-weight:800; font-size:10px;'>" + aetrData.warning + "</span>";
                     aetrBox.style.background = "#ffebee";
