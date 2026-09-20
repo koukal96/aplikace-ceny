@@ -217,7 +217,7 @@
             <div id="avoidListContainer"></div>
 
             <div class="input-group">
-                <label id="lblStart">Výchozí Start (Bod A) <span class="icon-help" onclick="showInfo(T('helpStart'))">i</span></label>
+                <label id="lblStart">Výchozí Start (Bod A) <span class="icon-help" onclick="showInfo(T('Cílová destinace (Pokud se zadá jakákoliv mezizastávka nebude fungovat kolečko)'))">i</span></label>
                 <input type="text" id="startAdresa" value="Věrovany 94" oninput="autoSave()">
             </div>
 
@@ -225,13 +225,13 @@
             <button class="btn-add-wp" id="btnAddWp" onclick="addWaypoint()">+ Přidat zastávku / Přejezd</button>
 
             <div class="input-group">
-                <label id="lblCil">Konečný Cíl (Bod B) <span class="icon-help" onclick="showInfo(T('helpCil'))">i</span></label>
+                <label id="lblCil">Konečný Cíl (Bod B) <span class="icon-help" onclick="showInfo(T('Cílová destinace (Pokud se zadá jakákoliv mezizastávka nebude fungovat kolečko)'))">i</span></label>
                 <input type="text" id="cilAdresa" placeholder="Např. Turate nebo Milán" oninput="autoSave()">
             </div>
 
             <div class="form-grid">
                 <div class="input-group">
-                    <label id="lblCilStat">Země určení (Garance) <span class="icon-help" onclick="showInfo(T('helpCilStat'))">i</span></label>
+                    <label id="lblCilStat">Země určení (Garance) <span class="icon-help" onclick="showInfo(T('Cílová destinace (Pokud se zadá jakákoliv mezizastávka nebude fungovat kolečko)Stat'))">i</span></label>
                     <select id="cilStat" onchange="autoSave()">
                         <option value="">-- Automaticky --</option>
                         <option value="CZ">Česko</option><option value="DE">Německo</option>
@@ -243,7 +243,7 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label id="lblMenaKurz">Měna & Kurz <span class="icon-help" onclick="showInfo(T('helpMena'))">i</span></label>
+                    <label id="lblMenaKurz">Měna & Kurz <span class="icon-help" onclick="showInfo(T('Kurz (Kč/EUR)'))">i</span></label>
                     <div style="display: flex; gap: 4px;">
                         <select id="menaSelect" onchange="calculate(); autoSave();" style="flex:1;">
                             <option value="CZK">CZK</option><option value="EUR">EUR</option>
@@ -275,7 +275,7 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label id="lblDokladky">Dokládky km <span class="icon-help" onclick="showInfo(T('helpDokladky'))">i</span></label>
+                    <label id="lblDokladky">Dokládky km <span class="icon-help" onclick="showInfo(T('Jízda po prázdnu k dokládce'))">i</span></label>
                     <input type="number" id="dokladky" value="0" oninput="recalcAETR(); autoSave();">
                 </div>
             </div>
@@ -287,7 +287,7 @@
         </div>
 
         <div class="card">
-            <h2><span class="num">02.</span> <span id="lblSec2">Technika vozidla</span></h2>
+            <h2><span class="num">02.Technika vozidla</span></h2>
             <div class="form-grid">
                 <div class="input-group">
                     <label id="lblEuro">Euro Norma <span class="icon-help" onclick="showInfo(T('helpEuro'))">i</span></label>
@@ -306,31 +306,31 @@
                 <div class="input-group">
                     <label id="lblZvedle">Zvednuté nápravy</label>
                     <select id="zvedleNapravy" onchange="calculate(); autoSave();">
-                        <option value="0">0 (Dole)</option><option value="1">1 nahoře</option><option value="2">2 nahoře</option>
+                        <option value="0">0</option><option value="1">1 nahoře</option><option value="2">2 nahoře</option>
                     </select>
                 </div>
             </div>
             <div class="form-grid" style="margin-top: 12px; border-top: 1px solid #eee; padding-top: 12px;">
                 <div class="input-group">
-                    <label id="lblSpotreba">Spotřeba prázdné <span class="icon-help" onclick="showInfo(T('helpPrazdna'))">i</span></label>
-                    <input type="number" id="spotrebaPrazdne" value="25" step="0.1" oninput="calculate(); autoSave();">
+                    <label id="lblSpotreba">Spotřeba prázdné <span class="icon-help" onclick="showInfo(T('Výchozí spotřeba prázdného vozidla'))">i</span></label>
+                    <input type="number" id="spotrebaPrazdne" value="20" step="0.1" oninput="calculate(); autoSave();">
                 </div>
                 <div class="input-group">
-                    <label id="lblNaklad">Start. Náklad (t) <span class="icon-help" onclick="showInfo(T('helpVaha'))">i</span></label>
+                    <label id="lblNaklad">Start. Náklad (t) <span class="icon-help" onclick="showInfo(T('Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)'))">i</span></label>
                     <input type="number" id="vahaNakladu" value="10" step="0.1" oninput="calculate(); autoSave();">
                 </div>
                 <div class="input-group">
                     <label id="lblNaftaCena">Cena nafty / L</label>
-                    <input type="number" id="cenaNafty" value="36.50" step="0.10" oninput="calculate(); autoSave();">
+                    <input type="number" id="cenaNafty" value="40" step="0.10" oninput="calculate(); autoSave();">
                 </div>
             </div>
         </div>
 
         <div class="card">
-            <h2><span class="num">03.</span> <span id="lblSec3">Náklady & Řidič</span></h2>
+            <h2><span class="num">03.Náklady & Řidič</span></h2>
             <div class="form-grid">
                 <div class="input-group">
-                    <label id="lblPosadka">Složení posádky <span class="icon-help" onclick="showInfo(T('helpPosadka'))">i</span></label>
+                    <label id="lblPosadka">Složení posádky <span class="icon-help" onclick="showInfo(T('Režim jízdy 1 nebo 2 řidiči'))">i</span></label>
                     <select id="posadka" onchange="recalcAETR();">
                         <option value="1" id="opt1Ridic">1 Řidič</option>
                         <option value="2" id="opt2Ridici">Dvojosádka</option>
@@ -419,7 +419,7 @@
         </div>
 
         <div class="card analysis">
-            <h2 id="lblSec4"><span>04.</span> Analýza reality</h2>
+            <h2 id="lblSec4"><span>04. Analýza reality</span></h2>
             
             <div class="form-grid">
                 <div class="input-group">
@@ -482,7 +482,7 @@
             
             <div class="form-grid" style="margin-bottom:15px;">
                 <div class="input-group">
-                    <label id="lblPlanDriver">1. Řidič (Hlavní) <span class="icon-help" onclick="showInfo(T('helpPlanDriver'))">i</span></label>
+                    <label id="lblPlanDriver">1. Řidič (Hlavní) <span class="icon-help" onclick="showInfo(T('Hlavní řidič (zapíše se do směny)'))">i</span></label>
                     <select id="planDriverSelect"></select>
                 </div>
                 <div class="input-group" id="driver2Container" style="display:none; background:#ffecb3; padding:5px; border-radius:4px; border:1px solid #ffd54f;">
@@ -547,7 +547,7 @@
             
             <div class="input-group" style="flex-direction:row; align-items:center; gap:10px; background:#e8f5e9; padding:15px; border-radius:4px; border:1px solid #c8e6c9; margin-bottom:15px;">
                 <input type="checkbox" id="planKoleckoToggle" style="width:24px; height:24px; margin:0;">
-                <label style="margin:0; font-size:14px; color:#2e7d32; font-weight:800;" id="lblPlanKolecko">Zpáteční trasa (Kolečko) <span class="icon-help" onclick="showInfo(T('helpPlanKolecko'))">i</span></label>
+                <label style="margin:0; font-size:14px; color:#2e7d32; font-weight:800;" id="lblPlanKolecko">Zpáteční trasa (Kolečko) <span class="icon-help" onclick="showInfo(T('Trasa se pojede v kolečku'))">i</span></label>
             </div>
 
             <!-- ROZPAD V PLANNERU -->
@@ -1202,7 +1202,7 @@
             document.getElementById('zvedleNapravy').value = d.zvedle || "0";
             document.getElementById('spotrebaPrazdne').value = d.prazdna || "25";
             document.getElementById('vahaNakladu').value = d.vaha || "10";
-            document.getElementById('cenaNafty').value = d.nafta || "36.50";
+            document.getElementById('cenaNafty').value = d.nafta || "40";
             if(d.posadka) document.getElementById('posadka').value = d.posadka;
             document.getElementById('typMzdy').value = d.mzdaTyp || "denni";
             document.getElementById('mzdaHodnota').value = d.mzdaHodnota || "3000";
@@ -1300,8 +1300,8 @@
     // =======================================================================
     function updateFavoritesDropdown() {
         let favs = JSON.parse(localStorage.getItem('cpFavorites')) || {};
-        let sel = document.getElementById('favSelect');
-        sel.innerHTML = `<option value="" id="lblSelFav">${T('favSel')}</option>`;
+        let sel = document.getElementById('Oblíbená trasa');
+        sel.innerHTML = `<option value="" id="lblSelFav">${T('uložená trasa')}</option>`;
         for(let k in favs) { sel.insertAdjacentHTML('beforeend', `<option value="${k}">${k}</option>`); }
     }
 
@@ -2751,7 +2751,7 @@
             document.getElementById('zvedleNapravy').value = d.zvedle || "0";
             document.getElementById('spotrebaPrazdne').value = d.prazdna || "25";
             document.getElementById('vahaNakladu').value = d.vaha || "10";
-            document.getElementById('cenaNafty').value = d.nafta || "36.50";
+            document.getElementById('cenaNafty').value = d.nafta || "40";
             if(d.posadka) document.getElementById('posadka').value = d.posadka;
             document.getElementById('typMzdy').value = d.mzdaTyp || "denni";
             document.getElementById('mzdaHodnota').value = d.mzdaHodnota || "3000";
