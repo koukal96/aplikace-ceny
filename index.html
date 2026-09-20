@@ -6,623 +6,155 @@
     <meta name="theme-color" content="#e3000f">
     <title>Control Point - Ultimate Fleet ERP</title>
     
-    <!-- Písma z Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
-    
-    <!-- Knihovna Leaflet pro interaktivní mapu (Zdarma) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
-        /* ========================================================= */
-        /* ZÁKLADNÍ STYLY A PROMĚNNÉ                                 */
-        /* ========================================================= */
+        /* --- ZÁKLADNÍ RESET A BARVY --- */
         :root { 
-            --cp-red: #e3000f; 
-            --cp-red-hover: #b3000b; 
-            --cp-dark: #1a1a1a; 
-            --cp-gray: #f4f4f4; 
-            --cp-border: #e0e0e0; 
-            --cp-white: #ffffff; 
-            --cp-success: #2e7d32; 
-            --cp-danger: #c62828; 
-            --cp-blue: #1565c0; 
-            --shadow: 0 4px 20px rgba(0,0,0,0.06); 
-            --transition: all 0.3s ease; 
+            --cp-red: #e3000f; --cp-red-hover: #b3000b; 
+            --cp-dark: #1a1a1a; --cp-gray: #f4f4f4; 
+            --cp-border: #e0e0e0; --cp-white: #ffffff; 
+            --cp-success: #2e7d32; --cp-danger: #c62828; 
+            --cp-blue: #1565c0; --shadow: 0 4px 20px rgba(0,0,0,0.06); 
         }
         
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-            font-family: 'Montserrat', sans-serif; 
-        }
-        
-        body { 
-            background-color: var(--cp-gray); 
-            color: var(--cp-dark); 
-            line-height: 1.5; 
-            font-size: 14px; 
-            overflow-x: hidden; 
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
+        body { background-color: var(--cp-gray); color: var(--cp-dark); line-height: 1.5; font-size: 14px; overflow-x: hidden; }
 
         /* --- LOADING SCREEN --- */
         #loading-screen { 
-            position: fixed; 
-            top: 0; left: 0; 
-            width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.9); 
-            z-index: 99999; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.9); z-index: 99999; 
+            display: flex; align-items: center; justify-content: center; 
             transition: opacity 0.6s ease-out; 
         }
-        
         .spinner { 
-            width: 50px; 
-            height: 50px; 
-            border: 4px solid rgba(255,255,255,0.1); 
-            border-top: 4px solid var(--cp-red); 
-            border-radius: 50%; 
-            animation: spin 1s linear infinite; 
-            margin: 0 auto 15px auto; 
+            width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.1); 
+            border-top: 4px solid var(--cp-red); border-radius: 50%; 
+            animation: spin 1s linear infinite; margin: 0 auto 15px auto; 
         }
-        
-        @keyframes spin { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
-        }
-        
-        .loading-text { 
-            font-size: 18px; 
-            font-weight: 800; 
-            color: white; 
-            letter-spacing: 2px; 
-            text-transform: uppercase; 
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text { font-size: 18px; font-weight: 800; color: white; letter-spacing: 2px; text-transform: uppercase; }
 
-        /* --- HEADER & NAVIGATION (Vše v jednom řádku) --- */
+        /* --- HLAVIČKA (HEADER) V JEDNOM ŘÁDKU --- */
         header { 
-            background-color: var(--cp-dark); 
-            padding: 10px 15px; 
-            border-bottom: 4px solid var(--cp-red); 
-            position: sticky; 
-            top: 0; 
-            z-index: 100; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            width: 100%; 
+            background-color: var(--cp-dark); padding: 10px 15px; 
+            border-bottom: 4px solid var(--cp-red); position: sticky; top: 0; z-index: 100; 
+            display: flex; justify-content: space-between; align-items: center; width: 100%; 
         }
-        
-        .logo-container { 
-            font-size: 18px; 
-            font-weight: 800; 
-            color: white; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-        }
-        
-        .logo-container span.sub { 
-            font-size: 12px; 
-            color: #aaa; 
-            border-left: 2px solid var(--cp-red); 
-            padding-left: 10px; 
-        }
-        
-        .header-controls { 
-            display: flex; 
-            gap: 10px; 
-            align-items: center; 
-        }
-        
-        /* PŘEPÍNAČ APLIKACÍ */
-        .app-switcher { 
-            display: flex; 
-            max-width: 1400px; 
-            margin: 15px auto 5px auto; 
-            padding: 0 10px; 
-            gap: 10px; 
-            flex-wrap: wrap; 
-        }
-        
-        .app-btn { 
-            flex: 1; 
-            min-width: 250px; 
-            padding: 12px; 
-            font-size: 14px; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            border: 2px solid var(--cp-dark); 
-            border-radius: 6px; 
-            background: white; 
-            color: var(--cp-dark); 
-            cursor: pointer; 
-            transition: 0.3s; 
-            text-align: center; 
-        }
-        
-        .app-btn.active { 
-            background: var(--cp-dark); 
-            color: white; 
-        }
+        .logo-container { font-size: 18px; font-weight: 800; color: white; display: flex; align-items: center; gap: 10px; }
+        .logo-container span.sub { font-size: 12px; color: #aaa; border-left: 2px solid var(--cp-red); padding-left: 10px; }
+        .header-controls { display: flex; gap: 10px; align-items: center; }
 
-        /* --- LAYOUTS A KARTY --- */
-        .container, .planner-layout { 
-            max-width: 1400px; 
-            margin: 10px auto; 
-            padding: 0 10px; 
-            display: grid; 
-            gap: 15px; 
-            width: 100%; 
-        }
+        /* --- PŘEPÍNAČ APLIKACÍ --- */
+        .app-switcher { display: flex; max-width: 1400px; margin: 15px auto 5px auto; padding: 0 10px; gap: 10px; flex-wrap: wrap; }
+        .app-btn { flex: 1; min-width: 250px; padding: 12px; font-size: 14px; font-weight: 800; text-transform: uppercase; border: 2px solid var(--cp-dark); border-radius: 6px; background: white; color: var(--cp-dark); cursor: pointer; transition: 0.3s; text-align: center; }
+        .app-btn.active { background: var(--cp-dark); color: white; }
+
+        /* --- LAYOUTY A KARTY --- */
+        .container, .planner-layout { max-width: 1400px; margin: 10px auto; padding: 0 10px; display: grid; gap: 15px; width: 100%; }
+        .container { grid-template-columns: 1fr 450px; }
+        .planner-layout { grid-template-columns: 280px 1fr; }
+        @media (max-width: 1100px) { .container { grid-template-columns: 1fr; } }
+        @media (max-width: 900px) { .planner-layout { grid-template-columns: 1fr; } }
         
-        .container { 
-            grid-template-columns: 1fr 450px; 
-        }
-        
-        .planner-layout { 
-            grid-template-columns: 280px 1fr; 
-        }
-        
-        @media (max-width: 1100px) { 
-            .container { grid-template-columns: 1fr; } 
-        }
-        
-        @media (max-width: 900px) { 
-            .planner-layout { grid-template-columns: 1fr; } 
-        }
-        
-        .card { 
-            background: var(--cp-white); 
-            border-radius: 6px; 
-            padding: 20px; 
-            box-shadow: var(--shadow); 
-            margin-bottom: 15px; 
-            border-left: 4px solid var(--cp-red); 
-        }
-        
-        .card.dashboard { 
-            border-left: 4px solid var(--cp-dark); 
-        }
-        
-        h2 { 
-            font-size: 15px; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            margin-bottom: 15px; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            color: var(--cp-dark); 
-            border-bottom: 2px solid #eee; 
-            padding-bottom: 8px; 
-        }
-        
-        h2 span.num { 
-            color: var(--cp-red); 
-        }
+        .card { background: var(--cp-white); border-radius: 6px; padding: 20px; box-shadow: var(--shadow); margin-bottom: 15px; border-left: 4px solid var(--cp-red); }
+        .card.dashboard { border-left: 4px solid var(--cp-dark); }
+        h2 { font-size: 15px; font-weight: 800; text-transform: uppercase; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; color: var(--cp-dark); border-bottom: 2px solid #eee; padding-bottom: 8px; }
+        h2 span.num { color: var(--cp-red); }
 
         /* --- FORMULÁŘE A INPUTY --- */
-        .form-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
-            gap: 12px; 
-            width: 100%; 
-        }
-        
-        .input-group { 
-            display: flex; 
-            flex-direction: column; 
-            margin-bottom: 10px; 
-            width: 100%; 
-        }
-        
-        .input-group label { 
-            font-size: 11px; 
-            font-weight: 600; 
-            color: #555; 
-            margin-bottom: 5px; 
-            text-transform: uppercase; 
-        }
-        
-        input, select, textarea { 
-            width: 100%; 
-            padding: 10px; 
-            border: 1px solid var(--cp-border); 
-            border-radius: 4px; 
-            font-size: 13px; 
-            font-family: 'Roboto Mono', monospace; 
-            font-weight: 600; 
-            color: var(--cp-dark); 
-            background: #fafafa; 
-        }
-        
-        input:focus, select:focus { 
-            border-color: var(--cp-red); 
-            outline: none; 
-            background: var(--cp-white); 
-        }
-        
-        input[disabled], select[disabled] { 
-            background: #e0e0e0; 
-            cursor: not-allowed; 
-            color: #888; 
-        }
-        
-        .readonly-highlight { 
-            background: #e3f2fd !important; 
-            border-color: #90caf9 !important; 
-            color: #0d47a1 !important; 
-            font-weight: 800; 
-        }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; width: 100%; }
+        .input-group { display: flex; flex-direction: column; margin-bottom: 10px; width: 100%; }
+        .input-group label { font-size: 11px; font-weight: 600; color: #555; margin-bottom: 5px; text-transform: uppercase; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--cp-border); border-radius: 4px; font-size: 13px; font-family: 'Roboto Mono', monospace; font-weight: 600; color: var(--cp-dark); background: #fafafa; }
+        input:focus, select:focus { border-color: var(--cp-red); outline: none; background: var(--cp-white); }
+        input[disabled], select[disabled] { background: #e0e0e0; cursor: not-allowed; color: #888; }
+        .readonly-highlight { background: #e3f2fd !important; border-color: #90caf9 !important; color: #0d47a1 !important; font-weight: 800; }
 
         /* --- TLAČÍTKA --- */
-        .btn { 
-            background-color: var(--cp-red); 
-            color: var(--cp-white); 
-            border: none; 
-            padding: 14px; 
-            border-radius: 4px; 
-            font-size: 14px; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            cursor: pointer; 
-            transition: 0.3s; 
-            width: 100%; 
-            margin-top: 10px; 
-            text-align: center; 
-        }
-        
-        .btn:hover { 
-            background-color: var(--cp-red-hover); 
-        }
-        
-        .btn-secondary { 
-            background-color: #555; 
-            color: white; 
-            padding: 10px; 
-            font-size: 12px; 
-            font-weight: 800; 
-            border: none; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            display: inline-flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 6px; 
-        }
-        
-        .btn-secondary:hover { 
-            background-color: #333; 
-        }
-        
-        .btn-magic { 
-            background: linear-gradient(45deg, #1565c0, #42a5f5); 
-            color: white; 
-            font-weight: 800; 
-            padding: 14px; 
-            width: 100%; 
-            border: none; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            text-transform: uppercase; 
-            font-size: 13px; 
-            margin-top: 10px; 
-            transition: 0.3s;
-        } 
-        
-        .btn-magic:hover { 
-            background: linear-gradient(45deg, #0d47a1, #1e88e5); 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
-        }
+        .btn { background-color: var(--cp-red); color: var(--cp-white); border: none; padding: 14px; border-radius: 4px; font-size: 14px; font-weight: 800; text-transform: uppercase; cursor: pointer; transition: 0.3s; width: 100%; margin-top: 10px; text-align: center; }
+        .btn:hover { background-color: var(--cp-red-hover); }
+        .btn-secondary { background-color: #555; color: white; padding: 10px; font-size: 12px; font-weight: 800; border: none; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+        .btn-secondary:hover { background-color: #333; }
+        .btn-magic { background: linear-gradient(45deg, #1565c0, #42a5f5); color: white; font-weight: 800; padding: 14px; width: 100%; border: none; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-size: 13px; margin-top:10px; transition: 0.3s;} 
+        .btn-magic:hover { background: linear-gradient(45deg, #0d47a1, #1e88e5); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 
-        /* --- MAPA A ZASTÁVKY --- */
-        .addr-block { 
-            border: 1px solid #ddd; 
-            padding: 12px; 
-            border-radius: 6px; 
-            background: #fff; 
-            margin-bottom: 10px; 
-        }
+        /* --- ADRESNÍ BLOKY A MAPA --- */
+        .addr-block { border: 1px solid #ddd; padding: 12px; border-radius: 6px; background: #fff; margin-bottom: 10px; }
+        .addr-header { font-size: 12px; font-weight: 800; color: var(--cp-blue); margin-bottom: 8px; text-transform: uppercase; display: flex; justify-content: space-between;}
         
-        .addr-header { 
-            font-size: 12px; 
-            font-weight: 800; 
-            color: var(--cp-blue); 
-            margin-bottom: 8px; 
-            text-transform: uppercase; 
-            display: flex; 
-            justify-content: space-between;
-        }
+        .waypoints-container { border-left: 2px dashed var(--cp-red); padding-left: 15px; margin: 15px 0; }
+        .waypoint-row { background: #fff; padding: 12px; border-radius: 4px; border: 1px solid #ddd; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         
-        .waypoints-container { 
-            border-left: 2px dashed var(--cp-red); 
-            padding-left: 15px; 
-            margin: 15px 0; 
-        }
+        #map-container { display: none; height: 300px; border-radius: 6px; overflow: hidden; margin-top: 15px; border: 2px solid #ddd; width: 100%; }
         
-        #map-container { 
-            display: none; 
-            height: 300px; 
-            border-radius: 6px; 
-            overflow: hidden; 
-            margin-top: 15px; 
-            border: 2px solid #ddd; 
-            width: 100%; 
-        }
-        
-        .breakdown-container { 
-            background: #e3f2fd; 
-            padding: 15px; 
-            border-radius: 6px; 
-            border: 1px solid #b6d4fe; 
-            margin-top: 15px; 
-            display: none; 
-        }
-        
-        .breakdown-row { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr 1fr auto; 
-            gap: 10px; 
-            align-items: center; 
-            margin-bottom: 10px; 
-            border-bottom: 1px dashed #b6d4fe; 
-            padding-bottom: 10px; 
-        }
+        .breakdown-container { background: #e3f2fd; padding: 15px; border-radius: 6px; border: 1px solid #b6d4fe; margin-top: 15px; display: none; }
+        .breakdown-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: center; margin-bottom: 10px; border-bottom: 1px dashed #b6d4fe; padding-bottom: 10px; }
 
         /* --- DASHBOARD VÝSLEDKŮ --- */
-        .toggle-container { 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            background: var(--cp-dark); 
-            color: white; 
-            padding: 12px 15px; 
-            border-radius: 6px; 
-            margin-bottom: 12px; 
-        }
-        
-        .switch { 
-            position: relative; 
-            display: inline-block; 
-            width: 44px; 
-            height: 24px; 
-            flex-shrink: 0; 
-        }
-        
+        .toggle-container { display: flex; align-items: center; justify-content: space-between; background: var(--cp-dark); color: white; padding: 12px 15px; border-radius: 6px; margin-bottom: 12px; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        
-        .slider { 
-            position: absolute; 
-            cursor: pointer; 
-            top: 0; left: 0; right: 0; bottom: 0; 
-            background-color: #555; 
-            transition: .4s; 
-            border-radius: 24px; 
-        }
-        
-        .slider:before { 
-            position: absolute; 
-            content: ""; 
-            height: 18px; 
-            width: 18px; 
-            left: 3px; 
-            bottom: 3px; 
-            background-color: white; 
-            transition: .4s; 
-            border-radius: 50%; 
-        }
-        
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--cp-red); }
         input:checked + .slider:before { transform: translateX(20px); }
 
-        .result-row { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 8px 0; 
-            border-bottom: 1px dashed var(--cp-border); 
-        }
-        
+        .result-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--cp-border); }
         .result-label { font-size: 13px; color: #666; font-weight: 600; }
         .result-val { font-family: 'Roboto Mono', monospace; font-size: 14px; font-weight: 800; color: var(--cp-dark); }
         
-        .result-main { 
-            background: var(--cp-gray); 
-            padding: 15px; 
-            border-radius: 6px; 
-            margin-top: 10px; 
-            border-left: 4px solid var(--cp-red); 
-        }
-        
+        .result-main { background: var(--cp-gray); padding: 15px; border-radius: 6px; margin-top: 10px; border-left: 4px solid var(--cp-red); }
         .result-main .result-val { font-size: 18px; color: var(--cp-red); }
         
-        .status-box { 
-            padding: 15px; 
-            border-radius: 6px; 
-            margin-top: 15px; 
-            text-align: center; 
-            font-weight: 800; 
-            font-size: 16px; 
-            text-transform: uppercase; 
-        }
-        
+        .status-box { padding: 15px; border-radius: 6px; margin-top: 15px; text-align: center; font-weight: 800; font-size: 16px; text-transform: uppercase; }
         .status-profit { background: #d4edda; color: #155724; border: 2px solid #c3e6cb; }
         .status-loss { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
         .status-neutral { background: #333; color: #aaa; border: 2px solid #555; }
 
-        /* --- ŠICHTOVNÍK A KALENDÁŘ --- */
-        .driver-item { 
-            display: flex; 
-            flex-direction: column; 
-            padding: 10px; 
-            background: #f9f9f9; 
-            border: 1px solid #eee; 
-            margin-bottom: 8px; 
-            border-radius: 4px; 
-        }
+        /* --- ŠICHTOVNÍK KALENDÁŘ --- */
+        .driver-item { display: flex; flex-direction: column; padding: 10px; background: #f9f9f9; border: 1px solid #eee; margin-bottom: 8px; border-radius: 4px; }
+        .driver-item-header { display: flex; justify-content: space-between; align-items: center; width:100%; font-weight: 800; font-size: 14px;}
         
-        .driver-item-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            width:100%; 
-            font-weight: 800; 
-            font-size: 14px;
-        }
+        .calendar-table { width: 100%; border-collapse: collapse; min-width: 900px; background: white; }
+        .calendar-table th { background: #f0f0f0; padding: 12px; text-align: center; border: 1px solid #ddd; font-size: 12px; text-transform: uppercase; }
+        .calendar-table td { border: 1px solid #ddd; padding: 6px; vertical-align: top; height: 140px; width: 14.28%; position: relative; transition: 0.2s; }
+        .calendar-table td:hover { border-color: var(--cp-red); box-shadow: inset 0 0 5px rgba(227,0,15,0.2); }
+        .driver-name-col { font-weight: 800; background: #fafafa; text-align: left !important; padding: 10px !important; width: 140px; }
         
-        .aetr-badge { 
-            font-size: 10px; 
-            padding: 4px 6px; 
-            border-radius: 4px; 
-            font-weight: 800; 
-            margin-top: 5px; 
-            display: inline-block; 
-            text-align: center;
-        }
+        .shift-content { font-size: 11px; font-family: 'Roboto Mono', monospace; display: flex; flex-direction: column; height: 100%; cursor: pointer;}
+        .shift-head { font-weight: 800; font-size: 12px; border-bottom: 1px dashed #ccc; padding-bottom: 4px; margin-bottom: 6px; color: var(--cp-blue);}
+        .timeline-bar-wrap { width: 100%; height: 14px; background: #eee; border-radius: 4px; display: flex; overflow: hidden; margin-top: auto; }
+        .tl-drive { background: #4caf50; } .tl-work { background: #ff9800; } .tl-rest { background: #2196f3; }
         
-        .calendar-table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            min-width: 900px; 
-            background: white; 
-        }
-        
-        .calendar-table th { 
-            background: #f0f0f0; 
-            padding: 12px; 
-            text-align: center; 
-            border: 1px solid #ddd; 
-            font-size: 12px; 
-            text-transform: uppercase; 
-        }
-        
-        .calendar-table td { 
-            border: 1px solid #ddd; 
-            padding: 6px; 
-            vertical-align: top; 
-            height: 140px; 
-            width: 14.28%; 
-            position: relative; 
-            transition: 0.2s; 
-        }
-        
-        .calendar-table td:hover { 
-            border-color: var(--cp-red); 
-            box-shadow: inset 0 0 5px rgba(227,0,15,0.2); 
-        }
-        
-        .driver-name-col { 
-            font-weight: 800; 
-            background: #fafafa; 
-            text-align: left !important; 
-            padding: 10px !important; 
-            width: 140px; 
-        }
-        
-        .shift-content { 
-            font-size: 11px; 
-            font-family: 'Roboto Mono', monospace; 
-            display: flex; 
-            flex-direction: column; 
-            height: 100%; 
-            cursor: pointer;
-        }
-        
-        .shift-head { 
-            font-weight: 800; 
-            font-size: 12px; 
-            border-bottom: 1px dashed #ccc; 
-            padding-bottom: 4px; 
-            margin-bottom: 6px; 
-            color: var(--cp-blue);
-        }
-        
-        .timeline-bar-wrap { 
-            width: 100%; 
-            height: 14px; 
-            background: #eee; 
-            border-radius: 4px; 
-            display: flex; 
-            overflow: hidden; 
-            margin-top: auto; 
-        }
-        
-        .tl-drive { background: #4caf50; } 
-        .tl-work { background: #ff9800; } 
-        .tl-rest { background: #2196f3; }
-        
-        .cell-actions { 
-            position: absolute; 
-            top: 4px; 
-            right: 4px; 
-            display: flex; 
-            gap: 4px; 
-            opacity: 0.2; 
-            transition: 0.2s;
-        }
-        
-        .calendar-table td:hover .cell-actions { 
-            opacity: 1; 
-        }
-        
-        .cell-btn { 
-            background: #fff; 
-            border: 1px solid #ccc; 
-            font-size: 10px; 
-            padding: 4px 6px; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-weight: bold; 
-        }
-        
-        .cell-btn:hover { 
-            background: var(--cp-dark); 
-            color: white; 
-        }
+        .cell-actions { position: absolute; top: 4px; right: 4px; display: flex; gap: 4px; opacity: 0.2; transition: 0.2s;}
+        .calendar-table td:hover .cell-actions { opacity: 1; }
+        .cell-btn { background: #fff; border: 1px solid #ccc; font-size: 10px; padding: 4px 6px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .cell-btn:hover { background: var(--cp-dark); color: white; }
 
         /* --- VYSKAKOVACÍ OKNA (MODALS) --- */
-        .modal-overlay { 
-            display: none; 
-            position: fixed; 
-            top: 0; left: 0; 
-            width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.85); 
-            z-index: 100000; 
-            align-items: flex-start; 
-            justify-content: center; 
-            padding: 20px; 
-            overflow-y: auto; 
-        }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100000; align-items: flex-start; justify-content: center; padding: 20px; overflow-y: auto; }
+        .info-box { background: white; padding: 25px; border-radius: 8px; max-width: 600px; width: 100%; margin: 40px auto; box-shadow: 0 15px 40px rgba(0,0,0,0.4); border-top: 6px solid var(--cp-red); position: relative;}
         
-        .info-box { 
-            background: white; 
-            padding: 25px; 
-            border-radius: 8px; 
-            max-width: 600px; 
-            width: 100%; 
-            margin: 40px auto; 
-            box-shadow: 0 15px 40px rgba(0,0,0,0.4); 
-            border-top: 6px solid var(--cp-red); 
-            position: relative;
-        }
+        #apiStatus { margin-top: 10px; font-size: 12px; font-weight: 800; padding: 10px; border-radius: 4px; display: none; text-align: center;}
         
-        #apiStatus { 
-            margin-top: 10px; 
-            font-size: 12px; 
-            font-weight: 800; 
-            padding: 10px; 
-            border-radius: 4px; 
-            display: none; 
-            text-align: center;
+        /* Ochrana před tiskem modalů atd */
+        @media print {
+            header, .app-switcher, .driver-list-box, .week-controls button, .modal-overlay, .cell-actions, .btn-secondary, .btn { display: none !important; }
+            body { background: white; }
+            .planner-layout { display: block; margin: 0; padding: 0;}
+            .planner-grid-box { border: none; box-shadow: none; padding: 0; }
+            .calendar-table th { background: #ddd !important; -webkit-print-color-adjust: exact; }
+            @page { size: landscape; margin: 1cm; }
         }
     </style>
 </head>
 <body>
 
+<!-- NÁČÍTÁNÍ PŘI STARTU -->
 <div id="loading-screen">
     <div class="loader-content">
         <div class="spinner"></div>
@@ -630,20 +162,20 @@
     </div>
 </div>
 
+<!-- HLAVIČKA -->
 <header>
     <div class="logo-container">
         CONTROL POINT <span class="sub">ULTIMATE ERP</span>
     </div>
     <div class="header-controls">
-        <button class="btn-secondary" onclick="autoSave(); alert('Všechna data uložena!');" style="background: #107c41; margin:0;">💾 ULOŽIT</button>
-        <select id="langSelect" style="padding: 8px; font-size: 12px; width: 80px; margin:0;" onchange="alert('Jazyk změněn');">
-            <option value="cs">CZ</option>
-            <option value="en">EN</option>
-            <option value="de">DE</option>
+        <button class="btn-secondary" onclick="autoSave(); alert('Data uložena!');" style="background: #107c41; margin:0; padding: 8px 15px;">💾 ULOŽIT</button>
+        <select id="langSelect" style="padding: 8px; font-size: 12px; width: 80px; margin:0;">
+            <option value="cs">CZ</option><option value="en">EN</option><option value="de">DE</option>
         </select>
     </div>
 </header>
 
+<!-- PŘEPÍNAČ -->
 <div class="app-switcher">
     <button class="app-btn active" id="btnAppCalc" onclick="switchApp('calc')">🧮 1. Kalkulačka Trasy</button>
     <button class="app-btn" id="btnAppPlan" onclick="switchApp('plan')">📅 2. Šichtovník & Mzdy</button>
@@ -654,20 +186,18 @@
 <!-- ========================================== -->
 <div id="view-calculator" class="container">
     <div class="inputs-section">
-        
         <div class="card">
             <h2><div><span class="num">01.</span> Lokace & Trasa</div></h2>
             
             <!-- Oblíbené trasy -->
             <div style="background: #f0f0f0; padding: 12px; border-radius: 6px; margin-bottom: 15px; display: flex; gap: 10px; border: 1px dashed #ccc;">
                 <select id="favSelect" onchange="loadFavorite()" style="flex-grow:1;">
-                    <option value="">-- Načíst oblíbenou šablonu trasy --</option>
+                    <option value="">-- Načíst oblíbenou šablonu --</option>
                 </select>
                 <button class="btn-secondary" style="background:#c62828; padding:10px 15px;" onclick="removeFavorite()" title="Smazat šablonu">🗑️</button>
                 <button class="btn-secondary" style="background:#ffca28; color:#333; padding:10px 15px;" onclick="saveFavorite()">⭐ Uložit</button>
             </div>
             
-            <!-- Varování o zákazu zemí -->
             <div id="avoidListContainer"></div>
 
             <!-- START -->
@@ -681,12 +211,8 @@
                     <div class="input-group">
                         <label>Stát</label>
                         <select id="startStat">
-                            <option value="CZ">CZ</option>
-                            <option value="DE">DE</option>
-                            <option value="AT">AT</option>
-                            <option value="SK">SK</option>
-                            <option value="PL">PL</option>
-                            <option value="IT">IT</option>
+                            <option value="CZ">CZ</option><option value="DE">DE</option><option value="AT">AT</option>
+                            <option value="SK">SK</option><option value="PL">PL</option><option value="IT">IT</option>
                         </select>
                     </div>
                     <div class="input-group">
@@ -709,17 +235,12 @@
                         <input type="text" id="cilAdresa" placeholder="Např. Madrid">
                     </div>
                     <div class="input-group">
-                        <label>Stát (Garance diet)</label>
+                        <label>Stát (Garance mýta/diet)</label>
                         <select id="cilStat">
-                            <option value="ES">ES</option>
-                            <option value="DE">DE</option>
-                            <option value="IT">IT</option>
-                            <option value="CZ">CZ</option>
-                            <option value="AT">AT</option>
-                            <option value="PL">PL</option>
-                            <option value="FR">FR</option>
-                            <option value="SK">SK</option>
-                            <option value="NL">NL</option>
+                            <option value="">-- Automaticky --</option>
+                            <option value="ES">ES</option><option value="DE">DE</option><option value="IT">IT</option>
+                            <option value="CZ">CZ</option><option value="AT">AT</option><option value="PL">PL</option>
+                            <option value="FR">FR</option><option value="SK">SK</option><option value="NL">NL</option>
                         </select>
                     </div>
                     <div class="input-group">
@@ -729,24 +250,29 @@
                 </div>
             </div>
 
-            <button id="btnTrasa" class="btn" onclick="spocitatTrasu()">🚀 Spočítat trasu ze satelitu OSRM</button>
-            <div id="apiStatus"></div>
-            
-            <div id="map-container">
-                <div id="map" style="width: 100%; height: 100%;"></div>
-            </div>
-            
-            <div class="form-grid" style="margin-top: 15px; border-top: 2px solid #eee; padding-top: 15px;">
-                <div class="input-group">
-                    <label>Celkem km</label>
-                    <input type="number" id="vzdalenost" value="0" readonly class="readonly-highlight">
-                </div>
+            <div class="form-grid" style="margin-top: 15px;">
                 <div class="input-group">
                     <label>Typ trasy</label>
                     <select id="typTrasy" onchange="calculate()">
                         <option value="1">Napřímo</option>
                         <option value="2">Zpáteční (Kolečko)</option>
                     </select>
+                </div>
+                <div class="input-group">
+                    <label>Kurz EUR</label>
+                    <input type="number" id="kurzEuro" value="25" step="0.1">
+                </div>
+            </div>
+
+            <button id="btnTrasa" class="btn" onclick="spocitatTrasu()">🚀 Spočítat trasu ze satelitu OSRM</button>
+            <div id="apiStatus"></div>
+            
+            <div id="map-container"><div id="map" style="width: 100%; height: 100%;"></div></div>
+            
+            <div class="form-grid" style="margin-top: 15px; border-top: 2px solid #eee; padding-top: 15px;">
+                <div class="input-group">
+                    <label>Celkem km</label>
+                    <input type="number" id="vzdalenost" value="0" readonly class="readonly-highlight">
                 </div>
                 <div class="input-group">
                     <label>Dokládky km mimo trasu</label>
@@ -765,17 +291,11 @@
             <div class="form-grid">
                 <div class="input-group">
                     <label>Euro Norma</label>
-                    <select id="euroNorma" onchange="updateAllSegmentTolls()">
-                        <option value="1.0">Euro VI</option>
-                        <option value="1.15">Euro V</option>
-                    </select>
+                    <select id="euroNorma" onchange="updateAllSegmentTolls()"><option value="1.0">Euro VI</option><option value="1.15">Euro V</option></select>
                 </div>
                 <div class="input-group">
                     <label>Nápravy</label>
-                    <select id="napravyFyzicke" onchange="updateAllSegmentTolls()">
-                        <option value="5">5 náprav</option>
-                        <option value="4">4 nápravy</option>
-                    </select>
+                    <select id="napravyFyzicke" onchange="updateAllSegmentTolls()"><option value="5">5 náprav</option><option value="4">4 nápravy</option></select>
                 </div>
                 <div class="input-group">
                     <label>Spotřeba prázdné (L)</label>
@@ -793,17 +313,11 @@
             <div class="form-grid">
                 <div class="input-group">
                     <label>Složení posádky</label>
-                    <select id="posadka" onchange="calculate()">
-                        <option value="1">1 Řidič</option>
-                        <option value="2">Dvojosádka</option>
-                    </select>
+                    <select id="posadka" onchange="calculate()"><option value="1">1 Řidič</option><option value="2">Dvojosádka</option></select>
                 </div>
                 <div class="input-group">
                     <label>Typ Mzdy</label>
-                    <select id="typMzdy" onchange="calculate()">
-                        <option value="denni">Dení sazba (vč. diet)</option>
-                        <option value="fixni">Fixní odměna (točka)</option>
-                    </select>
+                    <select id="typMzdy" onchange="calculate()"><option value="denni">Dení sazba (vč. diet)</option><option value="fixni">Fixní odměna (točka)</option></select>
                 </div>
                 <div class="input-group">
                     <label>Odměna (Hodnota)</label>
@@ -817,64 +331,35 @@
                     <label>Fixní náklady auta / Den</label>
                     <input type="number" id="nakladyAutoDen" value="2500" oninput="calculate()">
                 </div>
-                <div class="input-group">
-                    <label>Kurz EUR pro výpočty</label>
-                    <input type="number" id="kurzEuro" value="25" step="0.1" oninput="calculate()">
-                </div>
             </div>
         </div>
     </div>
 
-    <!-- PRAVÝ SLOUPEC: DASHBOARD -->
+    <!-- DASHBOARD VÝSLEDKŮ KALKULAČKY -->
     <div class="dashboards-section">
         <div class="card dashboard">
             <div class="toggle-container">
                 <span class="toggle-label">Zobrazit VČETNĚ DPH (21%)</span>
-                <label class="switch">
-                    <input type="checkbox" id="dphToggle" onchange="calculate()">
-                    <span class="slider"></span>
-                </label>
+                <label class="switch"><input type="checkbox" id="dphToggle" onchange="calculate()"><span class="slider"></span></label>
             </div>
             <div class="toggle-container" style="background: #333;">
                 <span class="toggle-label" style="color: #fff;">Kalkulace VČETNĚ MÝTA</span>
-                <label class="switch">
-                    <input type="checkbox" id="mytoToggle" checked onchange="calculate()">
-                    <span class="slider"></span>
-                </label>
+                <label class="switch"><input type="checkbox" id="mytoToggle" checked onchange="calculate()"><span class="slider"></span></label>
             </div>
 
             <h2 style="margin-top:20px; font-size:16px;">Ceníková Kalkulace</h2>
-            
             <div class="result-row">
                 <span class="result-label">Prům. spotřeba vč. tun:</span>
                 <span class="result-val" id="resSpotrebaDynamicka" style="color: var(--cp-blue);">0 L/100 km</span>
             </div>
-            <div class="result-row">
-                <span class="result-label">Nafta celkem:</span>
-                <span class="result-val" id="resNafta">0 Kč</span>
-            </div>
-            <div class="result-row">
-                <span class="result-label">Odměna posádky:</span>
-                <span class="result-val" id="resMzda">0 Kč</span>
-            </div>
-            <div class="result-row">
-                <span class="result-label">Fixní náklady auta & Pneu:</span>
-                <span class="result-val" id="resFixPneu">0 Kč</span>
-            </div>
-            <div class="result-row">
-                <span class="result-label">Mýto celkem:</span>
-                <span class="result-val" id="resMyto">0 Kč</span>
-            </div>
+            <div class="result-row"><span class="result-label">Nafta celkem:</span><span class="result-val" id="resNafta">0 Kč</span></div>
+            <div class="result-row"><span class="result-label">Odměna posádky:</span><span class="result-val" id="resMzda">0 Kč</span></div>
+            <div class="result-row"><span class="result-label">Fixní náklady auta & Pneu:</span><span class="result-val" id="resFixPneu">0 Kč</span></div>
+            <div class="result-row"><span class="result-label">Mýto celkem:</span><span class="result-val" id="resMyto">0 Kč</span></div>
 
             <div class="result-main">
-                <div class="result-row" style="border:none; padding:0;">
-                    <span class="result-label">NÁKLADY CELKEM:</span>
-                    <span class="result-val" id="resNakladyCelkem" style="font-size: 22px;">0 Kč</span>
-                </div>
-                <div class="result-row" style="border:none; padding:5px 0 0 0;">
-                    <span class="result-label" style="font-size:11px;">Náklad na 1 km:</span>
-                    <span class="result-val" id="resKmVcMyta" style="font-size:14px;">0 Kč/km</span>
-                </div>
+                <div class="result-row" style="border:none; padding:0;"><span class="result-label">NÁKLADY CELKEM:</span><span class="result-val" id="resNakladyCelkem" style="font-size: 22px;">0 Kč</span></div>
+                <div class="result-row" style="border:none; padding:5px 0 0 0;"><span class="result-label" style="font-size:11px;">Náklad na 1 km:</span><span class="result-val" id="resKmVcMyta" style="font-size:14px;">0 Kč/km</span></div>
             </div>
             
             <div class="input-group" style="margin-top: 15px;">
@@ -897,17 +382,11 @@
             <div class="form-grid">
                 <div class="input-group">
                     <label style="color:#aaa;">Zadání ceny</label>
-                    <select id="realCenaTyp" onchange="calculate()">
-                        <option value="celkem">Za celou trasu</option>
-                        <option value="km">Za 1 km</option>
-                    </select>
+                    <select id="realCenaTyp" onchange="calculate()"><option value="celkem">Za celou trasu</option><option value="km">Za 1 km</option></select>
                 </div>
                 <div class="input-group">
                     <label style="color:#aaa;">Měna tržby</label>
-                    <select id="realCenaMena" onchange="calculate()">
-                        <option value="CZK">CZK</option>
-                        <option value="EUR">EUR</option>
-                    </select>
+                    <select id="realCenaMena" onchange="calculate()"><option value="CZK">CZK</option><option value="EUR">EUR</option></select>
                 </div>
             </div>
             <div class="input-group" style="margin-top: 10px;">
@@ -946,11 +425,11 @@
             
             <div class="form-grid" style="border-bottom: 1px dashed #b6d4fe; padding-bottom: 15px; margin-bottom: 15px;">
                 <div class="input-group">
-                    <label>Odkud</label>
+                    <label>Odkud (Start)</label>
                     <input type="text" id="planStartRoute" placeholder="Např. Praha">
                 </div>
                 <div class="input-group">
-                    <label>Kam</label>
+                    <label>Kam (Cíl)</label>
                     <input type="text" id="planEndRoute" placeholder="Např. Madrid">
                 </div>
                 <div class="input-group">
@@ -1015,7 +494,7 @@
         </div>
 
         <div class="week-controls">
-            <button class="btn-secondary" style="width:auto; padding:10px 20px;" onclick="changeWeek(-1)">◀</button>
+            <button class="btn-secondary" style="width:auto; padding:10px 20px;" onclick="changeWeek(-1)">◀ Předchozí</button>
             <div style="display:flex; gap:10px; align-items:center;">
                 <select id="yearSelect" onchange="changeYearMonth()" style="width:80px; padding:6px;">
                     <option value="2024">2024</option>
@@ -1024,7 +503,11 @@
                 </select>
                 <h2 style="color: white; margin: 0; font-size: 16px;" id="plannerWeekLabel">Týden 1</h2>
             </div>
-            <button class="btn-secondary" style="width:auto; padding:10px 20px;" onclick="changeWeek(1)">▶</button>
+            <button class="btn-secondary" style="width:auto; padding:10px 20px;" onclick="changeWeek(1)">Další ▶</button>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:10px;">
+            <button class="btn-secondary" style="background:#107c41; width:auto; padding:10px 20px;" onclick="openPdfExportModal()">🖨️ Export (Kniha Jízd / Mzdy)</button>
         </div>
 
         <div style="overflow-x: auto;">
@@ -1042,13 +525,13 @@
     </div>
 </div>
 
-<!-- MODAL: MANUÁLNÍ ÚPRAVA DNE -->
+<!-- ========================================== -->
+<!-- MODAL: ÚPRAVA DNE AETR                     -->
+<!-- ========================================== -->
 <div id="shiftModal" class="modal-overlay">
     <div class="info-box" style="max-width: 500px;">
         <h3 id="shiftModalTitle" style="border-bottom:2px solid var(--cp-red); padding-bottom:10px; margin-bottom:15px;">Úprava Směny</h3>
         
-        <div id="aetrStrictWarning" style="background: #ffebee; color: #c62828; padding: 12px; border-radius: 4px; margin-bottom: 15px; font-size: 12px; font-weight: 800; display: none; border: 1px solid #ffcdd2; text-align:center;"></div>
-
         <div class="form-grid">
             <div class="input-group">
                 <label>Začátek Směny</label>
@@ -1063,7 +546,7 @@
             </div>
         </div>
         <div class="input-group" style="margin-top: 10px;">
-            <label>Poznámka k dni</label>
+            <label>Poznámka k dni (Např. Cíl)</label>
             <input type="text" id="editNote" placeholder="Např. Čekání hranice">
         </div>
         
@@ -1081,7 +564,9 @@
     </div>
 </div>
 
-<!-- MODAL: MZDY A DIETY -->
+<!-- ========================================== -->
+<!-- MODAL: MZDY A DIETY                        -->
+<!-- ========================================== -->
 <div id="payrollModal" class="modal-overlay">
     <div class="info-box" style="max-width: 650px;">
         <h3 id="payrollModalTitle" style="border-bottom:2px solid var(--cp-red); padding-bottom:10px; margin-bottom:15px;">Mzdový Výměr a Diety v Týdnu</h3>
@@ -1123,7 +608,7 @@
         </div>
 
         <div id="dietsSection" style="background: #e3f2fd; padding: 15px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #b6d4fe;">
-            <h4 style="font-size: 12px; margin-bottom: 12px; color: #0d47a1;">2. ZAHRANIČNÍ DIETY</h4>
+            <h4 style="font-size: 12px; margin-bottom: 12px; color: #0d47a1;">2. ZAHRANIČNÍ DIETY (Legislativa CZ)</h4>
             <div style="font-size:10px; color:#555; margin-bottom:10px;">Vygenerováno z Plánovače podle hodin. 1-12h = 1/3, 12-18h = 2/3, nad 18h = celá.</div>
             
             <div id="dietsListContainer" style="max-height:200px; overflow-y:auto; margin-bottom:10px;"></div>
@@ -1136,37 +621,60 @@
             </div>
         </div>
 
-        <div class="input-group" style="margin-bottom:15px;">
+        <div class="input-group" style="margin-bottom:0;">
             <label>Bonusy / Srážky (Kč)</label>
             <input type="number" id="payBonus" value="0" oninput="calcPayroll()">
         </div>
         
-        <div style="background: #e8f5e9; padding:20px; border-radius:6px; border:2px solid #c8e6c9; text-align:center;">
-            <span style="font-size:13px; color:#2e7d32; font-weight:800;">VÝPLATA CELKEM:</span><br>
+        <div style="background: #e8f5e9; padding:20px; border-radius:6px; border:2px solid #c8e6c9; text-align:center; margin-top: 15px;">
+            <span style="font-size:13px; color:#2e7d32; font-weight:800;">CELKEM K VÝPLATĚ:</span><br>
             <span id="payTotal" style="font-size:32px; color:#155724; font-weight:900;">0 Kč</span>
         </div>
-        
         <button class="btn-modal-close" onclick="closePayroll()" style="padding:15px; font-size:15px;">Uložit Nastavení</button>
     </div>
 </div>
 
+<!-- ========================================== -->
+<!-- MODAL: PDF A EXPORTY                       -->
+<!-- ========================================== -->
+<div id="pdfExportModal" class="modal-overlay">
+    <div class="info-box" style="max-width: 450px; text-align:center;">
+        <h3 style="margin-bottom:15px; color:var(--cp-dark);">Exporty a Tisk (Kniha Jízd)</h3>
+        
+        <div class="input-group" style="margin-bottom:20px;">
+            <label>Vyberte Řidiče</label>
+            <select id="pdfDriverSelect"></select>
+        </div>
+        
+        <div style="display:flex; gap:10px; margin-bottom:15px; flex-direction:column;">
+            <button class="btn-secondary" style="background:#107c41; padding:15px; font-size:15px;" onclick="exportKnihaPrint()">📄 Vytisknout / PDF (Kniha Jízd)</button>
+            <button class="btn-secondary" style="background:#1565c0; padding:12px;" onclick="exportKnihaCSV()">📊 Stáhnout do Excelu (CSV)</button>
+            <button class="btn-secondary" style="background:#25D366; padding:12px;" onclick="exportDriverWA()">💬 Poslat přehled na WhatsApp</button>
+        </div>
+        
+        <button class="btn-modal-close" style="background:#ccc; color:#333;" onclick="document.getElementById('pdfExportModal').style.display='none'">Zrušit</button>
+    </div>
+</div>
+
 <!-- ========================================================================================= -->
-<!-- JAVASCRIPT LOGIKA - API, MAPY, AETR, MZDY -->
+<!-- JAVASCRIPT LOGIKA - PLNĚ ROZBALENÁ, NENÍ ZKOMPRIMOVANÁ                                  -->
 <!-- ========================================================================================= -->
 <script>
-    // --- 1. PŘEPÍNAČ APLIKACÍ ---
+    // --- 1. ZÁKLADY A PŘEPÍNAČE ---
     function switchApp(app) {
         document.getElementById('btnAppCalc').className = 'app-btn' + (app === 'calc' ? ' active' : '');
         document.getElementById('btnAppPlan').className = 'app-btn' + (app === 'plan' ? ' active' : '');
+        
         document.getElementById('view-calculator').style.display = app === 'calc' ? 'grid' : 'none';
         document.getElementById('view-planner').style.display = app === 'plan' ? 'grid' : 'none';
+        
         if (app === 'plan') {
             plannerLoadState();
             renderPlanner();
         }
     }
 
-    // --- 2. MAPA A ZÁKLADY ---
+    // --- 2. MAPA LEAFLET ---
     let map = null; 
     let routeLayer = null; 
     let markerGroup = null;
@@ -1182,43 +690,48 @@
     
     function drawMap(coordsGeoJson) { 
         initMap(); 
-        if (routeLayer) map.removeLayer(routeLayer);
+        if (routeLayer) {
+            map.removeLayer(routeLayer);
+        }
         markerGroup.clearLayers(); 
+        
         let latlngs = coordsGeoJson.map(c => [c[1], c[0]]); 
         routeLayer = L.polyline(latlngs, {color: '#e3000f', weight: 4}).addTo(map); 
         map.fitBounds(routeLayer.getBounds(), {padding: [20,20]}); 
     }
 
+    // --- KONSTANTY (Mýto a Diety) ---
     const MYTO_STATY = { 
-        'CZ':{name:'Česko',rate:4.5}, 
-        'SK':{name:'Slovensko',rate:5.0}, 
-        'DE':{name:'Německo',rate:8.5}, 
-        'AT':{name:'Rakousko',rate:11.5}, 
-        'IT':{name:'Itálie',rate:6.0}, 
-        'PL':{name:'Polsko',rate:3.5}, 
-        'HU':{name:'Maďarsko',rate:8.0}, 
-        'RO':{name:'Rumunsko',rate:2.0}, 
-        'ES':{name:'Španělsko',rate:4.0}, 
-        'NL':{name:'Nizozemí',rate:1.0}, 
-        'BE':{name:'Belgie',rate:4.5}, 
-        'CH':{name:'Švýcarsko',rate:12.0}, 
-        'FR':{name:'Francie',rate:6.5} 
+        'CZ': { name: 'Česko', rate: 4.5 }, 
+        'SK': { name: 'Slovensko', rate: 5.0 }, 
+        'DE': { name: 'Německo', rate: 8.5 }, 
+        'AT': { name: 'Rakousko', rate: 11.5 }, 
+        'IT': { name: 'Itálie', rate: 6.0 }, 
+        'PL': { name: 'Polsko', rate: 3.5 }, 
+        'HU': { name: 'Maďarsko', rate: 8.0 }, 
+        'RO': { name: 'Rumunsko', rate: 2.0 }, 
+        'ES': { name: 'Španělsko', rate: 4.0 }, 
+        'NL': { name: 'Nizozemí', rate: 1.0 }, 
+        'BE': { name: 'Belgie', rate: 4.5 }, 
+        'CH': { name: 'Švýcarsko', rate: 12.0 }, 
+        'FR': { name: 'Francie', rate: 6.5 } 
     };
     
     const DIET_RATES = { 
-        'CZ':{rate:300,curr:'CZK'}, 
-        'DE':{rate:45,curr:'EUR'}, 
-        'AT':{rate:45,curr:'EUR'}, 
-        'IT':{rate:50,curr:'EUR'}, 
-        'SK':{rate:35,curr:'EUR'}, 
-        'PL':{rate:40,curr:'EUR'}, 
-        'HU':{rate:40,curr:'EUR'}, 
-        'ES':{rate:50,curr:'EUR'}, 
-        'NL':{rate:50,curr:'EUR'}, 
-        'BE':{rate:50,curr:'EUR'}, 
-        'CH':{rate:50,curr:'EUR'}, 
-        'FR':{rate:50,curr:'EUR'}, 
-        'OSTATNÍ':{rate:45,curr:'EUR'} 
+        'CZ': { rate: 300, curr: 'CZK' }, 
+        'DE': { rate: 45, curr: 'EUR' }, 
+        'AT': { rate: 45, curr: 'EUR' }, 
+        'IT': { rate: 50, curr: 'EUR' }, 
+        'SK': { rate: 35, curr: 'EUR' }, 
+        'PL': { rate: 40, curr: 'EUR' }, 
+        'HU': { rate: 40, curr: 'EUR' }, 
+        'RO': { rate: 40, curr: 'EUR' }, 
+        'ES': { rate: 50, curr: 'EUR' }, 
+        'NL': { rate: 50, curr: 'EUR' }, 
+        'BE': { rate: 50, curr: 'EUR' }, 
+        'CH': { rate: 50, curr: 'EUR' }, 
+        'FR': { rate: 50, curr: 'EUR' }, 
+        'OSTATNÍ': { rate: 45, curr: 'EUR' } 
     };
     
     const MYTO_NAPRAVY_KOEF = { '2': 0.7, '3': 0.8, '4': 1.0, '5': 1.0, '6': 1.1 };
@@ -1246,6 +759,7 @@
     let lastRouteData = null; 
     let excludedCountries = [];
 
+    // Geolokační helpery
     async function getCoordinates(address) {
         if (!address) return null; 
         
@@ -1311,10 +825,14 @@
         let url = `https://router.project-osrm.org/route/v1/driving/${coordStrings.join(';')}?overview=full&geometries=geojson`;
         let response = await fetch(url);
         
-        if (!response.ok) throw new Error("OSRM Server je přetížen nebo nedostupný."); 
+        if (!response.ok) {
+            throw new Error("OSRM Server je přetížen nebo nedostupný.");
+        } 
         
         let data = await response.json(); 
-        if (!data.routes || data.routes.length === 0) throw new Error("Trasu se nepodařilo nalézt.");
+        if (!data.routes || data.routes.length === 0) {
+            throw new Error("Trasu se nepodařilo nalézt.");
+        }
         
         return data.routes[0];
     }
@@ -1347,8 +865,10 @@
 
         for (let i = 1; i < coords.length; i++) {
             currentSegKm += distances[i];
+            
             if (checkIdx < pointsToCheck.length && pointsToCheck[checkIdx].index === i) { 
                 let cc = pointsToCheck[checkIdx].cc; 
+                
                 if (cc && MYTO_STATY[cc] && cc !== currentCountry) { 
                     rawSegments.push({ code: currentCountry, km: currentSegKm }); 
                     currentCountry = cc; 
@@ -1378,10 +898,9 @@
             finalSegments.forEach(s => s.km = s.km * ratio); 
         }
 
-        // POKA-YOKE 4: Ochrana proti zakázaným zemím (Vyhýbání)
         if (avoidArr.length > 0) {
             let hit = finalSegments.find(s => avoidArr.includes(s.code));
-            if(hit) {
+            if (hit) {
                 throw new Error(`Trasu nelze matematicky objet přes OSRM - narazeno na zakázaný stát ${MYTO_STATY[hit.code].name}. Přidejte prosím záchytný průjezdní bod.`);
             }
         }
@@ -1389,7 +908,7 @@
         return finalSegments;
     }
 
-    // --- MANIPULACE SE ZASTÁVKAMI ---
+    // --- ZASTÁVKY V KALKULAČCE ---
     function addWaypoint() {
         wpCounter++; 
         waypoints.push({ id: wpCounter, address: "", type: "transit", weight: 0, cc: "DE" });
@@ -1405,8 +924,7 @@
         waypoints = waypoints.filter(wp => wp.id !== id); 
         renderWaypoints();
         
-        // Odblokování kolečka, když není žádná zastávka
-        if(waypoints.length === 0) {
+        if (waypoints.length === 0) {
             document.getElementById('typTrasy').disabled = false;
         }
     }
@@ -1442,14 +960,16 @@
         });
     }
 
-    // --- ZAKÁZANÉ ZEMĚ ---
+    // --- ZAKAZOVÁNÍ ZEMÍ ---
     function removeAvoid(code) { 
         excludedCountries = excludedCountries.filter(c => c !== code); 
         renderAvoidList(); 
     }
     
     function avoidCountryPlan(code) { 
-        if(!excludedCountries.includes(code)) excludedCountries.push(code); 
+        if (!excludedCountries.includes(code)) {
+            excludedCountries.push(code); 
+        }
         renderAvoidList(); 
         spocitatTrasu(); 
     }
@@ -1457,7 +977,7 @@
     function renderAvoidList() {
         let container = document.getElementById('avoidListContainer'); 
         
-        if(excludedCountries.length === 0) { 
+        if (excludedCountries.length === 0) { 
             container.innerHTML = ''; 
             return; 
         }
@@ -1471,7 +991,7 @@
         container.innerHTML = html + `</div>`;
     }
 
-    // --- VÝPOČET TRASY ---
+    // --- HLAVNÍ VÝPOČET TRASY ---
     async function spocitatTrasu() {
         let startAdr = document.getElementById('startAdresa').value; 
         let cilAdr = document.getElementById('cilAdresa').value; 
@@ -1492,7 +1012,6 @@
             
             globalBreakdown = await processRouteSegments(route.geometry.coordinates, distTotal, document.getElementById('cilStat').value, excludedCountries);
             
-            // Inteligentní výpočet spotřeby dle tonáže na úsecích
             let startVaha = parseFloat(document.getElementById('startVaha').value) || 0;
             let actVaha = startVaha; 
             let emptyCons = parseFloat(document.getElementById('spotrebaPrazdne').value) || 25;
@@ -1524,7 +1043,7 @@
                     <div class="breakdown-input-group"><label>Stát</label><input type="text" value="${MYTO_STATY[seg.code].name}" readonly></div>
                     <div class="breakdown-input-group"><label>Km</label><input type="number" class="seg-km" value="${seg.km.toFixed(0)}" oninput="calculate()"></div>
                     <div class="breakdown-input-group"><label>Kč Mýto</label><input type="number" class="seg-toll" value="${Math.round(toll)}" oninput="calculate()"></div>
-                    <button class="btn-secondary" onclick="avoidCountryPlan('${seg.code}')" style="background:var(--cp-danger); margin:0; padding:10px;" title="Zakázat tento stát">✕</button>
+                    <button class="btn-secondary" onclick="avoidCountryPlan('${seg.code}')" style="background:var(--cp-danger); margin:0; padding:10px;" title="Zakázat stát">✕</button>
                 </div>`;
             });
             
@@ -1588,48 +1107,6 @@
         document.getElementById('resProdejniCenaKm').innerText = distFin > 0 ? formatMoney(pCena / distFin) + " / km" : "0";
     }
 
-    // --- Ukládání šablon ---
-    function saveFavorite() {
-        let name = prompt("Zadejte název šablony (např. Mohelnice - Miláno):");
-        if(!name) return;
-        let favs = JSON.parse(localStorage.getItem('cpFavorites')) || {};
-        favs[name] = JSON.parse(localStorage.getItem('controlPointDraft'));
-        localStorage.setItem('cpFavorites', JSON.stringify(favs));
-        updateFavoritesDropdown();
-        alert("Úspěšně uloženo!");
-    }
-
-    function loadFavorite() {
-        let name = document.getElementById('favSelect').value;
-        if(!name) return;
-        let favs = JSON.parse(localStorage.getItem('cpFavorites')) || {};
-        if(favs[name]) {
-            localStorage.setItem('controlPointDraft', JSON.stringify(favs[name]));
-            loadAutoSave();
-            spocitatTrasu();
-        }
-    }
-
-    function removeFavorite() {
-        let name = document.getElementById('favSelect').value;
-        if(!name) return;
-        if(confirm(`Opravdu smazat šablonu ${name}?`)) {
-            let favs = JSON.parse(localStorage.getItem('cpFavorites')) || {};
-            delete favs[name];
-            localStorage.setItem('cpFavorites', JSON.stringify(favs));
-            updateFavoritesDropdown();
-        }
-    }
-
-    function updateFavoritesDropdown() {
-        let favs = JSON.parse(localStorage.getItem('cpFavorites')) || {};
-        let sel = document.getElementById('favSelect');
-        sel.innerHTML = `<option value="">-- Načíst oblíbenou trasu --</option>`;
-        for(let k in favs) { 
-            sel.insertAdjacentHTML('beforeend', `<option value="${k}">${k}</option>`); 
-        }
-    }
-
     function autoSave() { 
         let dataToSave = { 
             start: document.getElementById('startAdresa').value, 
@@ -1648,7 +1125,6 @@
             wpCounter = waypoints.length; 
             renderWaypoints();
         } 
-        updateFavoritesDropdown();
     }
     
     window.addEventListener('load', () => { 
@@ -1684,7 +1160,7 @@
     }
 
     function plannerLoadState() { 
-        let savedState = localStorage.getItem('cpPlannerUltimate2'); 
+        let savedState = localStorage.getItem('cpPlannerUltimate3'); 
         if (savedState) {
             plannerState = JSON.parse(savedState);
         } else { 
@@ -1697,7 +1173,7 @@
     }
 
     function plannerSaveState() { 
-        localStorage.setItem('cpPlannerUltimate2', JSON.stringify(plannerState)); 
+        localStorage.setItem('cpPlannerUltimate3', JSON.stringify(plannerState)); 
         updateDriverSelects(); 
     }
     
@@ -1733,21 +1209,16 @@
         } 
     }
 
-    function removePlannerDriver(id) { 
-        if (confirm("Smazat řidiče? Smažou se i všechny jeho naplánované směny a mzdy!")) { 
-            plannerState.drivers = plannerState.drivers.filter(d => d.id !== id); 
-            plannerSaveState(); 
-            renderPlanner(); 
-        } 
-    }
-
     function updateDriverSelects() { 
-        let selectEl = document.getElementById('planDriverSelect'); 
-        selectEl.innerHTML = ""; 
+        let s1 = document.getElementById('planDriverSelect'); 
+        let s2 = document.getElementById('pdfDriverSelect');
+        s1.innerHTML = ""; 
+        s2.innerHTML = "";
         
         plannerState.drivers.forEach(d => { 
             let opt = `<option value="${d.id}">${d.name}</option>`; 
-            selectEl.innerHTML += opt; 
+            s1.innerHTML += opt; 
+            s2.innerHTML += opt;
         }); 
     }
 
@@ -1763,7 +1234,6 @@
                     <span>${d.name}</span>
                     <div style="display:flex;gap:5px;">
                         <button class="btn-secondary" style="background:var(--cp-blue);margin:0;padding:6px;" onclick="openPayroll(${d.id})">Mzdy</button>
-                        <button class="btn-secondary" style="background:var(--cp-danger);margin:0;padding:6px;" onclick="removePlannerDriver(${d.id})">✕</button>
                     </div>
                 </div>
             </div>`; 
@@ -1810,13 +1280,10 @@
                         tHtml += `<div class="${cssClass}" style="width:${pct}%"></div>`; 
                     });
                     
-                    td.innerHTML = html + tHtml + `</div><div class="cell-actions"><button class="cell-btn" onclick="event.stopPropagation(); copiedShift=JSON.parse(JSON.stringify(plannerState.shifts['${shiftKey}'])); alert('Zkopírováno');">C</button></div>`; 
+                    td.innerHTML = html + tHtml + `</div>`; 
                     td.style.background = "#fff9e6";
                 } else { 
                     let cHtml = `<div class="shift-content" style="justify-content:center;color:#ccc;" onclick="openShiftModal(${driver.id}, ${day})">Volno</div>`;
-                    if (copiedShift) {
-                        cHtml += `<div class="cell-actions"><button class="cell-btn" onclick="event.stopPropagation(); plannerState.shifts['${shiftKey}']=JSON.parse(JSON.stringify(copiedShift)); plannerSaveState(); renderPlanner();">P</button></div>`;
-                    }
                     td.innerHTML = cHtml;
                 }
                 tr.appendChild(td);
@@ -1885,7 +1352,6 @@
 
             let segments = await processRouteSegments(routeCoords, dist, document.getElementById('planCilStat').value, excludedCountries);
             
-            // Geolokace a spojení pro Diety
             let countryHours = {}; 
             segments.forEach(s => countryHours[s.code] = (countryHours[s.code] || 0) + (s.km / 70));
             
@@ -1909,7 +1375,6 @@
                 }
             }
 
-            // Rozstřel směn přesně podle AETR 4,5h jízda a max 9h / 18h
             let crew = document.getElementById('planCrewSelect').value; 
             let limit = crew === "2" ? 18 : 9; 
             let cTime = parseTime(document.getElementById('planTimeSelect').value); 
@@ -2010,6 +1475,7 @@
     function openShiftModal(dId, day) {
         editShiftContext = { dId: dId, day: day }; 
         let shift = plannerState.shifts[`${dId}_${plannerState.currentWeek}_${day}`];
+        document.getElementById('shiftModalTitle').innerText = "Úprava Dne";
         
         if (shift) { 
             document.getElementById('editStart').value = shift.start; 
@@ -2025,14 +1491,8 @@
         validateAndRenderShift();
     }
     
-    function closeShiftModal() { 
-        document.getElementById('shiftModal').style.display = 'none'; 
-    }
-    
-    function addActivity() { 
-        currentActs.push({t: 'work', d: 1}); 
-        validateAndRenderShift(); 
-    }
+    function closeShiftModal() { document.getElementById('shiftModal').style.display = 'none'; }
+    function addActivity() { currentActs.push({t: 'work', d: 1}); validateAndRenderShift(); }
     
     function validateAndRenderShift() {
         let container = document.getElementById('editActContainer'); 
@@ -2043,7 +1503,7 @@
             <div style="display:flex; gap:5px; margin-bottom:5px;">
                 <select onchange="currentActs[${i}].t=this.value; validateAndRenderShift();" style="flex:2;">
                     <option value="drive" ${act.t === 'drive' ? 'selected' : ''}>🚛 Jízda</option>
-                    <option value="work" ${act.t === 'work' ? 'selected' : ''}>⚒️ Práce / Vykládka</option>
+                    <option value="work" ${act.t === 'work' ? 'selected' : ''}>⚒️ Práce/Vykládka</option>
                     <option value="rest" ${act.t === 'rest' ? 'selected' : ''}>🛏️ Pauza</option>
                 </select>
                 <input type="number" step="0.25" value="${act.d}" oninput="currentActs[${i}].d=parseFloat(this.value)||0; validateAndRenderShift();" style="flex:1;"> 
@@ -2051,44 +1511,33 @@
             </div>`;
         });
         
-        let tDrive = 0; 
-        let span = 0; 
-        currentActs.forEach(a => {
-            span += a.d; 
-            if (a.t === 'drive') {
-                tDrive += a.d;
-            }
-        }); 
+        let tDrive = 0; let span = 0; 
+        currentActs.forEach(a => { span += a.d; if (a.t === 'drive') tDrive += a.d; });
         document.getElementById('shiftPreviewBox').innerText = `Výkon směny celkem: ${span}h | Z toho jízda: ${tDrive}h`;
     }
     
-    function saveShiftModal() { 
+    function saveShiftModal() {
         let shiftKey = `${editShiftContext.dId}_${plannerState.currentWeek}_${editShiftContext.day}`;
         plannerState.shifts[shiftKey] = { 
             start: document.getElementById('editStart').value, 
             crew: document.getElementById('editCrew').value, 
             note: document.getElementById('editNote').value, 
             acts: currentActs 
-        }; 
-        plannerSaveState(); 
-        closeShiftModal(); 
-        renderPlanner(); 
+        };
+        plannerSaveState(); closeShiftModal(); renderPlanner();
     }
     
     function deleteShift() { 
         let shiftKey = `${editShiftContext.dId}_${plannerState.currentWeek}_${editShiftContext.day}`;
         delete plannerState.shifts[shiftKey]; 
-        plannerSaveState(); 
-        closeShiftModal(); 
-        renderPlanner(); 
+        plannerSaveState(); closeShiftModal(); renderPlanner(); 
     }
 
     // --- MZDY A DIETY ---
-    let currentPayCtx = null; 
-    let dietRows = [];
+    let currentPayCtx = null; let dietRows = [];
     
     function openPayroll(dId) {
-        currentPayCtx = { dId: dId, w: plannerState.currentWeek }; 
+        currentPayCtx = { dId: dId, w: plannerState.currentWeek };
         let payroll = plannerState.payrolls[`${dId}_${plannerState.currentWeek}`] || { base: 0, diets: 0, bonus: 0, dietRows: [], pType: 'incl', pRate: 1500 };
         
         document.getElementById('payType').value = payroll.pType || 'incl'; 
@@ -2096,20 +1545,13 @@
         document.getElementById('payBonus').value = payroll.bonus || 0; 
         dietRows = payroll.dietRows || [];
         
-        let sCnt = 0; 
-        let tV = 0; 
-        let tJ = 0; 
+        let sCnt = 0; let tV = 0; let tJ = 0; 
         
         for (let i = 0; i < 7; i++) { 
             let shift = plannerState.shifts[`${dId}_${plannerState.currentWeek}_${i}`]; 
             if (shift) {
                 sCnt++; 
-                shift.acts.forEach(a => {
-                    tV += a.d; 
-                    if (a.t === 'drive') {
-                        tJ += a.d;
-                    }
-                });
+                shift.acts.forEach(a => { tV += a.d; if (a.t === 'drive') { tJ += a.d; } });
             } 
         }
         
@@ -2118,19 +1560,11 @@
         document.getElementById('payDriveHours').innerText = tJ.toFixed(1) + "h";
         
         document.getElementById('payrollModal').style.display = 'flex'; 
-        calcAutoBase(); 
-        renderDietRows();
+        calcAutoBase(); renderDietRows();
     }
     
-    function closePayroll() { 
-        document.getElementById('payrollModal').style.display = 'none'; 
-    }
-    
-    function addDietRow() { 
-        dietRows.push({cc: 'DE', hours: 24}); 
-        renderDietRows(); 
-        calcPayroll(); 
-    }
+    function closePayroll() { document.getElementById('payrollModal').style.display = 'none'; }
+    function addDietRow() { dietRows.push({cc: 'DE', hours: 24}); renderDietRows(); calcPayroll(); }
     
     function renderDietRows() {
         let container = document.getElementById('dietsListContainer'); 
@@ -2139,9 +1573,7 @@
         
         dietRows.forEach((r, i) => {
             let opts = ""; 
-            for (let k in DIET_RATES) {
-                opts += `<option value="${k}" ${r.cc === k ? 'selected' : ''}>${k}</option>`;
-            }
+            for (let k in DIET_RATES) { opts += `<option value="${k}" ${r.cc === k ? 'selected' : ''}>${k}</option>`; }
             
             let h = parseFloat(r.hours) || 0; 
             let dData = DIET_RATES[r.cc] || DIET_RATES['OSTATNÍ']; 
@@ -2224,6 +1656,183 @@
             }; 
             plannerSaveState(); 
         }
+    }
+
+    // =======================================================================
+    // 5. EXPORTY A KNIHA JÍZD
+    // =======================================================================
+    function getShiftsForExport() {
+        let drvId = document.getElementById('pdfDriverSelect').value; 
+        let drv = plannerState.drivers.find(d => d.id == drvId);
+        
+        let weeksToExport = [plannerState.currentWeek]; 
+        let title = `Týden ${plannerState.currentWeek} / ${plannerState.currentYear}`; 
+        
+        let rows = []; 
+        let totalV = 0; 
+        let totalJ = 0; 
+        let totalDiety = 0; 
+        let totalZaklad = 0; 
+        let shiftsCount = 0;
+        let dnyNames = ["Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek", "Sobota", "Neděle"];
+        
+        weeksToExport.forEach(w => {
+            let pr = plannerState.payrolls[`${drvId}_${w}`];
+            if (pr) { 
+                totalDiety += pr.diets; 
+                totalZaklad += pr.base + pr.bonus; 
+            }
+            for (let d = 0; d < 7; d++) {
+                let s = plannerState.shifts[`${drvId}_${w}_${d}`];
+                if (s) {
+                    shiftsCount++;
+                    let v = 0; 
+                    let j = 0; 
+                    s.acts.forEach(a => {
+                        v += a.d; 
+                        if (a.t === 'drive') {
+                            j += (s.crew === '2') ? (a.d / 2) : a.d;
+                        }
+                    }); 
+                    totalV += v; 
+                    totalJ += j;
+                    rows.push({ week: w, day: dnyNames[d], start: s.start, note: s.note || '-', v: v, j: j, shiftObj: s });
+                }
+            }
+        });
+        return { driver: drv ? drv.name : "Neznámý", title: title, rows: rows, totalV: totalV, totalJ: totalJ, totalP: totalZaklad + totalDiety, shiftsCount: shiftsCount };
+    }
+
+    function openPdfExportModal() {
+        if(plannerState.drivers.length === 0) { 
+            alert("Nemáte přidané žádné řidiče."); 
+            return; 
+        }
+        document.getElementById('pdfExportModal').style.display = 'flex';
+    }
+
+    function exportKnihaPrint() {
+        let data = getShiftsForExport();
+        
+        let html = `
+        <html><head><title>Tiskový Přehled - ${data.driver}</title>
+        <style>
+            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; color: #333; }
+            .header-print { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 4px solid #e3000f; padding-bottom: 10px; margin-bottom: 20px; }
+            .header-print h1 { margin: 0; font-size: 24px; text-transform: uppercase; color: #1a1a1a; }
+            .summary-box { display: flex; gap: 20px; margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 6px; border: 1px solid #ddd; }
+            .summary-item { flex: 1; text-align: center; }
+            .summary-item .label { font-size: 12px; color: #666; text-transform: uppercase; font-weight: bold; }
+            .summary-item .val { font-size: 22px; font-weight: 900; color: #1a1a1a; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+            th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+            th { background: #f0f0f0; text-transform: uppercase; font-size: 11px; }
+            .bar-wrap { width: 100px; height: 12px; background: #eee; border-radius: 4px; display: flex; overflow: hidden; }
+            .bar-drive { background: #4caf50; }
+            .bar-work { background: #ff9800; }
+            .bar-rest { background: #2196f3; }
+        </style>
+        </head><body>
+            <div class="header-print">
+                <div>
+                    <h1>Výkaz Směn a Kniha Jízd</h1>
+                    <div style="font-size: 16px; margin-top: 5px;"><b>Řidič:</b> ${data.driver}</div>
+                </div>
+                <div style="text-align: right; font-size: 14px; font-weight: bold; color: #666;">
+                    Období: ${data.title}
+                </div>
+            </div>`;
+
+        html += `
+        <div class="summary-box">
+            <div class="summary-item"><div class="label">Odpracováno celkem</div><div class="val">${data.totalV.toFixed(1)} h</div></div>
+            <div class="summary-item"><div class="label">Z toho čistá jízda</div><div class="val" style="color: #1565c0;">${data.totalJ.toFixed(1)} h</div></div>
+            <div class="summary-item"><div class="label">Celkem mzdový základ + Diety</div><div class="val" style="color: #2e7d32;">${data.totalP} CZK</div></div>
+        </div>`;
+
+        html += `
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:50px;">Týden</th>
+                    <th style="width:80px;">Den</th>
+                    <th style="width:60px;">Start</th>
+                    <th>Trasa / Poznámka (Účel cesty)</th>
+                    <th style="width:80px;">Výkon</th>
+                    <th style="width:80px;">Jízda</th>
+                    <th style="width:120px;">Grafické Rozložení</th>
+                </tr>
+            </thead>
+            <tbody>`;
+        
+        data.rows.forEach(r => { 
+            let grafHtml = `<div class="bar-wrap">`;
+            r.shiftObj.acts.forEach(act => {
+                let pct = (act.d / r.v) * 100;
+                let css = act.t === 'drive' ? 'bar-drive' : (act.t === 'work' ? 'bar-work' : 'bar-rest');
+                grafHtml += `<div class="${css}" style="width:${pct}%"></div>`;
+            });
+            grafHtml += `</div>`;
+
+            html += `<tr>
+                <td style="text-align:center;"><b>T${r.week}</b></td>
+                <td>${r.day}</td>
+                <td style="font-weight:bold;">${r.start}</td>
+                <td>${r.note}</td>
+                <td><b>${r.v.toFixed(1)} h</b></td>
+                <td style="color: #1565c0;"><b>${r.j.toFixed(1)} h</b></td>
+                <td>${grafHtml}</td>
+            </tr>`; 
+        });
+
+        html += `
+                </tbody>
+            </table>`;
+
+        html += `
+            <div style="margin-top: 50px; display: flex; justify-content: space-between;">
+                <div style="border-top: 1px solid #333; width: 30%; padding-top: 10px; text-align: center; font-size: 12px;">Podpis dispečera</div>
+                <div style="border-top: 1px solid #333; width: 30%; padding-top: 10px; text-align: center; font-size: 12px;">Podpis řidiče</div>
+            </div>
+        </body></html>`;
+        
+        let printWin = window.open('', '', 'width=900,height=800');
+        printWin.document.write(html);
+        printWin.document.close();
+        printWin.focus();
+        setTimeout(() => { printWin.print(); printWin.close(); }, 500);
+        document.getElementById('pdfExportModal').style.display='none';
+    }
+
+    function exportKnihaCSV() {
+        let data = getShiftsForExport();
+        let csv = `Export dat - ${data.driver} - ${data.title}\n`;
+        
+        csv += `\nMZDY A VYKON\nOdpracovano (h),${data.totalV.toFixed(1)}\nJizda (h),${data.totalJ.toFixed(1)}\nVyplata CELKEM (CZK),${data.totalP}\n\n`;
+        
+        csv += "KNIHA JIZD\nTyden,Den,Start,Trasa,Vykon(h),Jizda(h)\n";
+        data.rows.forEach(r => { 
+            csv += `${r.week},${r.day},${r.start},"${r.note}",${r.v.toFixed(1)},${r.j.toFixed(1)}\n`; 
+        });
+        
+        let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        let link = document.createElement("a"); 
+        link.setAttribute("href", URL.createObjectURL(blob));
+        link.setAttribute("download", `Data_${data.driver.replace(' ', '_')}.csv`); 
+        link.click();
+        document.getElementById('pdfExportModal').style.display='none';
+    }
+
+    function exportDriverWA() {
+        let data = getShiftsForExport();
+        let text = `📅 *Přehled pro: ${data.driver}*\n📍 Období: ${data.title}\n\n`;
+        
+        text += `🗓️ Počet odjetých směn: ${data.shiftsCount}\n`;
+        text += `⏱️ Odpracovaný výkon: ${data.totalV.toFixed(1)} h\n🚛 Čistá jízda (z toho): ${data.totalJ.toFixed(1)} h\n`;
+        text += `💰 *Výplata celkem:* ${data.totalP} Kč`;
+
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        document.getElementById('pdfExportModal').style.display='none';
     }
 </script>
 </body>
