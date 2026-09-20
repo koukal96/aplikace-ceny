@@ -2861,8 +2861,10 @@
         host.innerHTML=source.innerHTML;
         document.body.classList.add('print-report-mode');
 
-        // Necháme Safari nejdřív report vykreslit a potom otevřeme nativní Tisk.
-        requestAnimationFrame(()=>requestAnimationFrame(()=>window.print()));
+        // DŮLEŽITÉ pro iPhone/iPad: window.print() musí být zavolán přímo
+        // z kliknutí uživatele. Odložení přes requestAnimationFrame může iOS
+        // zablokovat jako ztrátu uživatelského gesta.
+        window.print();
     }
 
     window.addEventListener('afterprint',()=>{
