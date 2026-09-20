@@ -12,6 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         :root { 
@@ -3786,45 +3787,41 @@
         let container = document.getElementById('editActContainer'); container.innerHTML = "";
         currentActs.forEach((act, i) => {
             container.innerHTML += `
-            <div style="display:flex; gap:10px; margin-bottom:5px;">
-                <select onchange="currentActs[${i}].t=this.value; validateAndRenderShift();" style="flex:2;">
+            <div style="display:flex; gap:10px; margin-bottom:8px; align-items:center; background:#f8f9fa; padding:10px; border-radius:8px; border:1px solid #e0e0e0;">
+                <select onchange="currentActs[${i}].t=this.value; validateAndRenderShift();" style="flex:2; margin:0;">
                     <option value="drive" ${act.t === 'drive' ? 'selected' : ''}>🚛 Jízda</option>
-                    <option value="work" ${act.t === 'work' ? 'selected' : ''}>⚒️ Práce/Vykládka</option>
-                    <option value="rest" ${act.t === 'rest' ? 'selected' : ''}>🛏️ Pauza</option>
+                    <option value="work" ${act.t === 'work' ? 'selected' : ''}>⚒️ Práce / Pauza</option>
+                    <option value="rest" ${act.t === 'rest' ? 'selected' : ''}>🛏️ Postel (AETR)</option>
                 </select>
-                <input type="number" step="0.25" value="${act.d}" oninput="currentActs[${i}].d=parseFloat(this.value)||0; validateAndRenderShift();" style="flex:1;"> 
-                <button class="btn-secondary" onclick="currentActs.splice(${i},1); validateAndRenderShift();" style="background:var(--cp-danger); margin:0;">✕</button>
+                <input type="number" step="0.25" value="${act.d}" oninput="currentActs[${i}].d=parseFloat(this.value)||0; validateAndRenderShift();" style="flex:1; margin:0;">
+                <button class="btn-remove-wp" onclick="currentActs.splice(${i},1); validateAndRenderShift();">✕</button>
             </div>`;
         });
 
         let btn = document.getElementById('btnSaveShiftModal');
         let warn = document.getElementById('aetrStrictWarning');
-        
+
         let prevShiftData = getAbsoluteLastEnd(editShiftContext.dId, plannerState.currentWeek, editShiftContext.day);
         if (prevShiftData) {
             let currentStartAbs = parseTime(document.getElementById('editStart').value);
             let prevEndToday = prevShiftData.end % 24;
-            
             let actualGap = currentStartAbs - prevEndToday;
-            if(actualGap < 0) actualGap += 24; 
-            
+            if(actualGap < 0) actualGap += 24;
+
             let crewType = document.getElementById('editCrew').value;
             let reqRest = crewType === '2' ? 9 : 11;
-            
+
             if (actualGap < reqRest && actualGap > 0.1) {
                 let earliestStart = (prevEndToday + reqRest) % 24;
                 warn.style.display = 'block';
-                warn.innerHTML = `❌ Nedodržen denní odpočinek!<br>Předchozí směna skončila v ${formatTime(prevEndToday)}.<br>Nutná pauza ${reqRest}h. Nejdříve lze vyjet v <b>${formatTime(earliestStart)}</b>.`;
+                warn.innerHTML = `❌ Nedodržen odpočinek! Nutná pauza ${reqRest}h. Nejdříve lze vyjet v <b>${formatTime(earliestStart)}</b>.`;
                 btn.disabled = true;
             } else {
-                warn.style.display = 'none';
-                btn.disabled = false;
+                warn.style.display = 'none'; btn.disabled = false;
             }
-        } else {
-            warn.style.display = 'none';
-            btn.disabled = false;
-        }
+        } else { warn.style.display = 'none'; btn.disabled = false; }
     }
+
     
     function saveShiftModal() {
         plannerState.shifts[`${editShiftContext.dId}_${plannerState.currentWeek}_${editShiftContext.day}`] = { start: document.getElementById('editStart').value, crew: document.getElementById('editCrew').value, note: document.getElementById('editNote').value, acts: currentActs };
@@ -3940,16 +3937,22 @@
         document.getElementById('pdfExportModal').style.display = 'flex';
     }
 
-           function exportKnihaPrint() {
+     function exportKnihaPrint() {
         let data = getShiftsForExport();
-        let expType = document.getElementById('pdfTypeSelect').value; 
-        
-        let reportHtml = `
-        <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 15px; color: #333; background: white; max-width: 100%; box-sizing: border-box;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 4px solid #e3000f; padding-bottom: 10px; margin-bottom: 15px;">
+        let expType = document.getElementById('pdfTypeSelect').value;
+
+        // Skrytý kontejner pro generování PDF
+        let printDiv = document.createElement('div');
+        printDiv.style.padding = '20px';
+        printDiv.style.fontFamily = "'Montserrat', sans-serif";
+        printDiv.style.color = '#1a1a1a';
+        printDiv.style.background = '#ffffff';
+
+        let html = `
+            <div style="border-bottom: 3px solid #e3000f; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end;">
                 <div>
-                    <h2 style="margin: 0; font-size: 18px; text-transform: uppercase; color: #1a1a1a;">${expType === 'mzdy' ? 'Mzdový Výměr' : (expType === 'kniha' ? 'Kniha Jízd' : 'Výkaz Směn')}</h2>
-                    <div style="font-size: 14px; margin-top: 3px;"><b>Řidič:</b> ${data.driver}</div>
+                    <h1 style="margin: 0; font-size: 20px; text-transform: uppercase;">${expType === 'mzdy' ? 'Mzdový Výměr' : (expType === 'kniha' ? 'Kniha Jízd' : 'Výkaz Směn')}</h1>
+                    <div style="font-size: 14px; margin-top: 5px;"><b>Řidič:</b> ${data.driver}</div>
                 </div>
                 <div style="text-align: right; font-size: 12px; font-weight: bold; color: #666;">
                     ${data.title}
@@ -3957,94 +3960,66 @@
             </div>`;
 
         if (expType === 'both' || expType === 'mzdy') {
-            reportHtml += `
-            <div style="display: flex; gap: 10px; margin-bottom: 20px; background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #ddd; flex-wrap: wrap;">
-                <div style="flex: 1; text-align: center; min-width: 90px;"><div style="font-size: 10px; color: #666; text-transform: uppercase; font-weight: bold;">Odpracováno</div><div style="font-size: 16px; font-weight: 900; color: #1a1a1a;">${data.totalV.toFixed(1)} h</div></div>
-                <div style="flex: 1; text-align: center; min-width: 90px;"><div style="font-size: 10px; color: #666; text-transform: uppercase; font-weight: bold;">Čistá jízda</div><div style="font-size: 16px; font-weight: 900; color: #1565c0;">${data.totalJ.toFixed(1)} h</div></div>
-                <div style="flex: 1; text-align: center; min-width: 90px;"><div style="font-size: 10px; color: #666; text-transform: uppercase; font-weight: bold;">Základ + Diety</div><div style="font-size: 16px; font-weight: 900; color: #2e7d32;">${data.totalP} Kč</div></div>
+            html += `
+            <div style="display: flex; gap: 15px; margin-bottom: 20px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+                <div style="flex: 1; text-align: center;"><div style="font-size: 11px; color: #666; text-transform: uppercase; font-weight: bold;">Odpracováno</div><div style="font-size: 18px; font-weight: 900;">${data.totalV.toFixed(1)} h</div></div>
+                <div style="flex: 1; text-align: center;"><div style="font-size: 11px; color: #666; text-transform: uppercase; font-weight: bold;">Čistá jízda</div><div style="font-size: 18px; font-weight: 900; color: #1565c0;">${data.totalJ.toFixed(1)} h</div></div>
+                <div style="flex: 1; text-align: center;"><div style="font-size: 11px; color: #666; text-transform: uppercase; font-weight: bold;">Základ + Diety</div><div style="font-size: 18px; font-weight: 900; color: #2e7d32;">${data.totalP} Kč</div></div>
             </div>`;
         }
 
         if (expType === 'both' || expType === 'kniha') {
-            reportHtml += `
-            <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px;">
-                    <thead>
-                        <tr>
-                            <th style="border: 1px solid #ddd; padding: 6px; background: #f0f0f0;">Týden</th>
-                            <th style="border: 1px solid #ddd; padding: 6px; background: #f0f0f0;">Den</th>
-                            <th style="border: 1px solid #ddd; padding: 6px; background: #f0f0f0;">Start</th>
-                            <th style="border: 1px solid #ddd; padding: 6px; background: #f0f0f0;">Trasa / Poznámka</th>
-                            <th style="border: 1px solid #ddd; padding: 6px; background: #f0f0f0;">Výkon</th>
-                            <th style="border: 1px solid #ddd; padding: 6px; background: #f0f0f0;">Jízda</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
-                
-            data.rows.forEach(r => { 
-                reportHtml += `<tr>
-                    <td style="border: 1px solid #ddd; padding: 6px; text-align:center;"><b>T${r.week}</b></td>
-                    <td style="border: 1px solid #ddd; padding: 6px;">${r.day}</td>
-                    <td style="border: 1px solid #ddd; padding: 6px; font-weight:bold;">${r.start}</td>
-                    <td style="border: 1px solid #ddd; padding: 6px;">${r.note}</td>
-                    <td style="border: 1px solid #ddd; padding: 6px;"><b>${r.v.toFixed(1)} h</b></td>
-                    <td style="border: 1px solid #ddd; padding: 6px; color: #1565c0;"><b>${r.j.toFixed(1)} h</b></td>
-                </tr>`; 
+            html += `
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px;">
+                <thead>
+                    <tr>
+                        <th style="border: 1px solid #ddd; padding: 8px; background: #f0f0f0;">Týden</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; background: #f0f0f0;">Den</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; background: #f0f0f0;">Start</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; background: #f0f0f0;">Trasa / Poznámka</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; background: #f0f0f0;">Výkon</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; background: #f0f0f0;">Jízda</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            data.rows.forEach(r => {
+                html += `<tr>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align:center;"><b>T${r.week}</b></td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">${r.day}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; font-weight:bold;">${r.start}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">${r.note}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;"><b>${r.v.toFixed(1)} h</b></td>
+                    <td style="border: 1px solid #ddd; padding: 8px; color: #1565c0;"><b>${r.j.toFixed(1)} h</b></td>
+                </tr>`;
             });
 
-            reportHtml += `</tbody></table></div>`;
+            html += `</tbody></table>`;
         }
 
-        reportHtml += `
-            <div style="margin-top: 30px; display: flex; justify-content: space-between; font-size: 11px;">
+        html += `
+            <div style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 11px;">
                 <div style="border-top: 1px solid #333; width: 35%; padding-top: 5px; text-align: center;">Podpis dispečera</div>
                 <div style="border-top: 1px solid #333; width: 35%; padding-top: 5px; text-align: center;">Podpis řidiče</div>
-            </div>
-        </div>`;
+            </div>`;
 
-        // 1. Zavřeme výběrové okno
+        printDiv.innerHTML = html;
+        document.body.appendChild(printDiv);
         document.getElementById('pdfExportModal').style.display = 'none';
 
-        // 2. Vytvoříme nebo najdeme okno s náhledem přímo v aplikaci
-        let previewModal = document.getElementById('reportPreviewModal');
-        if (!previewModal) {
-            previewModal = document.createElement('div');
-            previewModal.id = 'reportPreviewModal';
-            previewModal.className = 'modal-overlay';
-            previewModal.style.cssText = "display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:300000; align-items:center; justify-content:center; padding:15px; box-sizing:border-box;";
-            
-            previewModal.innerHTML = `
-                <div style="background:white; width:100%; max-width:600px; max-height:90vh; border-radius:8px; display:flex; flexDirection:column; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-                    <div style="background:#1a1a1a; color:white; padding:12px 15px; font-weight:bold; font-size:14px; display:flex; justify-content:space-between; align-items:center;">
-                        <span>📄 Náhled výkazu</span>
-                        <button onclick="document.getElementById('reportPreviewModal').style.display='none'" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;">✕</button>
-                    </div>
-                    <div id="reportPreviewContent" style="padding:15px; overflow-y:auto; flex-grow:1; background:#f4f4f4;"></div>
-                    <div style="padding:12px 15px; background:#eee; display:flex; gap:10px;">
-                        <button onclick="window.print()" style="flex:2; background:#107c41; color:white; border:none; padding:12px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:14px;">🖨️ Tisknout / Uložit PDF</button>
-                        <button onclick="document.getElementById('reportPreviewModal').style.display='none'" style="flex:1; background:#777; color:white; border:none; padding:12px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:14px;">Zavřít</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(previewModal);
+        // Konfigurace pro generování PDF
+        let opt = {
+            margin:       10,
+            filename:     `Vykaz_${data.driver.replace(/\s+/g, '_')}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
 
-            // Přidáme CSS pravidlo pro čistý tisk pouze obsahu náhledu
-            let printStyle = document.createElement('style');
-            printStyle.innerHTML = `
-                @media print {
-                    body > *:not(#reportPreviewModal) { display: none !important; }
-                    #reportPreviewModal { display: block !important; position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: auto !important; background: white !important; z-index: 999999 !important; padding: 0 !important; }
-                    #reportPreviewModal > div { max-width: 100% !important; max-height: none !important; box-shadow: none !important; border-radius: 0 !important; }
-                    #reportPreviewModal div:first-child, #reportPreviewModal div:last-child { display: none !important; }
-                    #reportPreviewContent { background: white !important; padding: 0 !important; max-height: none !important; overflow: visible !important; }
-                }
-            `;
-            document.head.appendChild(printStyle);
-        }
-
-        // 3. Naplníme obsah a otevřeme náhled
-        document.getElementById('reportPreviewContent').innerHTML = reportHtml;
-        previewModal.style.display = 'flex';
+        // Generování PDF a vyvolání stažení
+        html2pdf().set(opt).from(printDiv).save().then(() => {
+            document.body.removeChild(printDiv); // Úklid pomocného divu
+        });
     }
          
 
