@@ -3875,44 +3875,68 @@
     window.executePrint = async function() {
         const btn = document.getElementById('btnDoPrint');
         const printArea = document.getElementById('printableContent');
-        const originalBtnText = btn.innerText;
-
-        btn.innerText = "⏳ Generuji PDF...";
+        
+        btn.innerText = "⏳ Generuji PDF (čekejte)...";
         btn.disabled = true;
-
-        const opt = {
-            margin:       10,
-            filename:     `Vykaz_${document.getElementById('pdfDriverSelect')?.value || 'Ridic'}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
+        btn.style.background = "#ff9800";
 
         try {
-            // Vygenerování PDF jako souboru v paměti
-            const pdfBlob = await html2pdf().set(opt).from(printArea).output('blob');
-            const pdfFile = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
-
-            // Nativní iOS / Android sdílení – umožní Uložit do Souborů, AirPrint i odeslání
-            if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-                await navigator.share({
-                    files: [pdfFile],
-                    title: 'Výkaz směn a Kniha jízd'
+            // 1. Záchrana: Pokud chybí PDF knihovna, sama se dočasně stáhne
+            if (typeof html2pdf === 'undefined') {
+                await new Promise((resolve, reject) => {
+                    let script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error("Nelze stáhnout PDF generátor. Jste připojeni k internetu?"));
+                    document.head.appendChild(script);
                 });
-            } else {
-                // Fallback pro klasické prohlížeče
-                const fileURL = URL.createObjectURL(pdfBlob);
-                const link = document.createElement('a');
-                link.href = fileURL;
-                link.download = opt.filename;
-                link.click();
-                URL.revokeObjectURL(fileURL);
             }
-        } catch (err) {
-            // Pokud systém nepovolí soubor, zavolá standardní print
-            window.print();
-        } finally {
-            btn.innerText = originalBtnText;
+
+            // 2. Nastavení formátu PDF
+            const opt = {
+                margin: 10,
+                filename: 'Vykaz_Ridic.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // 3. Vygenerování PDF do paměti (trvá cca 1-2 vteřiny)
+            const pdfBlob = await html2pdf().set(opt).from(printArea).output('blob');
+            const fileURL = URL.createObjectURL(pdfBlob);
+
+            // 4. Úprava tlačítka pro PŘÍMÉ stažení/sdílení (obchází blokaci Apple)
+            btn.disabled = false;
+            btn.style.background = "#1565c0";
+            btn.innerText = "📥 OTEVŘÍT / ULOŽIT PDF";
+            
+            btn.onclick = async function() {
+                try {
+                    const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
+                    // Apple iOS Sdílení (Uložit do souborů, WhatsApp atd.)
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files: [file],
+                            title: 'Výkaz směn'
+                        });
+                    } else {
+                        // Fallback pro Windows / Android prohlížeče
+                        const a = document.createElement('a');
+                        a.href = fileURL;
+                        a.download = opt.filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    }
+                } catch (err) {
+                    console.log("Sdílení přerušeno: ", err);
+                }
+            };
+
+        } catch(err) {
+            alert("Chyba při tvorbě PDF: " + err.message);
+            btn.innerText = "❌ Zkusit znovu";
+            btn.style.background = "#c62828";
             btn.disabled = false;
         }
     };
@@ -3928,7 +3952,7 @@
             <!-- OVLÁDACÍ LIŠTA NÁHLEDU -->
             <div class="no-print-toolbar" style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 25px; display: flex; gap: 10px; border: 2px solid #1565c0; position: sticky; top: 10px; z-index: 100000; box-shadow: 0 5px 15px rgba(0,0,0,0.2); flex-wrap: wrap;">
                 <div style="width: 100%; font-size: 13px; color: #0d47a1; font-weight: bold; text-align: center; margin-bottom: 5px;">Náhled je připraven. Vyberte akci:</div>
-                <button id="btnDoPrint" onclick="executePrint()" style="flex: 2; background: #107c41; color: white; border: none; padding: 15px; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">💾 Uložit PDF / Tisk</button>
+                <button id="btnDoPrint" onclick="executePrint()" style="flex: 2; background: #107c41; color: white; border: none; padding: 15px; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">⚙️ Generovat PDF soubor</button>
                 <button onclick="closePrintPreview()" style="flex: 1; background: #c62828; color: white; border: none; padding: 15px; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🔙 Zpět</button>
             </div>
 
@@ -4013,6 +4037,7 @@
         document.body.style.background = 'white';
         window.scrollTo(0, 0);
     }
+
 
     function exportKnihaCSV() {
         let data = getShiftsForExport();
