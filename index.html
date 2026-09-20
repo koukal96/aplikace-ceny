@@ -3856,7 +3856,7 @@
         if(plannerState.drivers.length === 0) { alert("Nemáte přidané žádné řidiče."); return; }
         document.getElementById('pdfExportModal').style.display = 'flex';
     }
-        // --- POMOCNÉ FUNKCE PRO TISKOVÝ NÁHLED A EXPORT PDF ---
+           // --- POMOCNÉ FUNKCE PRO TISKOVÝ NÁHLED A EXPORT PDF ---
     window.hiddenElements = [];
     window.originalBodyBackground = "";
 
@@ -3881,7 +3881,7 @@
         btn.style.background = "#ff9800";
 
         try {
-            // 1. Záchrana: Pokud chybí PDF knihovna, sama se dočasně stáhne
+            // Záchrana: Pokud chybí PDF knihovna, sama se dočasně stáhne
             if (typeof html2pdf === 'undefined') {
                 await new Promise((resolve, reject) => {
                     let script = document.createElement('script');
@@ -3892,20 +3892,20 @@
                 });
             }
 
-            // 2. Nastavení formátu PDF
+            // Nastavení formátu PDF
             const opt = {
                 margin: 10,
-                filename: 'Vykaz_Ridic.pdf',
+                filename: 'Vykaz_Smen.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // 3. Vygenerování PDF do paměti (trvá cca 1-2 vteřiny)
+            // Vygenerování PDF do paměti (trvá cca 1-2 vteřiny)
             const pdfBlob = await html2pdf().set(opt).from(printArea).output('blob');
             const fileURL = URL.createObjectURL(pdfBlob);
 
-            // 4. Úprava tlačítka pro PŘÍMÉ stažení/sdílení (obchází blokaci Apple)
+            // Úprava tlačítka pro PŘÍMÉ stažení/sdílení (obchází blokaci Apple iOS)
             btn.disabled = false;
             btn.style.background = "#1565c0";
             btn.innerText = "📥 OTEVŘÍT / ULOŽIT PDF";
@@ -3913,14 +3913,14 @@
             btn.onclick = async function() {
                 try {
                     const file = new File([pdfBlob], opt.filename, { type: 'application/pdf' });
-                    // Apple iOS Sdílení (Uložit do souborů, WhatsApp atd.)
+                    // Apple iOS / Android Sdílení (Uložit do souborů, WhatsApp atd.)
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         await navigator.share({
                             files: [file],
                             title: 'Výkaz směn'
                         });
                     } else {
-                        // Fallback pro Windows / Android prohlížeče
+                        // Fallback pro klasické prohlížeče na PC
                         const a = document.createElement('a');
                         a.href = fileURL;
                         a.download = opt.filename;
@@ -3941,21 +3941,6 @@
         }
     };
 
-        // --- POMOCNÁ FUNKCE PRO ZAVŘENÍ NÁHLEDU ---
-    window.closePrintPreview = function() {
-        let printContainer = document.getElementById('cp-mobile-print-container');
-        if(printContainer) {
-            document.body.removeChild(printContainer);
-        }
-        // Obnovíme zobrazení původní aplikace
-        let mainElements = document.querySelectorAll('.cp-app-element-to-hide');
-        mainElements.forEach(el => {
-            el.style.display = el.dataset.originalDisplay || '';
-            el.classList.remove('cp-app-element-to-hide');
-        });
-        document.body.style.background = '';
-    };
-
     // --- HLAVNÍ FUNKCE PRO TISK A EXPORT PDF ---
     function exportKnihaPrint() {
         let data = getShiftsForExport();
@@ -3964,17 +3949,14 @@
         let html = `
         <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; color: #333; background: white; min-height: 100vh;">
             
-            <!-- OVLÁDACÍ LIŠTA NÁHLEDU (při samotném tisku zmizí) -->
-            <style>
-                @media print { .no-print-toolbar { display: none !important; } }
-            </style>
+            <!-- OVLÁDACÍ LIŠTA NÁHLEDU -->
             <div class="no-print-toolbar" style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 25px; display: flex; gap: 10px; border: 2px solid #1565c0; position: sticky; top: 10px; z-index: 100000; box-shadow: 0 5px 15px rgba(0,0,0,0.2); flex-wrap: wrap;">
                 <div style="width: 100%; font-size: 13px; color: #0d47a1; font-weight: bold; text-align: center; margin-bottom: 5px;">Náhled je připraven. Vyberte akci:</div>
-                <button onclick="window.print()" style="flex: 2; background: #107c41; color: white; border: none; padding: 15px; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🖨️ Tisk / Uložit PDF</button>
-                <button onclick="window.closePrintPreview()" style="flex: 1; background: #c62828; color: white; border: none; padding: 15px; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🔙 Zpět</button>
+                <button id="btnDoPrint" onclick="executePrint()" style="flex: 2; background: #107c41; color: white; border: none; padding: 15px; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">⚙️ Generovat PDF soubor</button>
+                <button onclick="closePrintPreview()" style="flex: 1; background: #c62828; color: white; border: none; padding: 15px; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">🔙 Zpět</button>
             </div>
 
-            <!-- OBSAH PRO EXPORT -->
+            <!-- OBSAH PRO EXPORT DO PDF -->
             <div id="printableContent" style="background: white; padding: 10px;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 4px solid #e3000f; padding-bottom: 10px; margin-bottom: 20px;">
                     <div>
@@ -4034,51 +4016,28 @@
                 </div>
             </div>`;
         
-        // Zavřít modal s výběrem exportu
         document.getElementById('pdfExportModal').style.display = 'none';
 
-        // Vytvořit speciální tiskový kontejner na konci těla (body)
         let printContainer = document.createElement('div');
         printContainer.id = "cp-mobile-print-container";
         printContainer.innerHTML = html;
 
-        // Skrýt aplikaci, aby na obrazovce zůstal JEN náhled (bezpečná metoda)
         let mainElements = Array.from(document.body.children);
+        window.hiddenElements = [];
+        
         mainElements.forEach(el => {
             if (el.style.display !== 'none' && el.tagName !== 'SCRIPT' && el.id !== 'pdfExportModal') {
-                el.classList.add('cp-app-element-to-hide');
-                el.dataset.originalDisplay = el.style.display;
+                window.hiddenElements.push({ element: el, originalDisplay: el.style.display });
                 el.style.display = 'none';
             }
         });
 
-        // Přidat tiskový kontejner do DOM
         document.body.appendChild(printContainer);
         window.originalBodyBackground = document.body.style.background;
         document.body.style.background = 'white';
         window.scrollTo(0, 0);
     }
 
-
-
-    function exportKnihaCSV() {
-        let data = getShiftsForExport();
-        let expType = document.getElementById('pdfTypeSelect').value;
-        let csv = `Export dat - ${data.driver} - ${data.title}\n`;
-        
-        if (expType === 'both' || expType === 'mzdy') {
-            csv += `\nMZDY A VYKON\nOdpracovano (h),${data.totalV.toFixed(1)}\nJizda (h),${data.totalJ.toFixed(1)}\nVyplata CELKEM (CZK),${data.totalP}\n\n`;
-        }
-        if (expType === 'both' || expType === 'kniha') {
-            csv += "KNIHA JIZD\nTyden,Den,Start,Trasa,Vykon(h),Jizda(h)\n";
-            data.rows.forEach(r => { csv += `${r.week},${r.day},${r.start},"${r.note}",${r.v.toFixed(1)},${r.j.toFixed(1)}\n`; });
-        }
-        
-        let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        let link = document.createElement("a"); link.setAttribute("href", URL.createObjectURL(blob));
-        link.setAttribute("download", `Data_${data.driver.replace(' ', '_')}.csv`); link.click();
-        document.getElementById('pdfExportModal').style.display='none';
-    }
 
     function exportDriverWA() {
         let data = getShiftsForExport();
