@@ -178,7 +178,7 @@
         #planDateSelect::-webkit-calendar-picker-indicator { margin-left:0; }
 
 
-        /* iOS print/share report */
+        /* iOS print/share report - tisk je záměrně v aktuální stránce, bez window.open() */
         @page { size:auto; margin:10mm; }
         @media print {
             html, body { width:100% !important; background:#fff !important; }
@@ -219,10 +219,37 @@
         .planner-gen-grid .input-group:nth-child(6) { grid-column: span 1; }
         .print-report-host { display:none; }
         @media print {
+            @page { size:auto; margin:10mm; }
+            html, body { width:100% !important; background:#fff !important; }
+            body.print-report-mode { overflow:visible !important; }
             body.print-report-mode > *:not(#printReportHost) { display:none !important; }
-            body.print-report-mode #printReportHost { display:block !important; position:static !important; width:100% !important; }
-            body.print-report-mode #printReportHost table { width:100%; border-collapse:collapse; }
-            body.print-report-mode #printReportHost th, body.print-report-mode #printReportHost td { border:1px solid #ccc; padding:6px; }
+            body.print-report-mode #printReportHost {
+                display:block !important;
+                position:static !important;
+                width:100% !important;
+                max-width:none !important;
+                margin:0 !important;
+                padding:0 !important;
+                background:#fff !important;
+                color:#222 !important;
+            }
+            body.print-report-mode #printReportHost table {
+                width:100% !important;
+                border-collapse:collapse !important;
+                font-size:11px;
+            }
+            body.print-report-mode #printReportHost th,
+            body.print-report-mode #printReportHost td {
+                border:1px solid #ccc !important;
+                padding:6px !important;
+            }
+            body.print-report-mode #printReportHost tr {
+                page-break-inside:avoid;
+                break-inside:avoid;
+            }
+            body.print-report-mode #printReportHost thead {
+                display:table-header-group;
+            }
         }
         @media (max-width: 600px) {
             .shift-top-grid { grid-template-columns:1fr 1fr; gap:8px; }
@@ -256,6 +283,9 @@
 <body>
 
 <div id="offlineBanner">⚠️ Jste Offline - OSRM Trasování a Geolokace jsou vypnuté</div>
+
+<!-- iOS PRINT HOST: tisk probíhá v aktuální stránce, bez popup okna a bez PDF generování -->
+<div id="printReportHost" class="print-report-host" aria-hidden="true"></div>
 
 <div id="loading-screen">
     <div class="loader-content">
@@ -801,7 +831,7 @@
         </div>
         
         <div style="display:flex; gap:10px; margin-bottom:15px; flex-direction:column;">
-            <button class="btn-secondary" style="background:#107c41; padding:15px; font-size:15px;" onclick="exportKnihaPrint()">📄 Náhled / Tisk / Uložit PDF</button>
+            <button class="btn-secondary" style="background:#107c41; padding:15px; font-size:15px;" onclick="exportKnihaPrint()">🖨️ Tisk / Sdílet / Uložit PDF</button>
             <button class="btn-secondary" style="background:#1565c0; padding:12px;" onclick="exportKnihaCSV()">📊 Stáhnout data do Excelu (CSV)</button>
             <button class="btn-secondary" style="background:#25D366; padding:12px;" onclick="exportDriverWA()">💬 Odeslat přehled na WhatsApp</button>
         </div>
@@ -943,7 +973,7 @@
             "Aktuální zobrazený týden": "Currently displayed week", "Aktuální vybraný měsíc": "Currently selected month", "Celý vybraný rok": "Entire selected year",
             "Typ Exportu (Co se má vygenerovat)": "Export Type (What to generate)", "Kompletní přehled (Kniha jízd + Mzdy)": "Complete overview (Logbook + Payroll)",
             "Pouze Kniha jízd (Bez financí)": "Logbook only (No finances)", "Pouze Mzdový výměr (Bez rozpisu tras)": "Payroll only (No route details)",
-            "📄 Náhled / Tisk / Uložit PDF": "📄 Preview / Print / Save PDF", "📊 Stáhnout data do Excelu (CSV)": "📊 Download data to Excel (CSV)",
+            "🖨️ Tisk / Sdílet / Uložit PDF": "📄 Preview / Print / Save PDF", "📊 Stáhnout data do Excelu (CSV)": "📊 Download data to Excel (CSV)",
             "💬 Odeslat přehled na WhatsApp": "💬 Send overview to WhatsApp", "🚛 Jízda": "🚛 Driving", "⚒️ Práce/Vykládka": "⚒️ Work/Unloading", "🛏️ Pauza": "🛏️ Rest",
             "Jízda": "Driving", "Práce/Vykládka": "Work/Unloading", "Pauza": "Rest", "Čas": "Time", "Délka": "Duration", "Délka v hodinách": "Duration in hours",
             "Hodin": "Hours", "Smazat blok": "Delete block", "Smazat řádek": "Delete row", "Jízdní doba": "Driving time",
@@ -1195,7 +1225,7 @@
         "Aktuální zobrazený týden":"Currently displayed week","Aktuální vybraný měsíc":"Currently selected month","Celý vybraný rok":"Entire selected year",
         "Typ Exportu (Co se má vygenerovat)":"Export Type (What to generate)","Kompletní přehled (Kniha jízd + Mzdy)":"Complete overview (Logbook + Payroll)",
         "Pouze Kniha jízd (Bez financí)":"Logbook only (No finances)","Pouze Mzdový výměr (Bez rozpisu tras)":"Payroll only (No route details)",
-        "📄 Náhled / Tisk / Uložit PDF":"📄 Preview / Print / Save PDF","📊 Stáhnout data do Excelu (CSV)":"📊 Download data to Excel (CSV)",
+        "🖨️ Tisk / Sdílet / Uložit PDF":"📄 Preview / Print / Save PDF","📊 Stáhnout data do Excelu (CSV)":"📊 Download data to Excel (CSV)",
         "💬 Odeslat přehled na WhatsApp":"💬 Send overview to WhatsApp","Jízda":"Driving","Práce/Vykládka":"Work/Unloading","Pauza":"Rest",
         "Čas":"Time","Délka":"Duration","Délka v hodinách":"Duration in hours","Hodin":"Hours","Smazat blok":"Delete block","Smazat řádek":"Delete row",
         "Jízdní doba":"Driving time","Váha vozidla/soupravy na začátku zakázky.":"Vehicle/combination weight at the start of the job.",
@@ -1209,13 +1239,13 @@
         "Úprava Směny":"Schicht bearbeiten","Začátek Směny":"Schichtbeginn","Režim":"Modus","Poznámka k dni (Trasa)":"Tagesnotiz (Route)","Rozpis bloků (Jízda/Práce/Pauza)":"Blöcke (Fahren/Arbeit/Pause)","+ Přidat blok (Jízda / Práce / Pauza)":"+ Block hinzufügen (Fahren / Arbeit / Pause)","Smazat Den":"Tag löschen","Uložit Směnu":"Schicht speichern","Zrušit":"Abbrechen",
         "Rychlé Nastavení Sazby a Diet":"Schnelle Lohn- und Speseneinstellung","Odpracovaný výkon:":"Arbeitszeit:","Z toho čistá jízda:":"Fahrzeit:","1. ZÁKLADNÍ MZDA PRO TENTO TÝDEN":"1. GRUNDLOHN FÜR DIESE WOCHE","Typ Sazby":"Tariftyp","Sazba / Den (Kč)":"Satz / Tag (CZK)","Odjeto směn":"Gefahrene Schichten","Typ mzdy":"Lohnart","Základ (Kč)":"Grundlohn (CZK)","Denní sazba":"Tagessatz","Měsíční mzda":"Monatslohn","Měsíc":"Monat","Dnů v měsíci":"Tage im Monat","Poměrná denní sazba":"Täglicher Anteil",
         "2. ZAHRANIČNÍ DIETY V TÝDNU":"2. AUSLANDSSPESEN DIESE WOCHE","+ Přidat zemi k výpočtu diety":"+ Land für Spesen hinzufügen","Zahraniční diety celkem (Kč)":"Auslandsspesen gesamt (CZK)","Bonusy / Srážky (Kč)":"Boni / Abzüge (CZK)","ODHADOVANÁ VÝPLATA ZA TENTO TÝDEN:":"GESCHÄTZTER WOCHENLOHN:","Uložit Nastavení Mzdy":"Lohneinstellungen speichern",
-        "Export Data (Kniha / Mzdy)":"Datenexport (Fahrtenbuch / Lohn)","Vyberte Řidiče":"Fahrer auswählen","Období Exportu":"Exportzeitraum","Aktuální zobrazený týden":"Aktuell angezeigte Woche","Aktuální vybraný měsíc":"Aktuell ausgewählter Monat","Celý vybraný rok":"Gesamtes ausgewähltes Jahr","Typ Exportu (Co se má vygenerovat)":"Exporttyp","Kompletní přehled (Kniha jízd + Mzdy)":"Komplettübersicht (Fahrtenbuch + Lohn)","Pouze Kniha jízd (Bez financí)":"Nur Fahrtenbuch (ohne Finanzen)","Pouze Mzdový výměr (Bez rozpisu tras)":"Nur Lohnabrechnung (ohne Routen)","📄 Náhled / Tisk / Uložit PDF":"📄 Vorschau / Drucken / PDF speichern","📊 Stáhnout data do Excelu (CSV)":"📊 Daten als Excel (CSV) herunterladen","💬 Odeslat přehled na WhatsApp":"💬 Übersicht per WhatsApp senden","Jízda":"Fahren","Práce/Vykládka":"Arbeit/Entladen","Pauza":"Pause","Čas":"Zeit","Délka":"Dauer","Délka v hodinách":"Dauer in Stunden","Hodin":"Stunden","Smazat blok":"Block löschen","Smazat řádek":"Zeile löschen","Jízdní doba":"Fahrzeit","Kurz (Kč/EUR)":"Wechselkurs (CZK/EUR)"
+        "Export Data (Kniha / Mzdy)":"Datenexport (Fahrtenbuch / Lohn)","Vyberte Řidiče":"Fahrer auswählen","Období Exportu":"Exportzeitraum","Aktuální zobrazený týden":"Aktuell angezeigte Woche","Aktuální vybraný měsíc":"Aktuell ausgewählter Monat","Celý vybraný rok":"Gesamtes ausgewähltes Jahr","Typ Exportu (Co se má vygenerovat)":"Exporttyp","Kompletní přehled (Kniha jízd + Mzdy)":"Komplettübersicht (Fahrtenbuch + Lohn)","Pouze Kniha jízd (Bez financí)":"Nur Fahrtenbuch (ohne Finanzen)","Pouze Mzdový výměr (Bez rozpisu tras)":"Nur Lohnabrechnung (ohne Routen)","🖨️ Tisk / Sdílet / Uložit PDF":"📄 Vorschau / Drucken / PDF speichern","📊 Stáhnout data do Excelu (CSV)":"📊 Daten als Excel (CSV) herunterladen","💬 Odeslat přehled na WhatsApp":"💬 Übersicht per WhatsApp senden","Jízda":"Fahren","Práce/Vykládka":"Arbeit/Entladen","Pauza":"Pause","Čas":"Zeit","Délka":"Dauer","Délka v hodinách":"Dauer in Stunden","Hodin":"Stunden","Smazat blok":"Block löschen","Smazat řádek":"Zeile löschen","Jízdní doba":"Fahrzeit","Kurz (Kč/EUR)":"Wechselkurs (CZK/EUR)"
       },
       pl: {
-        "Úprava Směny":"Edycja zmiany","Začátek Směny":"Początek zmiany","Režim":"Tryb","Poznámka k dni (Trasa)":"Notatka dnia (trasa)","Rozpis bloků (Jízda/Práce/Pauza)":"Bloki (jazda/praca/przerwa)","+ Přidat blok (Jízda / Práce / Pauza)":"+ Dodaj blok (jazda / praca / przerwa)","Smazat Den":"Usuń dzień","Uložit Směnu":"Zapisz zmianę","Zrušit":"Anuluj","Rychlé Nastavení Sazby a Diet":"Szybkie ustawienia płacy i diet","Odpracovaný výkon:":"Czas pracy:","Z toho čistá jízda:":"Czas jazdy:","1. ZÁKLADNÍ MZDA PRO TENTO TÝDEN":"1. PŁACA PODSTAWOWA NA TEN TYDZIEŃ","Typ Sazby":"Typ stawki","Sazba / Den (Kč)":"Stawka / dzień (CZK)","Odjeto směn":"Liczba zmian","Typ mzdy":"Typ płacy","Základ (Kč)":"Podstawa (CZK)","Denní sazba":"Stawka dzienna","Měsíční mzda":"Pensja miesięczna","Měsíc":"Miesiąc","Dnů v měsíci":"Dni w miesiącu","Poměrná denní sazba":"Stawka dzienna proporcjonalna","2. ZAHRANIČNÍ DIETY V TÝDNU":"2. DIETY ZAGRANICZNE W TYGODNIU","+ Přidat zemi k výpočtu diety":"+ Dodaj kraj do wyliczenia diety","Zahraniční diety celkem (Kč)":"Diety zagraniczne razem (CZK)","Bonusy / Srážky (Kč)":"Premie / Potrącenia (CZK)","ODHADOVANÁ VÝPLATA ZA TENTO TÝDEN:":"SZACOWANA WYPŁATA ZA TEN TYDZIEŃ:","Uložit Nastavení Mzdy":"Zapisz ustawienia płacy","Export Data (Kniha / Mzdy)":"Eksport danych (Ewidencja / Płace)","Vyberte Řidiče":"Wybierz kierowcę","Období Exportu":"Okres eksportu","Aktuální zobrazený týden":"Aktualnie wyświetlany tydzień","Aktuální vybraný měsíc":"Aktualnie wybrany miesiąc","Celý vybraný rok":"Cały wybrany rok","Typ Exportu (Co se má vygenerovat)":"Typ eksportu","Kompletní přehled (Kniha jízd + Mzdy)":"Pełne zestawienie (Ewidencja + Płace)","Pouze Kniha jízd (Bez financí)":"Tylko ewidencja (bez finansów)","Pouze Mzdový výměr (Bez rozpisu tras)":"Tylko płace (bez tras)","📄 Náhled / Tisk / Uložit PDF":"📄 Podgląd / Drukuj / Zapisz PDF","📊 Stáhnout data do Excelu (CSV)":"📊 Pobierz dane do Excel (CSV)","💬 Odeslat přehled na WhatsApp":"💬 Wyślij zestawienie przez WhatsApp","Jízda":"Jazda","Práce/Vykládka":"Praca/Rozładunek","Pauza":"Przerwa","Čas":"Czas","Délka":"Czas trwania","Délka v hodinách":"Czas trwania w godzinach","Hodin":"Godziny","Smazat blok":"Usuń blok","Smazat řádek":"Usuń wiersz","Jízdní doba":"Czas jazdy","Kurz (Kč/EUR)":"Kurs (CZK/EUR)"
+        "Úprava Směny":"Edycja zmiany","Začátek Směny":"Początek zmiany","Režim":"Tryb","Poznámka k dni (Trasa)":"Notatka dnia (trasa)","Rozpis bloků (Jízda/Práce/Pauza)":"Bloki (jazda/praca/przerwa)","+ Přidat blok (Jízda / Práce / Pauza)":"+ Dodaj blok (jazda / praca / przerwa)","Smazat Den":"Usuń dzień","Uložit Směnu":"Zapisz zmianę","Zrušit":"Anuluj","Rychlé Nastavení Sazby a Diet":"Szybkie ustawienia płacy i diet","Odpracovaný výkon:":"Czas pracy:","Z toho čistá jízda:":"Czas jazdy:","1. ZÁKLADNÍ MZDA PRO TENTO TÝDEN":"1. PŁACA PODSTAWOWA NA TEN TYDZIEŃ","Typ Sazby":"Typ stawki","Sazba / Den (Kč)":"Stawka / dzień (CZK)","Odjeto směn":"Liczba zmian","Typ mzdy":"Typ płacy","Základ (Kč)":"Podstawa (CZK)","Denní sazba":"Stawka dzienna","Měsíční mzda":"Pensja miesięczna","Měsíc":"Miesiąc","Dnů v měsíci":"Dni w miesiącu","Poměrná denní sazba":"Stawka dzienna proporcjonalna","2. ZAHRANIČNÍ DIETY V TÝDNU":"2. DIETY ZAGRANICZNE W TYGODNIU","+ Přidat zemi k výpočtu diety":"+ Dodaj kraj do wyliczenia diety","Zahraniční diety celkem (Kč)":"Diety zagraniczne razem (CZK)","Bonusy / Srážky (Kč)":"Premie / Potrącenia (CZK)","ODHADOVANÁ VÝPLATA ZA TENTO TÝDEN:":"SZACOWANA WYPŁATA ZA TEN TYDZIEŃ:","Uložit Nastavení Mzdy":"Zapisz ustawienia płacy","Export Data (Kniha / Mzdy)":"Eksport danych (Ewidencja / Płace)","Vyberte Řidiče":"Wybierz kierowcę","Období Exportu":"Okres eksportu","Aktuální zobrazený týden":"Aktualnie wyświetlany tydzień","Aktuální vybraný měsíc":"Aktualnie wybrany miesiąc","Celý vybraný rok":"Cały wybrany rok","Typ Exportu (Co se má vygenerovat)":"Typ eksportu","Kompletní přehled (Kniha jízd + Mzdy)":"Pełne zestawienie (Ewidencja + Płace)","Pouze Kniha jízd (Bez financí)":"Tylko ewidencja (bez finansów)","Pouze Mzdový výměr (Bez rozpisu tras)":"Tylko płace (bez tras)","🖨️ Tisk / Sdílet / Uložit PDF":"📄 Podgląd / Drukuj / Zapisz PDF","📊 Stáhnout data do Excelu (CSV)":"📊 Pobierz dane do Excel (CSV)","💬 Odeslat přehled na WhatsApp":"💬 Wyślij zestawienie przez WhatsApp","Jízda":"Jazda","Práce/Vykládka":"Praca/Rozładunek","Pauza":"Przerwa","Čas":"Czas","Délka":"Czas trwania","Délka v hodinách":"Czas trwania w godzinach","Hodin":"Godziny","Smazat blok":"Usuń blok","Smazat řádek":"Usuń wiersz","Jízdní doba":"Czas jazdy","Kurz (Kč/EUR)":"Kurs (CZK/EUR)"
       },
       it: {
-        "Úprava Směny":"Modifica turno","Začátek Směny":"Inizio turno","Režim":"Modalità","Poznámka k dni (Trasa)":"Nota del giorno (percorso)","Rozpis bloků (Jízda/Práce/Pauza)":"Blocchi (guida/lavoro/pausa)","+ Přidat blok (Jízda / Práce / Pauza)":"+ Aggiungi blocco (guida / lavoro / pausa)","Smazat Den":"Elimina giorno","Uložit Směnu":"Salva turno","Zrušit":"Annulla","Rychlé Nastavení Sazby a Diet":"Impostazioni rapide paga e diarie","Odpracovaný výkon:":"Tempo lavorato:","Z toho čistá jízda:":"Tempo di guida:","1. ZÁKLADNÍ MZDA PRO TENTO TÝDEN":"1. PAGA BASE DI QUESTA SETTIMANA","Typ Sazby":"Tipo tariffa","Sazba / Den (Kč)":"Tariffa / giorno (CZK)","Odjeto směn":"Turni effettuati","Typ mzdy":"Tipo di paga","Základ (Kč)":"Base (CZK)","Denní sazba":"Tariffa giornaliera","Měsíční mzda":"Stipendio mensile","Měsíc":"Mese","Dnů v měsíci":"Giorni nel mese","Poměrná denní sazba":"Equivalente giornaliero","2. ZAHRANIČNÍ DIETY V TÝDNU":"2. DIARIE ESTERE DELLA SETTIMANA","+ Přidat zemi k výpočtu diety":"+ Aggiungi paese per il calcolo delle diarie","Zahraniční diety celkem (Kč)":"Diarie estere totali (CZK)","Bonusy / Srážky (Kč)":"Bonus / Trattenute (CZK)","ODHADOVANÁ VÝPLATA ZA TENTO TÝDEN:":"STIMA PAGA DI QUESTA SETTIMANA:","Uložit Nastavení Mzdy":"Salva impostazioni paga","Export Data (Kniha / Mzdy)":"Esporta dati (Registro / Paghe)","Vyberte Řidiče":"Seleziona autista","Období Exportu":"Periodo export","Aktuální zobrazený týden":"Settimana visualizzata","Aktuální vybraný měsíc":"Mese selezionato","Celý vybraný rok":"Intero anno selezionato","Typ Exportu (Co se má vygenerovat)":"Tipo di export","Kompletní přehled (Kniha jízd + Mzdy)":"Riepilogo completo (Registro + Paghe)","Pouze Kniha jízd (Bez financí)":"Solo registro (senza finanze)","Pouze Mzdový výměr (Bez rozpisu tras)":"Solo paghe (senza percorsi)","📄 Náhled / Tisk / Uložit PDF":"📄 Anteprima / Stampa / Salva PDF","📊 Stáhnout data do Excelu (CSV)":"📊 Scarica dati Excel (CSV)","💬 Odeslat přehled na WhatsApp":"💬 Invia riepilogo su WhatsApp","Jízda":"Guida","Práce/Vykládka":"Lavoro/Scarico","Pauza":"Pausa","Čas":"Ora","Délka":"Durata","Délka v hodinách":"Durata in ore","Hodin":"Ore","Smazat blok":"Elimina blocco","Smazat řádek":"Elimina riga","Jízdní doba":"Tempo di guida","Kurz (Kč/EUR)":"Cambio (CZK/EUR)"}
+        "Úprava Směny":"Modifica turno","Začátek Směny":"Inizio turno","Režim":"Modalità","Poznámka k dni (Trasa)":"Nota del giorno (percorso)","Rozpis bloků (Jízda/Práce/Pauza)":"Blocchi (guida/lavoro/pausa)","+ Přidat blok (Jízda / Práce / Pauza)":"+ Aggiungi blocco (guida / lavoro / pausa)","Smazat Den":"Elimina giorno","Uložit Směnu":"Salva turno","Zrušit":"Annulla","Rychlé Nastavení Sazby a Diet":"Impostazioni rapide paga e diarie","Odpracovaný výkon:":"Tempo lavorato:","Z toho čistá jízda:":"Tempo di guida:","1. ZÁKLADNÍ MZDA PRO TENTO TÝDEN":"1. PAGA BASE DI QUESTA SETTIMANA","Typ Sazby":"Tipo tariffa","Sazba / Den (Kč)":"Tariffa / giorno (CZK)","Odjeto směn":"Turni effettuati","Typ mzdy":"Tipo di paga","Základ (Kč)":"Base (CZK)","Denní sazba":"Tariffa giornaliera","Měsíční mzda":"Stipendio mensile","Měsíc":"Mese","Dnů v měsíci":"Giorni nel mese","Poměrná denní sazba":"Equivalente giornaliero","2. ZAHRANIČNÍ DIETY V TÝDNU":"2. DIARIE ESTERE DELLA SETTIMANA","+ Přidat zemi k výpočtu diety":"+ Aggiungi paese per il calcolo delle diarie","Zahraniční diety celkem (Kč)":"Diarie estere totali (CZK)","Bonusy / Srážky (Kč)":"Bonus / Trattenute (CZK)","ODHADOVANÁ VÝPLATA ZA TENTO TÝDEN:":"STIMA PAGA DI QUESTA SETTIMANA:","Uložit Nastavení Mzdy":"Salva impostazioni paga","Export Data (Kniha / Mzdy)":"Esporta dati (Registro / Paghe)","Vyberte Řidiče":"Seleziona autista","Období Exportu":"Periodo export","Aktuální zobrazený týden":"Settimana visualizzata","Aktuální vybraný měsíc":"Mese selezionato","Celý vybraný rok":"Intero anno selezionato","Typ Exportu (Co se má vygenerovat)":"Tipo di export","Kompletní přehled (Kniha jízd + Mzdy)":"Riepilogo completo (Registro + Paghe)","Pouze Kniha jízd (Bez financí)":"Solo registro (senza finanze)","Pouze Mzdový výměr (Bez rozpisu tras)":"Solo paghe (senza percorsi)","🖨️ Tisk / Sdílet / Uložit PDF":"📄 Anteprima / Stampa / Salva PDF","📊 Stáhnout data do Excelu (CSV)":"📊 Scarica dati Excel (CSV)","💬 Odeslat přehled na WhatsApp":"💬 Invia riepilogo su WhatsApp","Jízda":"Guida","Práce/Vykládka":"Lavoro/Scarico","Pauza":"Pausa","Čas":"Ora","Délka":"Durata","Délka v hodinách":"Durata in ore","Hodin":"Ore","Smazat blok":"Elimina blocco","Smazat řádek":"Elimina riga","Jízdní doba":"Tempo di guida","Kurz (Kč/EUR)":"Cambio (CZK/EUR)"}
     };
     Object.keys(EXTRA_TRANSLATIONS).forEach(lang => Object.assign(TRANSLATIONS[lang], EXTRA_TRANSLATIONS[lang]));
     const EXTRA_TRANSLATIONS_2026 = {"en": {"Hmotnost nákladu (t)": "Cargo weight (t)", "Váha má vliv na spotřebu. (Každá tuna 0,2 l/100 km)": "Weight affects fuel consumption. (Each tonne adds 0.2 L/100 km)", "📤 Sdílet": "📤 Share", "Tisk / Uložit PDF": "Print / Save PDF", "Navigovat trasu směny v Mapách": "Navigate shift route in Maps"}, "de": {"Hmotnost nákladu (t)": "Ladungsgewicht (t)", "Váha má vliv na spotřebu. (Každá tuna 0,2 l/100 km)": "Das Gewicht beeinflusst den Verbrauch. (Je Tonne +0,2 l/100 km)", "📤 Sdílet": "📤 Teilen", "Tisk / Uložit PDF": "Drucken / PDF speichern", "Navigovat trasu směny v Mapách": "Schichtroute in Karten öffnen"}, "pl": {"Hmotnost nákladu (t)": "Masa ładunku (t)", "Váha má vliv na spotřebu. (Každá tuna 0,2 l/100 km)": "Masa wpływa na spalanie. (Każda tona +0,2 l/100 km)", "📤 Sdílet": "📤 Udostępnij", "Tisk / Uložit PDF": "Drukuj / Zapisz PDF", "Navigovat trasu směny v Mapách": "Nawiguj trasę zmiany w Mapach"}, "it": {"Hmotnost nákladu (t)": "Peso del carico (t)", "Váha má vliv na spotřebu. (Každá tuna 0,2 l/100 km)": "Il peso influisce sui consumi. (Ogni tonnellata +0,2 l/100 km)", "📤 Sdílet": "📤 Condividi", "Tisk / Uložit PDF": "Stampa / Salva PDF", "Navigovat trasu směny v Mapách": "Naviga il percorso del turno nelle Mappe"}};
@@ -2831,38 +2861,94 @@
     }
 
     function exportKnihaPrint() {
-        const data=getShiftsForExport();
-        const expType=document.getElementById('pdfTypeSelect').value;
-        let reportHtml=`<div style="font-family:Arial,sans-serif;padding:18px;color:#222;background:#fff;"><div style="border-bottom:4px solid #e3000f;padding-bottom:10px;margin-bottom:15px;display:flex;justify-content:space-between;gap:15px;"><div><h2 style="margin:0;">${expType==='mzdy'?'Mzdový výkaz':expType==='kniha'?'Kniha jízd':'Výkaz směn a kniha jízd'}</h2><div>Řidič: <b>${data.driver}</b></div></div><div>${data.title}</div></div>`;
-        if(expType==='both'||expType==='mzdy') reportHtml+=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;"><div style="flex:1;border:1px solid #ddd;padding:10px;text-align:center;min-width:110px;">Odpracováno<br><b>${data.totalV.toFixed(1)} h</b></div><div style="flex:1;border:1px solid #ddd;padding:10px;text-align:center;min-width:110px;">Čistá jízda<br><b>${data.totalJ.toFixed(1)} h</b></div><div style="flex:1;border:1px solid #ddd;padding:10px;text-align:center;min-width:110px;">Výplata<br><b>${formatMoney(data.totalP)}</b></div></div>`;
-        if(expType==='both'||expType==='kniha'){reportHtml+=`<table style="width:100%;border-collapse:collapse;font-size:11px;"><thead><tr><th style="border:1px solid #ccc;padding:6px;">Týden</th><th style="border:1px solid #ccc;padding:6px;">Den</th><th style="border:1px solid #ccc;padding:6px;">Start</th><th style="border:1px solid #ccc;padding:6px;">Trasa / účel</th><th style="border:1px solid #ccc;padding:6px;">Výkon</th><th style="border:1px solid #ccc;padding:6px;">Jízda</th></tr></thead><tbody>`;data.rows.forEach(r=>reportHtml+=`<tr><td style="border:1px solid #ccc;padding:6px;">T${r.week}</td><td style="border:1px solid #ccc;padding:6px;">${r.day}</td><td style="border:1px solid #ccc;padding:6px;">${r.start}</td><td style="border:1px solid #ccc;padding:6px;">${r.note}</td><td style="border:1px solid #ccc;padding:6px;">${r.v.toFixed(1)} h</td><td style="border:1px solid #ccc;padding:6px;">${r.j.toFixed(1)} h</td></tr>`);reportHtml+=`</tbody></table>`;}
-        reportHtml+=`</div>`;
-        document.getElementById('pdfExportModal').style.display='none';
-        let modal=document.getElementById('reportPreviewModal');
-        if(!modal){modal=document.createElement('div');modal.id='reportPreviewModal';modal.className='modal-overlay';modal.style.zIndex='300000';modal.innerHTML=`<div style="background:#fff;width:100%;max-width:800px;max-height:92vh;border-radius:8px;display:flex;flex-direction:column;overflow:hidden;"><div style="background:#1a1a1a;color:#fff;padding:12px 15px;font-weight:800;">📄 Náhled výkazu</div><div id="reportPreviewContent" style="padding:10px;overflow:auto;flex:1;"></div><div class="report-preview-actions" style="padding:12px;background:#eee;"><button class="btn-secondary" style="background:#107c41;" onclick="printCurrentReport()">🖨️ Tisk / Uložit PDF</button><button class="btn-secondary" style="background:#1565c0;" onclick="shareCurrentReport()">📤 Sdílet</button><button class="btn-secondary" style="background:#777;" onclick="document.getElementById('reportPreviewModal').style.display='none'">Zavřít</button></div></div>`;document.body.appendChild(modal);}
-        document.getElementById('reportPreviewContent').innerHTML=reportHtml;
-        modal.style.display='flex';
+        const data = getShiftsForExport();
+        const expType = document.getElementById('pdfTypeSelect').value;
+
+        let reportHtml = `<div style="font-family:Arial,sans-serif;padding:0;color:#222;background:#fff;">
+            <div style="border-bottom:4px solid #e3000f;padding-bottom:10px;margin-bottom:15px;display:flex;justify-content:space-between;gap:15px;">
+                <div>
+                    <h2 style="margin:0 0 5px 0;">${expType==='mzdy'?'Mzdový výkaz':expType==='kniha'?'Kniha jízd':'Výkaz směn a kniha jízd'}</h2>
+                    <div>Řidič: <b>${data.driver}</b></div>
+                </div>
+                <div>${data.title}</div>
+            </div>`;
+
+        if(expType==='both'||expType==='mzdy') {
+            reportHtml += `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;">
+                <div style="flex:1;border:1px solid #ddd;padding:10px;text-align:center;min-width:110px;">Odpracováno<br><b>${data.totalV.toFixed(1)} h</b></div>
+                <div style="flex:1;border:1px solid #ddd;padding:10px;text-align:center;min-width:110px;">Čistá jízda<br><b>${data.totalJ.toFixed(1)} h</b></div>
+                <div style="flex:1;border:1px solid #ddd;padding:10px;text-align:center;min-width:110px;">Výplata<br><b>${formatMoney(data.totalP)}</b></div>
+            </div>`;
+        }
+
+        if(expType==='both'||expType==='kniha') {
+            reportHtml += `<table style="width:100%;border-collapse:collapse;font-size:11px;">
+                <thead><tr>
+                    <th style="border:1px solid #ccc;padding:6px;">Týden</th>
+                    <th style="border:1px solid #ccc;padding:6px;">Den</th>
+                    <th style="border:1px solid #ccc;padding:6px;">Start</th>
+                    <th style="border:1px solid #ccc;padding:6px;">Trasa / účel</th>
+                    <th style="border:1px solid #ccc;padding:6px;">Výkon</th>
+                    <th style="border:1px solid #ccc;padding:6px;">Jízda</th>
+                </tr></thead><tbody>`;
+            data.rows.forEach(r => {
+                reportHtml += `<tr>
+                    <td style="border:1px solid #ccc;padding:6px;">T${r.week}</td>
+                    <td style="border:1px solid #ccc;padding:6px;">${r.day}</td>
+                    <td style="border:1px solid #ccc;padding:6px;">${r.start}</td>
+                    <td style="border:1px solid #ccc;padding:6px;">${r.note}</td>
+                    <td style="border:1px solid #ccc;padding:6px;">${r.v.toFixed(1)} h</td>
+                    <td style="border:1px solid #ccc;padding:6px;">${r.j.toFixed(1)} h</td>
+                </tr>`;
+            });
+            reportHtml += `</tbody></table>`;
+        }
+
+        reportHtml += `</div>`;
+
+        // Zavřít exportní dialog a tisknout přímo z aktuální aplikace.
+        document.getElementById('pdfExportModal').style.display = 'none';
+
+        const host = document.getElementById('printReportHost');
+        if(!host) {
+            alert('Tiskový modul se nepodařilo připravit.');
+            return;
+        }
+
+        host.innerHTML = reportHtml;
+        host.setAttribute('aria-hidden', 'false');
+
+        const finishPrint = () => {
+            document.body.classList.remove('print-report-mode');
+            host.setAttribute('aria-hidden', 'true');
+            host.innerHTML = '';
+        };
+
+        window.onafterprint = finishPrint;
+        document.body.classList.add('print-report-mode');
+
+        // Dvojité překreslení pomáhá iOS před otevřením nativního tiskového panelu.
+        void host.offsetHeight;
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                try {
+                    window.print();
+                } catch(e) {
+                    finishPrint();
+                    alert('Tisk se nepodařilo otevřít. Zkuste tlačítko Tisk znovu.');
+                }
+            });
+        });
     }
 
-    function openReportPrintWindow(){
-        const source=document.getElementById('reportPreviewContent');
-        if(!source) return null;
-        const report=source.innerHTML;
-        const css=`@page{size:auto;margin:10mm}html,body{background:#fff!important;color:#222!important}body{font-family:Arial,sans-serif;margin:0;padding:18px}.print-actions{position:sticky;top:0;background:#fff;padding:0 0 14px;margin-bottom:14px;border-bottom:1px solid #ddd;display:flex;gap:8px;flex-wrap:wrap}.print-actions button{border:0;border-radius:7px;padding:12px 15px;font-weight:800;font-size:14px}.btn-print{background:#107c41;color:#fff}.btn-share{background:#1565c0;color:#fff}.btn-back{background:#777;color:#fff}.report{max-width:1000px;margin:0 auto}.report table{width:100%;border-collapse:collapse;font-size:11px}.report th,.report td{border:1px solid #ccc;padding:6px}.report tr{page-break-inside:avoid}.report thead{display:table-header-group}@media print{.print-actions{display:none!important}body{padding:0}.report{max-width:none}}`;
-        const w=window.open('', '_blank');
-        if(!w) return null;
-        w.document.open();
-        w.document.write(`<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Control Point – výkaz</title><style>${css}</style></head><body><div class="print-actions"><button class="btn-print" onclick="window.print()">🖨️ Otevřít tisk v iOS</button><button class="btn-share" onclick="shareFromPrintPage()">📤 Sdílet</button><button class="btn-back" onclick="window.close()">← Zpět do aplikace</button></div><main class="report">${report}</main><script>async function shareFromPrintPage(){try{if(navigator.share){await navigator.share({title:'Control Point – výkaz',text:'Výkaz Control Point'});return;}}catch(e){if(e&&e.name==='AbortError')return;}window.print();}<\/script></body></html>`);
-        w.document.close();
-        return w;
+    // Na iOS má „Sdílet“ otevřít stejný nativní tiskový panel.
+    // Z něj lze zvolit Sdílet, Uložit do Souborů/PDF nebo tiskárnu.
+    function printCurrentReport() {
+        exportKnihaPrint();
     }
-    function printCurrentReport(){
-        const w=openReportPrintWindow();
-        if(!w) alert('iOS zablokoval otevření tiskového dokumentu. Klepněte znovu na Tisk a povolte v Safari vyskakovací okna.');
-    }
-    async function shareCurrentReport(){
-        const w=openReportPrintWindow();
-        if(!w) alert('iOS zablokoval otevření dokumentu. Zkuste Sdílet znovu.');
+
+    function shareCurrentReport() {
+        exportKnihaPrint();
     }
 
     function exportKnihaCSV(){
