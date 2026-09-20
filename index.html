@@ -10,7 +10,9 @@
     <title>Control Point - Transport Analytics & ERP</title>
     
     <!-- PWA Manifest pro instalaci na plochu -->
-    <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Control%20Point%22%2C%22short_name%22%3A%22CP%20Analytics%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f4f4f4%22%2C%22theme_color%22%3A%22%23e3000f%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII%3D%22%2C%22sizes%22%3A%221x1%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D'>
+    <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Control%20Point%22%2C%22short_name%22%3A%22CP%20Analytics%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f4f4f4%22%2C%22theme_color%22%3A%22%23e3000f%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22IMG_9552.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image/png%22%2C%22purpose%22%3A%22any%20maskable%22%7D%2C%7B%22src%22%3A%22data%3Aimage/svg%2Bxml%2C%253Csvg%20xmlns%3D%2522http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2522%20width%3D%2522512%2522%20height%3D%2522512%2522%20viewBox%3D%25220%200%20512%20512%2522%253E%253Crect%20width%3D%2522512%2522%20height%3D%2522512%2522%20fill%3D%2522white%2522%252F%253E%253Ctext%20x%3D%2522256%2522%20y%3D%2522305%2522%20text-anchor%3D%2522middle%2522%20font-family%3D%2522Arial%2522%20font-size%3D%2522200%2522%20font-weight%3D%2522700%2522%20fill%3D%2522%2523e3000f%2522%253ECP%253C%252Ftext%253E%253C%252Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image/svg%2Bxml%22%2C%22purpose%22%3A%22any%22%7D%5D%7D">
+    <link rel="apple-touch-icon" sizes="180x180" href="IMG_9552.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="IMG_9552.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -162,6 +164,25 @@
         .pdf-hide { display: block; }
         @media print { .pdf-hide { display: none !important; } body{background:white;} }
 
+
+        /* Shift modal – compact top controls for iPhone/iPad */
+        #shiftModal .shift-top-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; width:100%; }
+        #shiftModal .shift-top-grid .input-group { min-width:0; margin-bottom:0; }
+        #shiftModal .shift-top-grid label { min-height:32px; line-height:1.2; font-size:11px; }
+        #shiftModal .shift-top-grid input, #shiftModal .shift-top-grid select { width:100%; min-width:0; height:46px; }
+        @media (max-width:390px) { #shiftModal .shift-top-grid { gap:6px; } #shiftModal .shift-top-grid label { font-size:10px; } }
+
+        /* iOS print/share report */
+        @page { size:auto; margin:10mm; }
+        @media print {
+            html, body { width:100% !important; background:#fff !important; }
+            body.print-report-mode { overflow:visible !important; }
+            body.print-report-mode .print-report-host { display:block !important; width:100% !important; }
+            body.print-report-mode .print-report-host table { page-break-inside:auto; }
+            body.print-report-mode .print-report-host tr { page-break-inside:avoid; page-break-after:auto; }
+            body.print-report-mode .print-report-host thead { display:table-header-group; }
+        }
+
         /* === OPRAVY 2026: čistší mobilní UI === */
         .shift-top-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
         .shift-top-grid .input-group { margin-bottom:0; }
@@ -184,13 +205,6 @@
         .planner-gen-grid input, .planner-gen-grid select { min-height: 46px; }
         #aetrInfo { max-height: 54px; overflow:auto; }
         .planner-gen-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .planner-gen-grid .input-group { min-width:0; overflow:hidden; }
-        .planner-gen-grid input, .planner-gen-grid select { min-width:0; width:100%; }
-        .planner-route-row { display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap; }
-        .planner-route-main { flex:2 1 150px; min-width:0 !important; }
-        .planner-route-country { flex:1 1 90px; min-width:0 !important; }
-        .planner-route-delay { flex:1 1 110px; min-width:0 !important; }
-        .planner-nav-btn { background:var(--cp-blue) !important; color:#fff !important; border:none !important; }
         .planner-gen-grid .input-group:nth-child(1) { grid-column: span 1; }
         .planner-gen-grid .input-group:nth-child(2) { grid-column: span 1; }
         .planner-gen-grid .input-group:nth-child(3) { grid-column: span 1; }
@@ -381,8 +395,8 @@
                 </div>
                 <input type="hidden" id="startVaha" value="10">
                 <div class="input-group">
-                    <label id="lblNaklad">Hmotnost nákladu (t) <span class="icon-help" onclick="showInfo(T('Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)'))">i</span></label>
-                    <input type="number" id="vahaNakladu" value="10" min="0" step="0.1" oninput="syncCargoWeight(); calculate(); autoSave();">
+                    <label id="lblNaklad">Hmotnost nákladu (t) <span class="icon-help" onclick="showInfo(T('Váha má vliv na spotřebu. (Každá tuna 0,2 l/100 km)'))">i</span></label>
+                    <input type="number" id="vahaNakladu" value="10" min="0" step="0.1" oninput="calculate(); autoSave();">
                 </div>
                 <div class="input-group">
                     <label id="lblNaftaCena">Cena nafty / L</label>
@@ -572,7 +586,7 @@
                     <input type="number" id="planSpeed" value="70">
                 </div>
                 <div class="input-group">
-                    <label id="lblPlanDay">Datum Startu <span class="icon-help" onclick="showInfo(T('Vyberte přesné datum, aplikace sama určí týden a rok.'))">i</span></label>
+                    <label id="lblPlanDay">Datum Startu <span class="icon-help" onclick="showInfo('Vyberte přesné datum, aplikace sama určí týden a rok.')">i</span></label>
                     <input type="date" id="planDateSelect">
                 </div>
                 <div class="input-group">
@@ -583,13 +597,13 @@
 
             <div style="border:1px solid #b6d4fe; background:white; padding:15px; border-radius:6px; margin-bottom:15px;">
                 
-                <div class="planner-route-row">
-                    <div class="input-group planner-route-main" style="margin:0; flex:2; min-width:150px;">
+                <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap: wrap;">
+                    <div class="input-group" style="margin:0; flex: 2; min-width: 150px;">
                         <label id="lblPlanStart" style="font-size:13px; color:var(--cp-blue);">1. Start (Odkud)</label>
                         <input type="text" id="planStartRoute" placeholder="Např. Praha" style="border:2px solid var(--cp-blue);">
                     </div>
-                    <div class="input-group planner-route-country" style="margin:0; flex:1; min-width:80px;">
-                        <label id="lblPlanStartCountry">Stát</label>
+                    <div class="input-group" style="margin:0; flex: 1; min-width: 80px;">
+                        <label>Stát</label>
                         <select id="planStartStat"><option value="">-- Auto --</option><option value="CZ">CZ</option><option value="DE">DE</option><option value="AT">AT</option><option value="PL">PL</option><option value="SK">SK</option><option value="IT">IT</option></select>
                     </div>
                 </div>
@@ -597,22 +611,21 @@
                 <div id="planWpBeforeContainer" style="margin-bottom:10px; margin-left:15px; border-left:2px solid #ccc; padding-left:10px;"></div>
                 <button class="btn-secondary" onclick="addPlanWaypoint('before')" id="btnPlanAddWpBefore" style="margin-left:15px; margin-bottom:15px; width:auto; padding:10px 15px;">+ Přidat Zastávku PŘED cílem (Nakládka/Vykládka)</button>
 
-                <div class="planner-route-row">
-                    <div class="input-group planner-route-main" style="margin:0; flex:2; min-width:150px;">
+                <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap: wrap;">
+                    <div class="input-group" style="margin:0; flex: 2; min-width: 150px;">
                         <label id="lblPlanEnd" style="font-size:13px; color:var(--cp-danger);">2. Cíl (Kam)</label>
                         <input type="text" id="planEndRoute" placeholder="Např. Madrid" style="border:2px solid var(--cp-danger);">
                     </div>
-                    <div class="input-group planner-route-country" style="margin:0; flex:1; min-width:80px;">
-                        <label id="lblPlanEndCountry">Stát</label>
+                    <div class="input-group" style="margin:0; flex: 1; min-width: 80px;">
+                        <label>Stát</label>
                         <select id="planEndStat"><option value="">-- Auto --</option><option value="CZ">CZ</option><option value="DE">DE</option><option value="AT">AT</option><option value="PL">PL</option><option value="SK">SK</option><option value="IT">IT</option></select>
                     </div>
-                    <div class="input-group planner-route-delay" style="margin:0; flex:1; min-width:110px;">
-                        <label id="lblPlanEndDelay">Zdržení v Cíli (h) <span class="icon-help" onclick="showInfo(T('Doba vykládky. Pokud je 0.75 a více, počítá se i jako pauza.'))">i</span></label>
+                    <div class="input-group" style="margin:0; flex: 1; min-width: 80px;">
+                        <label>Zdržení v Cíli (h) <span class="icon-help" onclick="showInfo('Doba vykládky. Pokud je 0.75 a více, počítá se i jako pauza.')">i</span></label>
                         <input type="number" id="planEndDelay" step="0.25" value="1.5">
                     </div>
                 </div>
 
-                <button type="button" class="btn-secondary planner-nav-btn" id="btnPlanNav" onclick="openPlannerNav()" disabled>🧭 Navigovat trasu v Mapách</button>
                 <div id="planWpAfterContainer" style="margin-bottom:10px; margin-left:15px; border-left:2px dashed #ccc; padding-left:10px;"></div>
                 <button class="btn-secondary" onclick="addPlanWaypoint('after')" id="btnPlanAddWpAfter" style="margin-left:15px; margin-bottom:15px; width:auto; background:#777; padding:10px 15px;">+ Přidat Zastávku ZA cílem (Pokračování trasy)</button>
             </div>
@@ -640,7 +653,12 @@
         <div class="week-controls pdf-hide">
             <button class="btn-secondary" style="width:auto; padding:10px 20px;" onclick="changeWeek(-1)">◀</button>
             <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:center;">
-                <select id="yearSelect" onchange="changeYearMonth()" aria-label="Rok"></select>
+                <select id="yearSelect" onchange="changeYearMonth()">
+                    <option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option>
+                    <option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option>
+                    <option value="2030">2030</option><option value="2031">2031</option><option value="2032">2032</option>
+                    <option value="2033">2033</option><option value="2034">2034</option><option value="2035">2035</option>
+                </select>
                 <select id="monthSelect" onchange="changeYearMonth()">
                     <option value="0">Leden</option><option value="1">Únor</option><option value="2">Březen</option><option value="3">Duben</option>
                     <option value="4">Květen</option><option value="5">Červen</option><option value="6">Červenec</option><option value="7">Srpen</option>
@@ -671,8 +689,8 @@
         <div id="aetrStrictWarning" style="background: #ffebee; color: #c62828; padding: 12px; border-radius: 4px; margin-bottom: 15px; font-size: 12px; font-weight: 800; display: none; border: 1px solid #ffcdd2; text-align:center;"></div>
 
         <div class="shift-top-grid">
-            <div class="input-group"><label>Začátek Směny <span class="icon-help" onclick="showInfo(T('helpShiftStart'))">i</span></label><input type="time" id="editStart" value="06:00" onchange="validateAndRenderShift()"></div>
-            <div class="input-group"><label>Režim</label><select id="editCrew" onchange="validateAndRenderShift()"><option value="1">1 Řidič</option><option value="2">Dvojosádka</option></select></div>
+            <div class="input-group"><label id="lblEditStart">Začátek Směny <span class="icon-help" onclick="showInfo(T('helpShiftStart'))">i</span></label><input type="time" id="editStart" value="06:00" onchange="validateAndRenderShift()"></div>
+            <div class="input-group"><label id="lblEditCrew">Režim</label><select id="editCrew" onchange="validateAndRenderShift()"><option value="1">1 Řidič</option><option value="2">Dvojosádka</option></select></div>
         </div>
         <div class="input-group" style="margin-top: 10px;"><label>Poznámka k dni (Trasa)</label><input type="text" id="editNote" placeholder="Např. Trasa (Ostrava - Berlín)"></div>
         
@@ -1190,37 +1208,8 @@
         "Úprava Směny":"Modifica turno","Začátek Směny":"Inizio turno","Režim":"Modalità","Poznámka k dni (Trasa)":"Nota del giorno (percorso)","Rozpis bloků (Jízda/Práce/Pauza)":"Blocchi (guida/lavoro/pausa)","+ Přidat blok (Jízda / Práce / Pauza)":"+ Aggiungi blocco (guida / lavoro / pausa)","Smazat Den":"Elimina giorno","Uložit Směnu":"Salva turno","Zrušit":"Annulla","Rychlé Nastavení Sazby a Diet":"Impostazioni rapide paga e diarie","Odpracovaný výkon:":"Tempo lavorato:","Z toho čistá jízda:":"Tempo di guida:","1. ZÁKLADNÍ MZDA PRO TENTO TÝDEN":"1. PAGA BASE DI QUESTA SETTIMANA","Typ Sazby":"Tipo tariffa","Sazba / Den (Kč)":"Tariffa / giorno (CZK)","Odjeto směn":"Turni effettuati","Typ mzdy":"Tipo di paga","Základ (Kč)":"Base (CZK)","Denní sazba":"Tariffa giornaliera","Měsíční mzda":"Stipendio mensile","Měsíc":"Mese","Dnů v měsíci":"Giorni nel mese","Poměrná denní sazba":"Equivalente giornaliero","2. ZAHRANIČNÍ DIETY V TÝDNU":"2. DIARIE ESTERE DELLA SETTIMANA","+ Přidat zemi k výpočtu diety":"+ Aggiungi paese per il calcolo delle diarie","Zahraniční diety celkem (Kč)":"Diarie estere totali (CZK)","Bonusy / Srážky (Kč)":"Bonus / Trattenute (CZK)","ODHADOVANÁ VÝPLATA ZA TENTO TÝDEN:":"STIMA PAGA DI QUESTA SETTIMANA:","Uložit Nastavení Mzdy":"Salva impostazioni paga","Export Data (Kniha / Mzdy)":"Esporta dati (Registro / Paghe)","Vyberte Řidiče":"Seleziona autista","Období Exportu":"Periodo export","Aktuální zobrazený týden":"Settimana visualizzata","Aktuální vybraný měsíc":"Mese selezionato","Celý vybraný rok":"Intero anno selezionato","Typ Exportu (Co se má vygenerovat)":"Tipo di export","Kompletní přehled (Kniha jízd + Mzdy)":"Riepilogo completo (Registro + Paghe)","Pouze Kniha jízd (Bez financí)":"Solo registro (senza finanze)","Pouze Mzdový výměr (Bez rozpisu tras)":"Solo paghe (senza percorsi)","📄 Náhled / Tisk / Uložit PDF":"📄 Anteprima / Stampa / Salva PDF","📊 Stáhnout data do Excelu (CSV)":"📊 Scarica dati Excel (CSV)","💬 Odeslat přehled na WhatsApp":"💬 Invia riepilogo su WhatsApp","Jízda":"Guida","Práce/Vykládka":"Lavoro/Scarico","Pauza":"Pausa","Čas":"Ora","Délka":"Durata","Délka v hodinách":"Durata in ore","Hodin":"Ore","Smazat blok":"Elimina blocco","Smazat řádek":"Elimina riga","Jízdní doba":"Tempo di guida","Kurz (Kč/EUR)":"Cambio (CZK/EUR)"}
     };
     Object.keys(EXTRA_TRANSLATIONS).forEach(lang => Object.assign(TRANSLATIONS[lang], EXTRA_TRANSLATIONS[lang]));
-    // Kompletní doplnění překladů pro popisky, placeholdery, nápovědy a stavové zprávy.
-    const COMPLETE_UI_TRANSLATIONS = {
-      en: {
-        "Hmotnost nákladu (t)":"Cargo weight (t)","Mzdy / Diety":"Pay / Diets","Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)":"Weight affects consumption. (Each tonne adds 0.2 L/100 km)",
-        "Vyberte přesné datum, aplikace sama určí týden a rok.":"Select the exact date; the app determines the week and year automatically.",
-        "Doba vykládky. Pokud je 0.75 a více, počítá se i jako pauza.":"Unloading time. If it is 0.75 h or more, it also counts as a rest break.",
-        "Nejprve zadejte Start a Cíl.":"Enter Start and Destination first.","Nejprve spočítejte trasu.":"Calculate the route first.",
-        "Souhrn zkopírován do schránky! Můžete jej vložit do WhatsAppu.":"Summary copied to the clipboard! You can paste it into WhatsApp.",
-        "Nemáte přidané žádné řidiče.":"No drivers have been added.","Zadejte město/adresu...":"Enter city/address...","Adresa":"Address","Zastávka":"Stop","Zdržení (h)":"Delay (h)",
-        "Nové jméno...":"New name...","Např. Turate nebo Milán":"e.g. Turate or Milan","Např. Praha":"e.g. Prague","Např. Madrid":"e.g. Madrid","Např. Trasa (Ostrava - Berlín)":"e.g. Route (Ostrava - Berlin)","Např. adresa / město":"e.g. address / city",
-        "Stát":"Country","Start":"Start","Cíl":"Destination","Volno (Pauza)":"Free (Rest)","Výkon":"Duty time","Čistá jízda":"Driving time","Výplata":"Pay","Řidič":"Driver","Řidič:":"Driver:","Týden":"Week","Den":"Day","Hodiny Celkem":"Total hours",
-        "Odhadovaná vzdálenost:":"Estimated distance:","Očekávaný návrat do cíle (Konec výkonu):":"Expected arrival at destination (end of duty):","Čistý po pauze (Lze dál jet):":"Net time after rest (can continue driving):","Přesný odhad diet (tranzit):":"Exact diet estimate (transit):",
-        "Čekám na zadání ceny":"Waiting for price input","Mýto":"Toll","Výstupní měna":"Output currency","Ne":"No","Ano":"Yes","Nejdříve lze vyjet v":"Earliest departure:","Nutná pauza":"Required rest","Předchozí směna skončila v":"Previous shift ended at","Start systému...":"System starting...",
-        "🧭 Navigovat trasu v Mapách":"🧭 Navigate route in Maps","🧭 Navigovat trasu směny v Mapách":"🧭 Navigate shift route in Maps","+ Přidat Zastávku PŘED cílem (Nakládka/Vykládka)":"+ Add stop BEFORE destination (Loading/Unloading)","+ Přidat Zastávku ZA cílem (Pokračování trasy)":"+ Add stop AFTER destination (Continue route)",
-        "Průjezdový bod":"Transit point","Prázdný":"Empty","Přejezd":"Empty run","1/2 nákladu":"Half load","Plný":"Full load","5 náprav (2+3)":"5 axles (2+3)","6 a více (3+3)":"6+ axles (3+3)","4 nápravy (2+2)":"4 axles (2+2)","3 nápravy":"3 axles","1 nahoře":"1 lifted","2 nahoře":"2 lifted",
-        "Víkend:":"Weekend:","Dluh":"Debt","<24h!":"<24h!","Analyzuji trasu, body a AETR logiku...":"Analyzing route, points and AETR logic...","Úspěšně naplánováno vč. tranzitních států a pauz!":"Successfully planned including transit countries and breaks!","Chyba generátoru:":"Generator error:","Jste offline. Výpočet trasy přes OSRM nelze provést.":"You are offline. Route calculation via OSRM is unavailable.","Vyberte přesné datum startu!":"Select the exact start date!","Vyberte prvního řidiče!":"Select the first driver!","Režim 2 řidičů je aktivní, ale druhý řidič není vybrán!":"Two-driver mode is active, but the second driver has not been selected!","Chyba: Zvolili jste stejného řidiče dvakrát pro dvojosádku!":"Error: the same driver was selected twice for a two-driver crew!","Vyplňte Start a Cíl!":"Enter Start and Destination!","Nelze naplánovat! Řidič neměl pauzu":"Cannot plan! The driver did not have the required rest","Přidat blok":"Add block","Zrušit":"Cancel"
-      },
-      de: {
-        "Hmotnost nákladu (t)":"Ladungsgewicht (t)","Mzdy / Diety":"Lohn / Spesen","Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)":"Das Gewicht beeinflusst den Verbrauch. (Je Tonne +0,2 l/100 km)",
-        "Vyberte přesné datum, aplikace sama určí týden a rok.":"Exaktes Datum wählen; die App bestimmt Woche und Jahr automatisch.","Doba vykládky. Pokud je 0.75 a více, počítá se i jako pauza.":"Entladezeit. Ab 0,75 h zählt sie auch als Pause.",
-        "Nejprve zadejte Start a Cíl.":"Bitte zuerst Start und Ziel eingeben.","Nejprve spočítejte trasu.":"Bitte zuerst die Route berechnen.","Souhrn zkopírován do schránky! Můžete jej vložit do WhatsAppu.":"Zusammenfassung kopiert! Sie kann in WhatsApp eingefügt werden.","Nemáte přidané žádné řidiče.":"Es wurden keine Fahrer hinzugefügt.",
-        "Zadejte město/adresu...":"Stadt/Adresse eingeben...","Adresa":"Adresse","Zastávka":"Stopp","Zdržení (h)":"Aufenthalt (Std.)","Nové jméno...":"Neuer Name...","Např. Turate nebo Milán":"z. B. Turate oder Mailand","Např. Praha":"z. B. Prag","Např. Madrid":"z. B. Madrid","Např. Trasa (Ostrava - Berlín)":"z. B. Route (Ostrava - Berlin)","Např. adresa / město":"z. B. Adresse / Stadt","Stát":"Land","Start":"Start","Cíl":"Ziel","Volno (Pauza)":"Frei (Pause)","Výkon":"Arbeitszeit","Čistá jízda":"Fahrzeit","Výplata":"Lohn","Řidič":"Fahrer","Řidič:":"Fahrer:","Týden":"Woche","Den":"Tag","Hodiny Celkem":"Gesamtstunden","Odhadovaná vzdálenost:":"Geschätzte Entfernung:","Očekávaný návrat do cíle (Konec výkonu):":"Voraussichtliche Ankunft am Ziel (Dienstende):","Čistý po pauze (Lze dál jet):":"Nettozeit nach Pause (Weiterfahrt möglich):","Přesný odhad diet (tranzit):":"Genaue Spesenschätzung (Transit):","Čekám na zadání ceny":"Warte auf Preiseingabe","Mýto":"Maut","Výstupní měna":"Ausgabewährung","Ne":"Nein","Ano":"Ja","Nejdříve lze vyjet v":"Früheste Abfahrt:","Nutná pauza":"Erforderliche Pause","Předchozí směna skončila v":"Vorherige Schicht endete um","Start systému...":"Systemstart...","🧭 Navigovat trasu v Mapách":"🧭 Route in Maps öffnen","🧭 Navigovat trasu směny v Mapách":"🧭 Schichtroute in Maps öffnen","+ Přidat Zastávku PŘED cílem (Nakládka/Vykládka)":"+ Stopp VOR Ziel hinzufügen (Laden/Entladen)","+ Přidat Zastávku ZA cílem (Pokračování trasy)":"+ Stopp NACH Ziel hinzufügen (Route fortsetzen)","Průjezdový bod":"Durchfahrtspunkt","Prázdný":"Leer","Přejezd":"Leerfahrt","1/2 nákladu":"Halbe Ladung","Plný":"Voll","5 náprav (2+3)":"5 Achsen (2+3)","6 a více (3+3)":"6+ Achsen (3+3)","4 nápravy (2+2)":"4 Achsen (2+2)","3 nápravy":"3 Achsen","1 nahoře":"1 angehoben","2 nahoře":"2 angehoben","Víkend:":"Wochenende:","Dluh":"Fehlbetrag","Analyzuji trasu, body a AETR logiku...":"Route, Punkte und AETR-Logik werden analysiert...","Úspěšně naplánováno vč. tranzitních států a pauz!":"Erfolgreich einschließlich Transitstaaten und Pausen geplant!","Chyba generátoru:":"Generatorfehler:","Jste offline. Výpočet trasy přes OSRM nelze provést.":"Sie sind offline. Die Routenberechnung über OSRM ist nicht möglich.","Vyberte přesné datum startu!":"Exaktes Startdatum wählen!","Vyberte prvního řidiče!":"Ersten Fahrer auswählen!","Režim 2 řidičů je aktivní, ale druhý řidič není vybrán!":"Zwei-Fahrer-Modus aktiv, aber kein zweiter Fahrer ausgewählt!","Vyplňte Start a Cíl!":"Start und Ziel eingeben!","Nelze naplánovat! Řidič neměl pauzu":"Planung nicht möglich! Die erforderliche Pause fehlt","Přidat blok":"Block hinzufügen","Zrušit":"Abbrechen"
-      },
-      pl: {
-        "Hmotnost nákladu (t)":"Masa ładunku (t)","Mzdy / Diety":"Płace / Diety","Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)":"Masa wpływa na spalanie. (Każda tona +0,2 l/100 km)","Vyberte přesné datum, aplikace sama určí týden a rok.":"Wybierz dokładną datę; aplikacja automatycznie ustali tydzień i rok.","Doba vykládky. Pokud je 0.75 a více, počítá se i jako pauza.":"Czas rozładunku. Od 0,75 h jest również liczony jako przerwa.","Nejprve zadejte Start a Cíl.":"Najpierw wpisz Start i Cel.","Nejprve spočítejte trasu.":"Najpierw oblicz trasę.","Nemáte přidané žádné řidiče.":"Nie dodano żadnych kierowców.","Zadejte město/adresu...":"Wpisz miasto/adres...","Adresa":"Adres","Zastávka":"Postój","Zdržení (h)":"Postój (godz.)","Nové jméno...":"Nowe imię...","Např. Praha":"np. Praga","Např. Madrid":"np. Madryt","Např. Turate nebo Milán":"np. Turate lub Mediolan","Např. Trasa (Ostrava - Berlín)":"np. Trasa (Ostrawa - Berlin)","Např. adresa / město":"np. adres / miasto","Stát":"Kraj","Start":"Start","Cíl":"Cel","Volno (Pauza)":"Wolne (Przerwa)","Výkon":"Czas pracy","Čistá jízda":"Czas jazdy","Výplata":"Wypłata","Řidič":"Kierowca","Řidič:":"Kierowca:","Týden":"Tydzień","Den":"Dzień","Hodiny Celkem":"Łącznie godzin","Odhadovaná vzdálenost:":"Szacowana odległość:","Očekávaný návrat do cíle (Konec výkonu):":"Przewidywany powrót do celu (koniec pracy):","Čistý po pauze (Lze dál jet):":"Czysty czas po przerwie (można jechać dalej):","Přesný odhad diet (tranzit):":"Dokładny szacunek diet (tranzyt):","Čekám na zadání ceny":"Oczekiwanie na cenę","Mýto":"Myto","Výstupní měna":"Waluta wyjściowa","Ne":"Nie","Ano":"Tak","Nejdříve lze vyjet v":"Najwcześniejszy wyjazd:","Nutná pauza":"Wymagana przerwa","Předchozí směna skončila v":"Poprzednia zmiana zakończyła się o","Start systému...":"Uruchamianie systemu...","🧭 Navigovat trasu v Mapách":"🧭 Nawiguj trasę w Mapach","🧭 Navigovat trasu směny v Mapách":"🧭 Nawiguj trasę zmiany w Mapach","+ Přidat Zastávku PŘED cílem (Nakládka/Vykládka)":"+ Dodaj postój PRZED celem (załadunek/rozładunek)","+ Přidat Zastávku ZA cílem (Pokračování trasy)":"+ Dodaj postój ZA celem (kontynuacja trasy)","Průjezdový bod":"Punkt tranzytowy","Prázdný":"Pusty","Přejezd":"Przejazd pusty","1/2 nákladu":"Połowa ładunku","Plný":"Pełny","5 náprav (2+3)":"5 osi (2+3)","6 a více (3+3)":"6+ osi (3+3)","4 nápravy (2+2)":"4 osie (2+2)","3 nápravy":"3 osie","1 nahoře":"1 podniesiona","2 nahoře":"2 podniesione","Víkend:":"Weekend:","Dluh":"Dług","Analyzuji trasu, body a AETR logiku...":"Analizowanie trasy, punktów i logiki AETR...","Úspěšně naplánováno vč. tranzitních států a pauz!":"Pomyślnie zaplanowano wraz z krajami tranzytowymi i przerwami!","Chyba generátoru:":"Błąd generatora:","Jste offline. Výpočet trasy přes OSRM nelze provést.":"Jesteś offline. Obliczenie trasy przez OSRM jest niedostępne.","Vyberte přesné datum startu!":"Wybierz dokładną datę startu!","Vyberte prvního řidiče!":"Wybierz pierwszego kierowcę!","Režim 2 řidičů je aktivní, ale druhý řidič není vybrán!":"Tryb dwóch kierowców jest aktywny, ale nie wybrano drugiego kierowcy!","Vyplňte Start a Cíl!":"Wpisz Start i Cel!","Nelze naplánovat! Řidič neměl pauzu":"Nie można zaplanować! Kierowcy brakuje wymaganej przerwy","Přidat blok":"Dodaj blok","Zrušit":"Anuluj"
-      },
-      it: {
-        "Hmotnost nákladu (t)":"Peso del carico (t)","Mzdy / Diety":"Paghe / Diarie","Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)":"Il peso influisce sui consumi. (Ogni tonnellata aggiunge 0,2 l/100 km)","Vyberte přesné datum, aplikace sama určí týden a rok.":"Seleziona la data esatta; l'app determina automaticamente settimana e anno.","Doba vykládky. Pokud je 0.75 a více, počítá se i jako pauza.":"Tempo di scarico. Da 0,75 h viene conteggiato anche come pausa.","Nejprve zadejte Start a Cíl.":"Inserisci prima Partenza e Destinazione.","Nejprve spočítejte trasu.":"Calcola prima il percorso.","Nemáte přidané žádné řidiče.":"Nessun autista aggiunto.","Zadejte město/adresu...":"Inserisci città/indirizzo...","Adresa":"Indirizzo","Zastávka":"Fermata","Zdržení (h)":"Sosta (ore)","Nové jméno...":"Nuovo nome...","Např. Praha":"es. Praga","Např. Madrid":"es. Madrid","Např. Turate nebo Milán":"es. Turate o Milano","Např. Trasa (Ostrava - Berlín)":"es. Percorso (Ostrava - Berlino)","Např. adresa / město":"es. indirizzo / città","Stát":"Paese","Start":"Partenza","Cíl":"Destinazione","Volno (Pauza)":"Libero (Pausa)","Výkon":"Tempo di lavoro","Čistá jízda":"Tempo di guida","Výplata":"Paga","Řidič":"Autista","Řidič:":"Autista:","Týden":"Settimana","Den":"Giorno","Hodiny Celkem":"Ore totali","Odhadovaná vzdálenost:":"Distanza stimata:","Očekávaný návrat do cíle (Konec výkonu):":"Arrivo previsto alla destinazione (fine servizio):","Čistý po pauze (Lze dál jet):":"Tempo netto dopo la pausa (si può continuare):","Přesný odhad diet (tranzit):":"Stima precisa delle diarie (transito):","Čekám na zadání ceny":"In attesa del prezzo","Mýto":"Pedaggio","Výstupní měna":"Valuta di output","Ne":"No","Ano":"Sì","Nejdříve lze vyjet v":"Partenza più presto:","Nutná pauza":"Pausa richiesta","Předchozí směna skončila v":"Il turno precedente è terminato alle","Start systému...":"Avvio del sistema...","🧭 Navigovat trasu v Mapách":"🧭 Naviga il percorso in Mappe","🧭 Navigovat trasu směny v Mapách":"🧭 Naviga il percorso del turno in Mappe","+ Přidat Zastávku PŘED cílem (Nakládka/Vykládka)":"+ Aggiungi fermata PRIMA della destinazione (carico/scarico)","+ Přidat Zastávku ZA cílem (Pokračování trasy)":"+ Aggiungi fermata DOPO la destinazione (continua percorso)","Průjezdový bod":"Punto di transito","Prázdný":"Vuoto","Přejezd":"Trasferimento a vuoto","1/2 nákladu":"Mezzo carico","Plný":"Pieno","5 náprav (2+3)":"5 assi (2+3)","6 a více (3+3)":"6+ assi (3+3)","4 nápravy (2+2)":"4 assi (2+2)","3 nápravy":"3 assi","1 nahoře":"1 sollevato","2 nahoře":"2 sollevati","Víkend:":"Weekend:","Dluh":"Debito","Analyzuji trasu, body a AETR logiku...":"Analisi del percorso, dei punti e della logica AETR...","Úspěšně naplánováno vč. tranzitních států a pauz!":"Pianificazione completata con paesi di transito e pause!","Chyba generátoru:":"Errore del generatore:","Jste offline. Výpočet trasy přes OSRM nelze provést.":"Sei offline. Il calcolo del percorso tramite OSRM non è disponibile.","Vyberte přesné datum startu!":"Seleziona la data esatta di partenza!","Vyberte prvního řidiče!":"Seleziona il primo autista!","Režim 2 řidičů je aktivní, ale druhý řidič není vybrán!":"Modalità due autisti attiva, ma il secondo autista non è selezionato!","Vyplňte Start a Cíl!":"Inserisci Partenza e Destinazione!","Nelze naplánovat! Řidič neměl pauzu":"Impossibile pianificare! Manca la pausa richiesta","Přidat blok":"Aggiungi blocco","Zrušit":"Annulla"
-      }
-    };
-    Object.keys(COMPLETE_UI_TRANSLATIONS).forEach(lang=>Object.assign(TRANSLATIONS[lang],COMPLETE_UI_TRANSLATIONS[lang]));
+    const EXTRA_TRANSLATIONS_2026 = {"en": {"Hmotnost nákladu (t)": "Cargo weight (t)", "Váha má vliv na spotřebu. (Každá tuna 0,2 l/100 km)": "Weight affects fuel consumption. (Each tonne adds 0.2 L/100 km)", "📤 Sdílet": "📤 Share", "Tisk / Uložit PDF": "Print / Save PDF", "Navigovat trasu směny v Mapách": "Navigate shift route in Maps"}, "de": {"Hmotnost nákladu (t)": "Ladungsgewicht (t)", "Váha má vliv na spotřebu. (Každá tuna 0,2 l/100 km)": "Das Gewicht beeinflusst den Verbrauch. (Je Tonne +0,2 l/100 km)", "📤 Sdílet": "📤 Teilen", "Tisk / Uložit PDF": "Drucken / PDF speichern", "Navigovat trasu směny v Mapách": "Schichtroute in Karten öffnen"}, "pl": {"Hmotnost nákladu (t)": "Masa ładunku (t)", "Váha má vliv na spotřebu. (Každá tuna 0,2 l/100 km)": "Masa wpływa na spalanie. (Każda tona +0,2 l/100 km)", "📤 Sdílet": "📤 Udostępnij", "Tisk / Uložit PDF": "Drukuj / Zapisz PDF", "Navigovat trasu směny v Mapách": "Nawiguj trasę zmiany w Mapach"}, "it": {"Hmotnost nákladu (t)": "Peso del carico (t)", "Váha má vliv na spotřebu. (Každá tuna 0,2 l/100 km)": "Il peso influisce sui consumi. (Ogni tonnellata +0,2 l/100 km)", "📤 Sdílet": "📤 Condividi", "Tisk / Uložit PDF": "Stampa / Salva PDF", "Navigovat trasu směny v Mapách": "Naviga il percorso del turno nelle Mappe"}};
+    Object.keys(EXTRA_TRANSLATIONS_2026).forEach(lang => Object.assign(TRANSLATIONS[lang], EXTRA_TRANSLATIONS_2026[lang]));
 
 
     function changeLanguage() {
@@ -1272,6 +1261,11 @@
                 }
             }
         });
+
+        const editStartLabel = document.getElementById('lblEditStart');
+        if (editStartLabel && dict['Začátek Směny']) editStartLabel.childNodes[0].nodeValue = dict['Začátek Směny'] + ' ';
+        const editCrewLabel = document.getElementById('lblEditCrew');
+        if (editCrewLabel && dict['Režim']) editCrewLabel.childNodes[0].nodeValue = dict['Režim'] + ' ';
 
         // Překlad placeholderů, title a aria-labelů uvnitř vstupních polí a tlačítek.
         document.querySelectorAll('[placeholder],[title],[aria-label]').forEach(el => {
@@ -1330,6 +1324,7 @@
         let latlngs = coordsGeoJson.map(c => [c[1], c[0]]);
         routeLayer = L.polyline(latlngs, {color: '#e3000f', weight: 4}).addTo(map);
         map.fitBounds(routeLayer.getBounds(), {padding: [20,20]});
+        setTimeout(() => { try { map.invalidateSize(true); map.fitBounds(routeLayer.getBounds(), {padding:[20,20]}); } catch(e) {} }, 120);
 
         L.marker(latlngs[0]).addTo(markerGroup).bindPopup("Start");
         L.marker(latlngs[latlngs.length-1]).addTo(markerGroup).bindPopup("Cíl");
@@ -1426,8 +1421,8 @@
             napravy: document.getElementById('napravyFyzicke').value,
             zvedle: document.getElementById('zvedleNapravy').value,
             prazdna: document.getElementById('spotrebaPrazdne').value,
-            startVaha: document.getElementById('vahaNakladu')?.value || '0',
-            vaha: document.getElementById('vahaNakladu')?.value || '0',
+            startVaha: document.getElementById('startVaha')?.value || '0',
+            vaha: document.getElementById('vahaNakladu').value,
             nafta: document.getElementById('cenaNafty').value,
             posadka: document.getElementById('posadka').value,
             mzdaTyp: document.getElementById('typMzdy').value,
@@ -1460,8 +1455,8 @@
             document.getElementById('napravyFyzicke').value = d.napravy || '5';
             document.getElementById('zvedleNapravy').value = d.zvedle || '0';
             document.getElementById('spotrebaPrazdne').value = d.prazdna || '20';
-            document.getElementById('vahaNakladu').value = d.vaha ?? d.startVaha ?? '10';
-            syncCargoWeight();
+            if (document.getElementById('startVaha')) document.getElementById('startVaha').value = d.startVaha ?? '0';
+            document.getElementById('vahaNakladu').value = d.vaha || '10';
             document.getElementById('cenaNafty').value = d.nafta || '40';
             document.getElementById('posadka').value = d.posadka || '1';
             document.getElementById('typMzdy').value = d.mzdaTyp || 'denni';
@@ -1489,22 +1484,18 @@
         updateFavoritesDropdown();
     }
 
-    // Kompatibilita se staršími uloženými daty / Safari cache: #startVaha zůstává pouze interní.
+    // Kompatibilita se staršími verzemi: některé uložené/kešované skripty očekávají #startVaha.
+    // Pole je nyní přímo v HTML, ale tato pojistka zabrání pádu celé aplikace, pokud Safari drží starou DOM šablonu.
     function ensureStartVahaField() {
-        let el = document.getElementById('startVaha');
-        if (!el) {
-            el = document.createElement('input');
-            el.type = 'hidden'; el.id = 'startVaha';
-            el.value = document.getElementById('vahaNakladu')?.value || '10';
-            document.body.appendChild(el);
-        }
-        syncCargoWeight();
-    }
-
-    function syncCargoWeight() {
-        const cargo = document.getElementById('vahaNakladu');
-        const legacy = document.getElementById('startVaha');
-        if (cargo && legacy) legacy.value = cargo.value || '0';
+        if (document.getElementById('startVaha')) return;
+        const anchor = document.getElementById('vahaNakladu');
+        if (!anchor || !anchor.parentElement || !anchor.parentElement.parentElement) return;
+        const group = document.createElement('div');
+        group.className = 'input-group';
+        group.innerHTML = '<input type="hidden" id="startVaha" value="10">';
+        anchor.parentElement.parentElement.insertBefore(group, anchor.parentElement);
+        const el = document.getElementById('startVaha');
+        if (el) el.addEventListener('input', () => { try { calculate(); autoSave(); } catch(e) { console.error(e); } });
     }
 
     window.addEventListener('load', () => {
@@ -1522,11 +1513,7 @@
         }, 1000); 
         loadAutoSave();
         plannerLoadState();
-        populatePlannerYears(new Date().getFullYear());
-        syncPlannerSelectors();
         renderPlanner();
-        updatePlannerNavButton();
-        ['planStartRoute','planEndRoute'].forEach(id => { const el=document.getElementById(id); if(el) el.addEventListener('input', updatePlannerNavButton); });
         calculate(); 
     });
 
@@ -1680,6 +1667,7 @@
                 startVaha.value = loadMap[wp.type];
                 const cargo = document.getElementById('vahaNakladu');
                 if (cargo) cargo.value = loadMap[wp.type];
+                if (cargo) startVaha.value = cargo.value;
             }
         }
         autoSave();
@@ -2016,9 +2004,8 @@
         const zvedle = parseInt(document.getElementById('zvedleNapravy').value) || 0;
         const baseCons = parseFloat(document.getElementById('spotrebaPrazdne').value) || 20;
         const enteredCargoWeight = parseFloat(document.getElementById('vahaNakladu')?.value);
-        const loadWeight = Number.isFinite(enteredCargoWeight) ? enteredCargoWeight : 0;
-        const legacyWeight = document.getElementById('startVaha');
-        if (legacyWeight) legacyWeight.value = String(loadWeight);
+        const enteredStartWeight = parseFloat(document.getElementById('startVaha')?.value);
+        const loadWeight = Number.isFinite(enteredCargoWeight) ? enteredCargoWeight : (Number.isFinite(enteredStartWeight) ? enteredStartWeight : 0);
         const weightCons = loadWeight * SPOTREBA_NA_TUNU;
         const avgCons = Math.max(0, baseCons + weightCons);
         avgFuelConsumption = avgCons;
@@ -2083,7 +2070,7 @@
     }
 
     function openNav() {
-        if(!lastRouteData) { alert(T('Nejprve spočítejte trasu.')); return; }
+        if(!lastRouteData) { alert("Nejprve spočítejte trasu."); return; }
         let url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(lastRouteData.start)}&destination=${encodeURIComponent(lastRouteData.cil)}`;
         if(lastRouteData.wps && lastRouteData.wps.length > 0) {
             let wpsStr = lastRouteData.wps.filter(w=>w.trim()!=="").map(w => encodeURIComponent(w)).join('|');
@@ -2093,7 +2080,7 @@
     }
 
     function shareSummary() {
-        if(!lastRouteData) { alert(T('Nejprve spočítejte trasu.')); return; }
+        if(!lastRouteData) { alert("Nejprve spočítejte trasu."); return; }
         let wpsText = lastRouteData.wps.filter(w=>w.trim()!=="").join(' -> ');
         let routeText = `${lastRouteData.start} -> ${wpsText ? wpsText + ' -> ' : ''}${lastRouteData.cil}`;
         let cena = document.getElementById('resProdejniCena').innerText;
@@ -2103,7 +2090,7 @@
         let text = `🚛 CONTROL POINT - ANALÝZA TRASY\nTrasa: ${routeText}\nVzdálenost: ${km} km\nCeníková cena: ${cena}\nCena za km: ${cenaKm}\n(Cena zahrnuje naftu, mzdu posádky a fixní náklady)`;
         
         navigator.clipboard.writeText(text).then(() => {
-            alert(T('Souhrn zkopírován do schránky! Můžete jej vložit do WhatsAppu.'));
+            alert("Souhrn zkopírován do schránky! Můžete jej vložit do WhatsAppu.");
         });
     }
 
@@ -2206,31 +2193,19 @@
         return monday;
     }
 
-    function populatePlannerYears(centerYear = new Date().getFullYear()) {
-        const y = document.getElementById('yearSelect');
-        if (!y) return;
-        const current = Number(centerYear) || new Date().getFullYear();
-        const min = Math.min(current - 3, plannerState.currentYear - 1);
-        const max = Math.max(current + 8, plannerState.currentYear + 1);
-        y.innerHTML = '';
-        for (let yr=min; yr<=max; yr++) { const o=document.createElement('option'); o.value=String(yr); o.textContent=String(yr); y.appendChild(o); }
-    }
-
     function syncPlannerSelectors() {
         const y = document.getElementById('yearSelect'), m = document.getElementById('monthSelect');
         if (!y || !m) return;
-        if (![...y.options].some(o=>Number(o.value)===plannerState.currentYear)) populatePlannerYears(plannerState.currentYear);
-        y.value = String(plannerState.currentYear);
+        const currentYear = new Date().getFullYear();
+        const minYear = Math.min(currentYear - 5, plannerState.currentYear - 2);
+        const maxYear = Math.max(currentYear + 5, plannerState.currentYear + 2);
+        const selectedYear = plannerState.currentYear;
+        y.innerHTML = '';
+        for (let yr=minYear; yr<=maxYear; yr++) {
+            const o=document.createElement('option'); o.value=String(yr); o.textContent=String(yr);
+            if (yr===selectedYear) o.selected=true; y.appendChild(o);
+        }
         m.value = String(plannerState.currentMonth);
-    }
-
-    function setPlannerDate(date) {
-        const d = date instanceof Date ? date : new Date(date);
-        plannerState.currentYear = d.getFullYear();
-        plannerState.currentMonth = d.getMonth();
-        plannerState.currentWeek = getISOWeek(d);
-        populatePlannerYears(plannerState.currentYear);
-        syncPlannerSelectors();
     }
 
     function changeYearMonth() {
@@ -2306,14 +2281,14 @@
         let startCurrAbs = ((firstDayCurr + 7) * 24) + parseTime(firstShiftCurr.start);
         let gap = startCurrAbs - endPrevAbs;
 
-        if(gap >= 45) return { status: 'ok', text: `${T('Víkend:')} ${gap.toFixed(1)}h` };
-        if(gap >= 24) return { status: 'warn', text: `${T('Víkend:')} ${gap.toFixed(1)}h (${T('Dluh')} ${(45-gap).toFixed(1)}h)` };
-        return { status: 'err', text: `${T('Víkend:')} ${gap.toFixed(1)}h (<24h!)` };
+        if(gap >= 45) return { status: 'ok', text: `Víkend: ${gap.toFixed(1)}h` };
+        if(gap >= 24) return { status: 'warn', text: `Víkend: ${gap.toFixed(1)}h (Dluh ${(45-gap).toFixed(1)}h)` };
+        return { status: 'err', text: `Víkend: ${gap.toFixed(1)}h (<24h!)` };
     }
 
     function renderPlanner() {
         syncPlannerSelectors();
-        document.getElementById('plannerWeekLabel').innerText = `${T('Týden')} ${plannerState.currentWeek} · ${plannerState.currentYear}`;
+        document.getElementById('plannerWeekLabel').innerText = `Týden ${plannerState.currentWeek} · ${plannerState.currentYear}`;
         const driverListEl = document.getElementById('plannerDriverList'); driverListEl.innerHTML = '';
         plannerState.drivers.forEach(d => {
             const restAnalysis = analyzeWeeklyRest(d.id, plannerState.currentWeek);
@@ -2322,7 +2297,7 @@
                 const badgeClass = restAnalysis.status==='ok'?'aetr-ok':(restAnalysis.status==='warn'?'aetr-warn':'aetr-err');
                 badgeHtml=`<span class="aetr-badge ${badgeClass}">${restAnalysis.text}</span>`;
             }
-            driverListEl.innerHTML += `<div class="driver-item"><div class="driver-item-header"><span style="font-size:14px;">${d.name}</span><div style="display:flex;gap:5px;"><button class="btn-secondary" style="background:var(--cp-blue);border:none;padding:6px 10px;margin:0;" onclick="openPayroll(${d.id})">💶 ${T('Mzdy / Diety')}</button><button class="btn-remove-wp" style="padding:6px 10px;margin:0;" onclick="removePlannerDriver(${d.id})">✕</button></div></div>${badgeHtml}</div>`;
+            driverListEl.innerHTML += `<div class="driver-item"><div class="driver-item-header"><span style="font-size:14px;">${d.name}</span><div style="display:flex;gap:5px;"><button class="btn-secondary" style="background:var(--cp-blue);border:none;padding:6px 10px;margin:0;" onclick="openPayroll(${d.id})">💶 Mzdy / Diety</button><button class="btn-remove-wp" style="padding:6px 10px;margin:0;" onclick="removePlannerDriver(${d.id})">✕</button></div></div>${badgeHtml}</div>`;
         });
         const tbody = document.getElementById('plannerBody'); tbody.innerHTML='';
         plannerState.drivers.forEach(driver=>{
@@ -2336,7 +2311,7 @@
                     let html=`<div class="shift-content" onclick="openShiftModal(${driver.id},${day})"><div class="shift-head">${shift.start} - ${formatTime(endTime)}</div><div>🚛 ${dDur.toFixed(1)}h | ⚒️ ${(sDur-dDur).toFixed(1)}h</div><div style="font-size:9px;color:#666;overflow:hidden;">📝 ${shift.note||''}</div><div class="timeline-bar-wrap">`;
                     shift.acts.forEach(a=>{const pct=sDur>0?(a.d/sDur*100):0;const cls=a.t==='drive'?'tl-drive':(a.t==='work'?'tl-work':'tl-rest');html+=`<div class="${cls}" style="width:${pct}%"></div>`;});
                     td.innerHTML=html+'</div></div>'; td.style.background='#fff9e6';
-                } else td.innerHTML=`<div class="shift-content" style="justify-content:center;color:#ccc;" onclick="openShiftModal(${driver.id},${day})">${T('Volno (Pauza)')}</div>`;
+                } else td.innerHTML=`<div class="shift-content" style="justify-content:center;color:#ccc;" onclick="openShiftModal(${driver.id},${day})">Volno (Pauza)</div>`;
                 tr.appendChild(td);
             }
             tbody.appendChild(tr);
@@ -2383,8 +2358,6 @@
     if (typeof checkPlanKolecko === "function") {
         checkPlanKolecko();
     }
-    updatePlannerNavButton();
-    changeLanguage();
 }
     function checkPlanKolecko() {
     let beforeContainer = document.getElementById('planWpBeforeContainer');
@@ -2431,29 +2404,10 @@
         return { w: weekToSearch, d: dayToSearch, end: endPrev };
     }
 
-    function openPlannerNav() {
-        const start = document.getElementById('planStartRoute')?.value.trim();
-        const end = document.getElementById('planEndRoute')?.value.trim();
-        if (!start || !end) { alert(T('Nejprve zadejte Start a Cíl.')); return; }
-        const waypoints = [];
-        document.querySelectorAll('#planWpBeforeContainer .plan-wp-address, #planWpAfterContainer .plan-wp-address').forEach(el => { if(el.value.trim()) waypoints.push(el.value.trim()); });
-        let url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(start)}&destination=${encodeURIComponent(end)}`;
-        if (waypoints.length) url += `&waypoints=${encodeURIComponent(waypoints.join('|'))}`;
-        if (document.getElementById('planKoleckoToggle')?.checked) url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(start)}&destination=${encodeURIComponent(start)}&waypoints=${encodeURIComponent([end,...waypoints].join('|'))}`;
-        window.open(url, '_blank');
-    }
-
-    function updatePlannerNavButton() {
-        const btn=document.getElementById('btnPlanNav'); if(!btn) return;
-        const start=document.getElementById('planStartRoute')?.value.trim();
-        const end=document.getElementById('planEndRoute')?.value.trim();
-        btn.disabled=!(start && end);
-    }
-
     async function executeAutoPlan() {
         if (!navigator.onLine) {
             let stat = document.getElementById('planStatus');
-            stat.innerText = `❌ ${T('Jste offline. Výpočet trasy přes OSRM nelze provést.')}`;
+            stat.innerText = "❌ Jste offline. Výpočet trasy přes OSRM nelze provést.";
             stat.style.display = "block";
             return;
         }
@@ -2465,7 +2419,7 @@
         let sDateStr = document.getElementById('planDateSelect').value;
         let stat = document.getElementById('planStatus');
         
-        if (!sDateStr) { stat.innerText = `❌ ${T('Vyberte přesné datum startu!')}`; stat.style.display="block"; return; }
+        if (!sDateStr) { stat.innerText = "❌ Vyberte přesné datum startu!"; stat.style.display="block"; return; }
         
         // Pevné načtení data bez vlivu časových pásem
         let parts = sDateStr.split('-');
@@ -2479,15 +2433,18 @@
         let isKolecko = document.getElementById('planKoleckoToggle').checked;
         
         // POKA-YOKE 1: Striktní ověření dvojosádky
-        if (!drv1) { stat.innerText = `❌ ${T('Vyberte prvního řidiče!')}`; stat.style.display = "block"; return; }
+        if (!drv1) { stat.innerText = "❌ Vyberte prvního řidiče!"; stat.style.display = "block"; return; }
         if (crew === '2') {
-            if (!drv2 || drv2 === "") { stat.innerText = `❌ ${T('Režim 2 řidičů je aktivní, ale druhý řidič není vybrán!')}`; stat.style.display = "block"; return; }
-            if (drv1 === drv2) { stat.innerText = `❌ ${T('Chyba: Zvolili jste stejného řidiče dvakrát pro dvojosádku!')}`; stat.style.display = "block"; return; }
+            if (!drv2 || drv2 === "") { stat.innerText = "❌ Režim 2 řidičů je aktivní, ale druhý řidič není vybrán!"; stat.style.display = "block"; return; }
+            if (drv1 === drv2) { stat.innerText = "❌ Chyba: Zvolili jste stejného řidiče dvakrát pro dvojosádku!"; stat.style.display = "block"; return; }
         }
-        if (!sR || !eR) { stat.innerText = `❌ ${T('Vyplňte Start a Cíl!')}`; stat.style.display = "block"; return; }
+        if (!sR || !eR) { stat.innerText = "❌ Vyplňte Start a Cíl!"; stat.style.display = "block"; return; }
         
         // Skok do týdne, který vybral uživatel
-        setPlannerDate(sDate);
+        plannerState.currentYear = sDate.getFullYear();
+        plannerState.currentMonth = sDate.getMonth();
+        plannerState.currentWeek = getISOWeek(sDate);
+        syncPlannerSelectors();
         
         let driversToSave = crew === '2' ? [drv1, drv2] : [drv1];
         let cTime = parseTime(document.getElementById('planTimeSelect').value); 
@@ -2511,7 +2468,7 @@
             }
         }
 
-        stat.style.color = "var(--cp-blue)"; stat.innerText = T('Analyzuji trasu, body a AETR logiku...'); stat.style.display = "block";
+        stat.style.color = "var(--cp-blue)"; stat.innerText = "Analyzuji trasu, body a AETR logiku..."; stat.style.display = "block";
 
         try {
             // Sestavení bodů trasy
@@ -2644,13 +2601,13 @@
                 }
             }
             
-            let planBreakHtml = `<div class="breakdown-row" style="font-weight:bold; border-bottom:2px solid #ccc; padding-bottom:5px;"><div>${T('Stát')}</div><div>${T('Hodiny Celkem')}</div></div>`;
+            let planBreakHtml = `<div class="breakdown-row" style="font-weight:bold; border-bottom:2px solid #ccc; padding-bottom:5px;"><div>Stát</div><div>Hodiny Celkem</div></div>`;
             let dRows = [];
             for(let cc in countryHoursCombined) {
                 planBreakHtml += `<div class="breakdown-row" style="border-bottom: 1px dashed #ccc; padding:6px 0;"><div>${cc}</div><div>${countryHoursCombined[cc].toFixed(1)} h</div></div>`;
                 if(countryHoursCombined[cc] > 1) { dRows.push({cc: (DIET_RATES[cc] ? cc : 'OSTATNÍ'), hours: countryHoursCombined[cc].toFixed(1)}); }
             }
-            planBreakHtml += `<div style="text-align:right; font-weight:900; font-size:15px; margin-top:10px; color:var(--cp-red);">${T('Přesný odhad diet (tranzit):')} ${Math.round(totalDietsEst)} Kč</div>`;
+            planBreakHtml += `<div style="text-align:right; font-weight:900; font-size:15px; margin-top:10px; color:var(--cp-red);">Přesný odhad diet (tranzit): ${Math.round(totalDietsEst)} Kč</div>`;
             document.getElementById('planBreakdownList').innerHTML = planBreakHtml;
             document.getElementById('planBreakdownContainer').style.display = "block";
 
@@ -2661,10 +2618,8 @@
                 plannerState.payrolls[`${dId}_${currentWeekSave}`].dietRows = dRows;
             }
 
-            setPlannerDate(sDate);
-            plannerSaveState();
-            renderPlanner();
-            stat.style.color = "var(--cp-success)"; stat.innerText = T('Úspěšně naplánováno vč. tranzitních států a pauz!');
+            plannerSaveState(); renderPlanner(); 
+            stat.style.color = "var(--cp-success)"; stat.innerText = "Úspěšně naplánováno vč. tranzitních států a pauz!";
         } catch(e) { stat.style.color = "var(--cp-danger)"; stat.innerText = "Chyba generátoru: " + e.message; }
     }
 
@@ -2845,7 +2800,7 @@
     }
 
     function openPdfExportModal() {
-        if(plannerState.drivers.length === 0) { alert(T('Nemáte přidané žádné řidiče.')); return; }
+        if(plannerState.drivers.length === 0) { alert("Nemáte přidané žádné řidiče."); return; }
         document.getElementById('pdfExportModal').style.display = 'flex';
     }
 
@@ -2858,28 +2813,66 @@
         reportHtml+=`</div>`;
         document.getElementById('pdfExportModal').style.display='none';
         let modal=document.getElementById('reportPreviewModal');
-        if(!modal){modal=document.createElement('div');modal.id='reportPreviewModal';modal.className='modal-overlay';modal.style.zIndex='300000';modal.innerHTML=`<div style="background:#fff;width:100%;max-width:800px;max-height:92vh;border-radius:8px;display:flex;flex-direction:column;overflow:hidden;"><div style="background:#1a1a1a;color:#fff;padding:12px 15px;font-weight:800;">📄 Náhled výkazu</div><div id="reportPreviewContent" style="padding:10px;overflow:auto;flex:1;"></div><div class="report-preview-actions" style="padding:12px;background:#eee;"><button class="btn-secondary" style="background:#107c41;" onclick="printCurrentReport()">🖨️ Tisk / Uložit PDF</button><button class="btn-secondary" style="background:#777;" onclick="document.getElementById('reportPreviewModal').style.display='none'">Zavřít</button></div></div>`;document.body.appendChild(modal);}
+        if(!modal){modal=document.createElement('div');modal.id='reportPreviewModal';modal.className='modal-overlay';modal.style.zIndex='300000';modal.innerHTML=`<div style="background:#fff;width:100%;max-width:800px;max-height:92vh;border-radius:8px;display:flex;flex-direction:column;overflow:hidden;"><div style="background:#1a1a1a;color:#fff;padding:12px 15px;font-weight:800;">📄 Náhled výkazu</div><div id="reportPreviewContent" style="padding:10px;overflow:auto;flex:1;"></div><div class="report-preview-actions" style="padding:12px;background:#eee;"><button class="btn-secondary" style="background:#107c41;" onclick="printCurrentReport()">🖨️ Tisk / Uložit PDF</button><button class="btn-secondary" style="background:#1565c0;" onclick="shareCurrentReport()">📤 Sdílet</button><button class="btn-secondary" style="background:#777;" onclick="document.getElementById('reportPreviewModal').style.display='none'">Zavřít</button></div></div>`;document.body.appendChild(modal);}
         document.getElementById('reportPreviewContent').innerHTML=reportHtml;
         modal.style.display='flex';
     }
 
     function printCurrentReport(){
-        const source=document.getElementById('reportPreviewContent'); if(!source) return;
-        const iosStandalone=/iPad|iPhone|iPod/.test(navigator.userAgent) && (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches);
-        document.getElementById('reportPreviewModal').style.display='none';
-        if(iosStandalone){
-            const w=window.open('','_blank');
-            if(w){
-                w.document.open();
-                w.document.write(`<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Control Point</title><style>@page{margin:12mm}body{font-family:Arial,sans-serif;color:#222;background:#fff;margin:0;padding:0}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body>${source.innerHTML}</body></html>`);
-                w.document.close(); setTimeout(()=>{try{w.focus();w.print();}catch(e){}},250); return;
-            }
+        const source = document.getElementById('reportPreviewContent');
+        if (!source) return;
+        let host = document.getElementById('printReportHost');
+        if (!host) {
+            host = document.createElement('div');
+            host.id = 'printReportHost';
+            host.className = 'print-report-host';
+            document.body.appendChild(host);
         }
-        let host=document.getElementById('printReportHost');
-        if(!host){host=document.createElement('div');host.id='printReportHost';host.className='print-report-host';document.body.appendChild(host);}
-        host.innerHTML=source.innerHTML; document.body.classList.add('print-report-mode');
-        const cleanup=()=>{document.body.classList.remove('print-report-mode');host.innerHTML='';window.removeEventListener('afterprint',cleanup);};
-        window.addEventListener('afterprint',cleanup); setTimeout(()=>window.print(),100);
+        host.innerHTML = source.innerHTML;
+        document.body.classList.add('print-report-mode');
+        const modal = document.getElementById('reportPreviewModal');
+        if (modal) modal.style.display='none';
+        let cleaned = false;
+        const cleanup = () => {
+            if (cleaned) return; cleaned = true;
+            document.body.classList.remove('print-report-mode');
+            host.innerHTML = '';
+            window.removeEventListener('afterprint', cleanup);
+        };
+        window.addEventListener('afterprint', cleanup, {once:true});
+        // Keep window.print() inside the button gesture: iOS may block a delayed print call.
+        try {
+            window.print();
+        } catch(e) {
+            cleanup();
+            alert('Tisk není v tomto režimu dostupný. Otevřete aplikaci v Safari a zvolte Sdílet → Tisk.');
+        }
+    }
+
+    async function shareCurrentReport(){
+        const source = document.getElementById('reportPreviewContent');
+        if (!source) return;
+        const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        // On iOS the native print sheet is the reliable path to a real PDF: Print → Share → Save to Files.
+        if (isiOS) { printCurrentReport(); return; }
+        const data = getShiftsForExport();
+        const safeName = String(data.driver||'Ridic').replace(/[^a-z0-9áčďéěíňóřšťúůýž _-]/gi,'_').replace(/\s+/g,'_');
+        const htmlText = '<!doctype html><html lang="cs"><head><meta charset="utf-8"><title>Control Point</title><style>body{font-family:Arial,sans-serif;padding:18px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px}</style></head><body>'+source.innerHTML+'</body></html>';
+        try {
+            if (navigator.share) {
+                const file = new File([htmlText], `ControlPoint_${safeName}.html`, {type:'text/html'});
+                if (!navigator.canShare || navigator.canShare({files:[file]})) {
+                    await navigator.share({files:[file], title:'Control Point – výkaz', text:'Výkaz Control Point'});
+                    return;
+                }
+                await navigator.share({title:'Control Point – výkaz', text:source.innerText});
+                return;
+            }
+        } catch(e) {
+            if (e && e.name === 'AbortError') return;
+        }
+        // The native iOS print sheet contains Share → Save to Files / PDF.
+        printCurrentReport();
     }
 
     function exportKnihaCSV(){
