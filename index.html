@@ -168,8 +168,8 @@
         /* Shift modal – compact top controls for iPhone/iPad */
         #shiftModal .shift-top-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; width:100%; }
         #shiftModal .shift-top-grid .input-group { min-width:0; margin-bottom:0; }
-        #shiftModal .shift-top-grid label { min-height:32px; line-height:1.2; font-size:11px; }
-        #shiftModal .shift-top-grid input, #shiftModal .shift-top-grid select { width:100%; min-width:0; height:46px; }
+        #shiftModal .shift-top-grid label { min-height:22px; line-height:1.15; font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        #shiftModal .shift-top-grid input, #shiftModal .shift-top-grid select { width:100% !important; min-width:0 !important; max-width:100% !important; height:42px; padding:8px 7px; font-size:13px; }
         @media (max-width:390px) { #shiftModal .shift-top-grid { gap:6px; } #shiftModal .shift-top-grid label { font-size:10px; } }
 
         /* iOS print/share report */
@@ -2637,14 +2637,26 @@
             currentActs = [{t: 'drive', d: 4.5}, {t: 'rest', d: 0.75}, {t: 'drive', d: 4.5}]; 
         }
         
+        // Navigace je záměrně dostupná POUZE v detailu konkrétního dne.
+        // Po kliknutí na pondělí/úterý/... se otevře Úprava směny a teprve zde
+        // se podle trasy daného dne zobrazí tlačítko Navigovat. Na iOS nepoužíváme
+        // window.open(), protože v PWA může být zablokované; použijeme přímou
+        // navigační URL, kterou iPhone předá Mapám / prohlížeči.
         let navBtn = document.getElementById('btnNavShift');
-        let noteStr = shift ? (shift.note || "") : "";
-        let m = noteStr.match(/Trasa\s*\((.*?)\s*-\s*(.*?)\)/);
-        if(m) {
-            navBtn.style.display = 'block';
-            navBtn.onclick = function() { window.open(`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(m[1])}&destination=${encodeURIComponent(m[2])}`, '_blank'); };
+        let noteStr = shift ? String(shift.note || "") : "";
+        let routeMatch = noteStr.match(/\(([^()]+?)\s*-\s*([^()]+?)\)/);
+        if(routeMatch && routeMatch[1].trim() && routeMatch[2].trim()) {
+            const origin = routeMatch[1].trim();
+            const destination = routeMatch[2].trim();
+            navBtn.style.display = 'flex';
+            navBtn.textContent = `🧭 ${T('Navigovat trasu směny v Mapách')}`;
+            navBtn.onclick = function() {
+                const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`;
+                window.location.href = mapsUrl;
+            };
         } else {
             navBtn.style.display = 'none';
+            navBtn.onclick = null;
         }
 
         document.getElementById('shiftModal').style.display = 'flex'; validateAndRenderShift();
@@ -2821,6 +2833,25 @@
     function printCurrentReport(){
         const source = document.getElementById('reportPreviewContent');
         if (!source) return;
+        const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const report = source.innerHTML;
+        const printCss = `@page{size:auto;margin:10mm}body{font-family:Arial,sans-serif;background:#fff;color:#222;margin:0;padding:18px}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border:1px solid #ccc;padding:6px}tr{page-break-inside:avoid}thead{display:table-header-group}`;
+
+        // iOS PWA (installed on the Home Screen) often ignores window.print() in the
+        // standalone WebView. Open a real Safari document instead and invoke its
+        // native print sheet. This also enables Share -> Save to Files as PDF.
+        if (isiOS) {
+            const w = window.open('', '_blank');
+            if (!w) {
+                alert('iOS zablokoval nové okno. Povolte v Safari otevírání vyskakovacích oken a zkuste Tisk znovu.');
+                return;
+            }
+            w.document.open();
+            w.document.write(`<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Control Point – výkaz</title><style>${printCss}</style></head><body>${report}<script>window.addEventListener('load',function(){setTimeout(function(){window.print()},250)});<\/script></body></html>`);
+            w.document.close();
+            return;
+        }
+
         let host = document.getElementById('printReportHost');
         if (!host) {
             host = document.createElement('div');
@@ -2828,7 +2859,7 @@
             host.className = 'print-report-host';
             document.body.appendChild(host);
         }
-        host.innerHTML = source.innerHTML;
+        host.innerHTML = report;
         document.body.classList.add('print-report-mode');
         const modal = document.getElementById('reportPreviewModal');
         if (modal) modal.style.display='none';
@@ -2840,13 +2871,7 @@
             window.removeEventListener('afterprint', cleanup);
         };
         window.addEventListener('afterprint', cleanup, {once:true});
-        // Keep window.print() inside the button gesture: iOS may block a delayed print call.
-        try {
-            window.print();
-        } catch(e) {
-            cleanup();
-            alert('Tisk není v tomto režimu dostupný. Otevřete aplikaci v Safari a zvolte Sdílet → Tisk.');
-        }
+        window.print();
     }
 
     async function shareCurrentReport(){
