@@ -3437,15 +3437,15 @@
         return { status: 'err', text: `Víkend: ${gap.toFixed(1)}h (<24h!)` };
     }
 
-        function renderPlanner() {
+            function renderPlanner() {
         document.getElementById('plannerWeekLabel').innerText = `Týden ${plannerState.currentWeek}`;
         
-        // --- Sladění roletek měsíce a roku s aktuálním stavem kalendáře ---
-        if (plannerState.currentYear) {
-            document.getElementById('yearSelect').value = plannerState.currentYear;
+        // --- Sladění roletek s pojistkou pro mobilní prohlížeče (iOS) ---
+        if (plannerState.currentYear !== undefined) {
+            document.getElementById('yearSelect').value = plannerState.currentYear.toString();
         }
         if (plannerState.currentMonth !== undefined) {
-            document.getElementById('monthSelect').value = plannerState.currentMonth;
+            document.getElementById('monthSelect').value = plannerState.currentMonth.toString();
         }
         // ------------------------------------------------------------------
         
@@ -3573,12 +3573,14 @@
         }
         if (!sR || !eR) { stat.innerText = "❌ Vyplňte Start a Cíl!"; stat.style.display = "block"; return; }
         
-                plannerState.currentYear = sDate.getFullYear();
+        plannerState.currentYear = sDate.getFullYear();
         plannerState.currentMonth = sDate.getMonth();
         plannerState.currentWeek = getISOWeek(sDate);
-        document.getElementById('yearSelect').value = plannerState.currentYear;
-        document.getElementById('monthSelect').value = plannerState.currentMonth;
         
+        // Přidáno .toString() pro kompatibilitu na iOS
+        document.getElementById('yearSelect').value = plannerState.currentYear.toString();
+        document.getElementById('monthSelect').value = plannerState.currentMonth.toString();
+
         let driversToSave = crew === '2' ? [drv1, drv2] : [drv1];
         let cTime = parseTime(document.getElementById('planTimeSelect').value); 
         let reqRest = crew === '2' ? 9 : 11;
