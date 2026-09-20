@@ -3386,12 +3386,11 @@
         plannerState.currentMonth = targetDate.getMonth();
         plannerState.currentYear = targetDate.getFullYear(); // Pojistka pro přelom roku
 
-        // Zápis do UI roletek
+                // Zápis do UI roletek
         if(document.getElementById('yearSelect')) document.getElementById('yearSelect').value = plannerState.currentYear.toString();
-        if(document.getElementById('monthSelect')) document.getElementById('monthSelect').value = plannerState.currentMonth.toString();
+        if(document.getElementById('monthSelect')) document.getElementById('monthSelect').selectedIndex = plannerState.currentMonth;
 
         renderPlanner(); 
-    }
 
     function addPlannerDriver() { 
         let nameInput = document.getElementById('newDriverName').value; 
@@ -3448,9 +3447,10 @@
         if (plannerState.currentYear !== undefined) {
             document.getElementById('yearSelect').value = plannerState.currentYear.toString();
         }
-        if (plannerState.currentMonth !== undefined) {
-            document.getElementById('monthSelect').value = plannerState.currentMonth.toString();
+                if (plannerState.currentMonth !== undefined) {
+            document.getElementById('monthSelect').selectedIndex = parseInt(plannerState.currentMonth);
         }
+
         // ------------------------------------------------------------------
         
         let driverListEl = document.getElementById('plannerDriverList'); driverListEl.innerHTML = "";
@@ -3578,11 +3578,11 @@
         if (!sR || !eR) { stat.innerText = "❌ Vyplňte Start a Cíl!"; stat.style.display = "block"; return; }
         
         plannerState.currentYear = sDate.getFullYear();
-        plannerState.currentMonth = sDate.getMonth(); // sDate už v sobě nese správný měsíc z data startu!
+        plannerState.currentMonth = sDate.getMonth();
         plannerState.currentWeek = getISOWeek(sDate);
         
         document.getElementById('yearSelect').value = plannerState.currentYear.toString();
-        document.getElementById('monthSelect').value = plannerState.currentMonth.toString();
+        document.getElementById('monthSelect').selectedIndex = plannerState.currentMonth;
 
 
         let driversToSave = crew === '2' ? [drv1, drv2] : [drv1];
