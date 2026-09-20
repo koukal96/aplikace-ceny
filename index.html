@@ -3437,8 +3437,20 @@
         return { status: 'err', text: `Víkend: ${gap.toFixed(1)}h (<24h!)` };
     }
 
-    function renderPlanner() {
+        function renderPlanner() {
         document.getElementById('plannerWeekLabel').innerText = `Týden ${plannerState.currentWeek}`;
+        
+        // --- Sladění roletek měsíce a roku s aktuálním stavem kalendáře ---
+        if (plannerState.currentYear) {
+            document.getElementById('yearSelect').value = plannerState.currentYear;
+        }
+        if (plannerState.currentMonth !== undefined) {
+            document.getElementById('monthSelect').value = plannerState.currentMonth;
+        }
+        // ------------------------------------------------------------------
+        
+        let driverListEl = document.getElementById('plannerDriverList'); driverListEl.innerHTML = "";
+
         let driverListEl = document.getElementById('plannerDriverList'); driverListEl.innerHTML = "";
         plannerState.drivers.forEach(d => { 
             let restAnalysis = analyzeWeeklyRest(d.id, plannerState.currentWeek);
@@ -3561,10 +3573,11 @@
         }
         if (!sR || !eR) { stat.innerText = "❌ Vyplňte Start a Cíl!"; stat.style.display = "block"; return; }
         
-        plannerState.currentYear = sDate.getFullYear();
+                plannerState.currentYear = sDate.getFullYear();
         plannerState.currentMonth = sDate.getMonth();
         plannerState.currentWeek = getISOWeek(sDate);
         document.getElementById('yearSelect').value = plannerState.currentYear;
+        document.getElementById('monthSelect').value = plannerState.currentMonth;
         
         let driversToSave = crew === '2' ? [drv1, drv2] : [drv1];
         let cTime = parseTime(document.getElementById('planTimeSelect').value); 
