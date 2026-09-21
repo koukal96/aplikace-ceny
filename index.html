@@ -1394,6 +1394,69 @@
         return ok;
     }
 
+
+    // === PERFORMANCE: in-memory caches ===
+    // Route/geocode results are reused during the current session. This avoids
+    // repeating the same network work when only price/margin/AETR inputs change.
+    const CP_GEO_CACHE = new Map();
+    const CP_COUNTRY_CACHE = new Map();
+    const CP_GEO_PENDING = new Map();
+    const CP_COUNTRY_PENDING = new Map();
+    const CP_ROUTE_CACHE = new Map();
+    const CP_COUNTRY_CONCURRENCY = 8;
+    let cpLastRouteRequestId = 0;
+    let cpAutoSaveTimer = null;
+
+    // Persistent, asynchronous cache for geocoding/country lookups only.
+    // Route results intentionally stay session-only so a fresh route is always
+    // requested after an app reload; this avoids making route data stale.
+    let CP_IDB_PROMISE = null;
+    function cpOpenCacheDB() {
+        if (!('indexedDB' in window)) return Promise.resolve(null);
+        if (CP_IDB_PROMISE) return CP_IDB_PROMISE;
+        CP_IDB_PROMISE = new Promise(resolve => {
+            try {
+                const req = indexedDB.open('ControlPointCacheV2', 1);
+                req.onupgradeneeded = () => {
+                    const db = req.result;
+                    if (!db.objectStoreNames.contains('geo')) db.createObjectStore('geo');
+                    if (!db.objectStoreNames.contains('country')) db.createObjectStore('country');
+                };
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => resolve(null);
+                req.onblocked = () => resolve(null);
+            } catch (_) { resolve(null); }
+        });
+        return CP_IDB_PROMISE;
+    }
+    async function cpIDBGet(store, key) {
+        const db = await cpOpenCacheDB();
+        if (!db) return undefined;
+        return new Promise(resolve => {
+            try {
+                const tx = db.transaction(store, 'readonly');
+                const req = tx.objectStore(store).get(key);
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => resolve(undefined);
+            } catch (_) { resolve(undefined); }
+        });
+    }
+    async function cpIDBPut(store, key, value) {
+        const db = await cpOpenCacheDB();
+        if (!db) return;
+        try {
+            const tx = db.transaction(store, 'readwrite');
+            tx.objectStore(store).put(value, key);
+        } catch (_) {}
+    }
+
+    function cpNormAddress(v) { return String(v || '').trim().toLowerCase().replace(/\s+/g,' '); }
+    function cpCoordKey(lon, lat) { return `${Number(lon).toFixed(5)},${Number(lat).toFixed(5)}`; }
+    function cpRouteKey(coords, excluded) {
+        return JSON.stringify({ c: coords.map(c=>[Number(c[0]).toFixed(5),Number(c[1]).toFixed(5)]), e:[...(excluded||[])].sort() });
+    }
+    function cpYield() { return new Promise(r => (window.requestAnimationFrame || setTimeout)(r, 0)); }
+
     function recoverPlannerStateFromStorage() {
         const known = ['cpPlannerStateUltimate','cpPlannerState','plannerState'];
         const backups = [];
@@ -1418,7 +1481,7 @@
         return backups;
     }
 
-    function autoSave() {
+    function _autoSaveNow() {
         const data = {
             start: document.getElementById('startAdresa').value,
             cil: document.getElementById('cilAdresa').value,
@@ -1449,6 +1512,11 @@
             excludedCountries: excludedCountries
         };
         safeSetStorage('controlPointDraft', data);
+    
+    }
+    function autoSave() {
+        clearTimeout(cpAutoSaveTimer);
+        cpAutoSaveTimer=setTimeout(_autoSaveNow,120);
     }
 
     function loadAutoSave() {
@@ -1738,29 +1806,66 @@
         if(!address) return null;
         let gpsMatch = address.match(/^([-+]?\d{1,2}\.\d+)[,\s]+([-+]?\d{1,3}\.\d+)$/);
         if(gpsMatch) return [parseFloat(gpsMatch[2]), parseFloat(gpsMatch[1])];
-        try {
-            let res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(address)}&limit=1`);
-            let data = await res.json();
-            if(data.features && data.features.length > 0) return data.features[0].geometry.coordinates;
-        } catch(e) {}
-        try {
-            let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`);
-            let data = await res.json();
-            if(data && data.length > 0) return [parseFloat(data[0].lon), parseFloat(data[0].lat)];
-        } catch(e) {}
-        throw new Error(`${T('chybaAdresa')} (${address})`);
+        const key = cpNormAddress(address);
+        if (CP_GEO_CACHE.has(key)) return CP_GEO_CACHE.get(key);
+        if (CP_GEO_PENDING.has(key)) return CP_GEO_PENDING.get(key);
+
+        const work = (async () => {
+            // Persistent cache is asynchronous and therefore does not block the UI.
+            const stored = await cpIDBGet('geo', key);
+            if (Array.isArray(stored) && stored.length === 2 && stored.every(Number.isFinite)) {
+                CP_GEO_CACHE.set(key, stored);
+                return stored;
+            }
+            const photon = `https://photon.komoot.io/api/?q=${encodeURIComponent(address)}&limit=1`;
+            const nominatim = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+            try {
+                const res = await fetch(photon);
+                const data = await res.json();
+                if(data.features?.length) {
+                    const c=data.features[0].geometry.coordinates;
+                    CP_GEO_CACHE.set(key,c); cpIDBPut('geo', key, c);
+                    return c;
+                }
+            } catch(e) {}
+            try {
+                const res = await fetch(nominatim);
+                const data = await res.json();
+                if(data?.length) {
+                    const c=[parseFloat(data[0].lon),parseFloat(data[0].lat)];
+                    CP_GEO_CACHE.set(key,c); cpIDBPut('geo', key, c);
+                    return c;
+                }
+            } catch(e) {}
+            throw new Error(`${T('chybaAdresa')} (${address})`);
+        })();
+        CP_GEO_PENDING.set(key, work);
+        try { return await work; }
+        finally { CP_GEO_PENDING.delete(key); }
     }
 
     async function getCountryCodeFromCoordsFast(lon, lat) {
-        try {
-            let res = await fetch(`https://photon.komoot.io/reverse?lon=${lon}&lat=${lat}`);
-            let data = await res.json();
-            if(data && data.features && data.features.length > 0) {
-                let cc = data.features[0].properties.countrycode;
-                if (cc) return cc.toUpperCase();
+        const key=cpCoordKey(lon,lat);
+        if(CP_COUNTRY_CACHE.has(key)) return CP_COUNTRY_CACHE.get(key);
+        if(CP_COUNTRY_PENDING.has(key)) return CP_COUNTRY_PENDING.get(key);
+        const work = (async () => {
+            const stored = await cpIDBGet('country', key);
+            if (typeof stored === 'string' || stored === null) {
+                CP_COUNTRY_CACHE.set(key, stored);
+                return stored;
             }
-        } catch(e) {}
-        return null; 
+            try {
+                const res=await fetch(`https://photon.komoot.io/reverse?lon=${lon}&lat=${lat}`);
+                const data=await res.json();
+                const cc=data?.features?.[0]?.properties?.countrycode;
+                const out=cc ? cc.toUpperCase() : null;
+                CP_COUNTRY_CACHE.set(key,out); cpIDBPut('country', key, out);
+                return out;
+            } catch(e) { return null; }
+        })();
+        CP_COUNTRY_PENDING.set(key, work);
+        try { return await work; }
+        finally { CP_COUNTRY_PENDING.delete(key); }
     }
 
     async function getCountryCodeFromCoords(lon, lat) {
@@ -1781,36 +1886,38 @@
     }
 
     async function extractSegmentsFromCoords(coords, distTotal) {
-        let pointsToCheck = []; let distAccumulator = 0; const INTERVAL = 25; let distances = [0]; 
-        for(let i=1; i<coords.length; i++) {
-            let d = haversine(coords[i-1][0], coords[i-1][1], coords[i][0], coords[i][1]);
+        let pointsToCheck = []; let distAccumulator = 0; const INTERVAL = 25; let distances = [0];
+        for(let i=1;i<coords.length;i++){
+            const d=haversine(coords[i-1][0],coords[i-1][1],coords[i][0],coords[i][1]);
             distances.push(d); distAccumulator += d;
-            if(distAccumulator >= INTERVAL) { pointsToCheck.push({ index: i, coord: coords[i] }); distAccumulator = 0; }
+            if(distAccumulator>=INTERVAL){ pointsToCheck.push({index:i,coord:coords[i]}); distAccumulator=0; }
         }
-        for(let p of pointsToCheck) { p.cc = await getCountryCodeFromCoordsFast(p.coord[0], p.coord[1]); }
-        let startCountry = await getCountryCodeFromCoords(coords[0][0], coords[0][1]) || 'CZ';
-        let currentCountry = MYTO_STATY[startCountry] ? startCountry : 'CZ';
-        let currentSegmentKm = 0; let rawSegments = []; let checkIdx = 0;
-        for(let i=1; i<coords.length; i++) {
-            currentSegmentKm += distances[i];
-            if (checkIdx < pointsToCheck.length && pointsToCheck[checkIdx].index === i) {
-                let cc = pointsToCheck[checkIdx].cc;
-                if (cc && MYTO_STATY[cc] && cc !== currentCountry) {
-                    rawSegments.push({ code: currentCountry, km: currentSegmentKm });
-                    currentCountry = cc; currentSegmentKm = 0;
-                }
+        // The old version awaited every reverse-geocode serially. Run a small
+        // bounded batch instead: same 25-km sampling/logic, much less waiting.
+        for(let i=0;i<pointsToCheck.length;i+=CP_COUNTRY_CONCURRENCY){
+            const batch=pointsToCheck.slice(i,i+CP_COUNTRY_CONCURRENCY);
+            const codes=await Promise.all(batch.map(p=>getCountryCodeFromCoordsFast(p.coord[0],p.coord[1])));
+            batch.forEach((p,j)=>p.cc=codes[j]);
+        }
+        let startCountry = await getCountryCodeFromCoordsFast(coords[0][0],coords[0][1]) || 'CZ';
+        let currentCountry=MYTO_STATY[startCountry]?startCountry:'CZ';
+        let currentSegmentKm=0, rawSegments=[], checkIdx=0;
+        for(let i=1;i<coords.length;i++){
+            currentSegmentKm+=distances[i];
+            if(checkIdx<pointsToCheck.length && pointsToCheck[checkIdx].index===i){
+                const cc=pointsToCheck[checkIdx].cc;
+                if(cc && MYTO_STATY[cc] && cc!==currentCountry){ rawSegments.push({code:currentCountry,km:currentSegmentKm}); currentCountry=cc; currentSegmentKm=0; }
                 checkIdx++;
             }
         }
-        rawSegments.push({ code: currentCountry, km: currentSegmentKm });
-        
-        let finalSegments = [];
-        for(let s of rawSegments) {
-            if(finalSegments.length > 0 && finalSegments[finalSegments.length-1].code === s.code) finalSegments[finalSegments.length-1].km += s.km;
-            else finalSegments.push(s);
+        rawSegments.push({code:currentCountry,km:currentSegmentKm});
+        const finalSegments=[];
+        for(const seg of rawSegments){
+            if(finalSegments.length && finalSegments.at(-1).code===seg.code) finalSegments.at(-1).km+=seg.km;
+            else finalSegments.push({...seg});
         }
-        let haversineTotal = finalSegments.reduce((sum, s) => sum + s.km, 0);
-        if(haversineTotal > 0) { let ratio = distTotal / haversineTotal; finalSegments.forEach(s => s.km = s.km * ratio); }
+        const total=finalSegments.reduce((sum,s)=>sum+s.km,0);
+        if(total>0){ const ratio=distTotal/total; finalSegments.forEach(s=>s.km*=ratio); }
         return finalSegments;
     }
 
@@ -1823,79 +1930,55 @@
         kmEl.value = (base * (round ? 2 : 1)).toFixed(1);
     }
 
-        async function spocitatTrasu() {
+    async function spocitatTrasu() {
         if (!navigator.onLine) { setStatus('❌ Jste offline. Výpočet trasy z OSRM není dostupný.', 'error'); return; }
-        const startStr = document.getElementById('startAdresa').value.trim();
-        const cilStr = document.getElementById('cilAdresa').value.trim();
-        const btn = document.getElementById('btnTrasa');
-        if (!startStr || !cilStr) { setStatus('Vyplňte Start i Cíl.', 'error'); return; }
-        btn.disabled = true;
-        setStatus('Počítám trasu, rozpad států a mýto...', 'info');
+        const startStr=document.getElementById('startAdresa').value.trim();
+        const cilStr=document.getElementById('cilAdresa').value.trim();
+        const btn=document.getElementById('btnTrasa');
+        if(!startStr||!cilStr){setStatus('Vyplňte Start i Cíl.','error');return;}
+        const requestId=++cpLastRouteRequestId; btn.disabled=true; setStatus('Počítám trasu…','info');
         try {
-            const coords = [];
-            const startCoords = await getCoordinates(startStr); coords.push(startCoords);
-            for (const wp of waypoints) if (wp.address?.trim()) coords.push(await getCoordinates(wp.address.trim()));
-            const cilCoords = await getCoordinates(cilStr); coords.push(cilCoords);
-            const coordStrings = coords.map(c => `${c[0]},${c[1]}`);
-            const url = `https://router.project-osrm.org/route/v1/driving/${coordStrings.join(';')}?overview=full&geometries=geojson&alternatives=true&steps=false`;
-            const res = await fetch(url);
-            if (!res.ok) throw new Error(`OSRM HTTP ${res.status}`);
-            const data = await res.json();
-            if (!data.routes?.length) throw new Error('Trasa nebyla nalezena.');
-
-            let candidates = data.routes;
-            let selected = candidates[0];
-            let selectedSegments = await extractSegmentsFromCoords(selected.geometry.coordinates, selected.distance/1000);
-            const blocked = new Set(excludedCountries);
-            let avoidFailed = false;
-            let avoidSucceeded = false;
-            if (blocked.size) {
-                const evaluated = [];
-                for (const route of candidates) {
-                    const segs = await extractSegmentsFromCoords(route.geometry.coordinates, route.distance/1000);
-                    const blockedKm = segs.filter(s => blocked.has(s.code)).reduce((a,s)=>a+s.km,0);
-                    evaluated.push({route, segs, blockedKm});
-                }
-                evaluated.sort((a,b) => (a.blockedKm - b.blockedKm) || (a.route.distance - b.route.distance));
-                if (evaluated[0].blockedKm > 0.5) {
-                    const names = [...blocked].map(c => MYTO_STATY[c]?.name || c).join(', ');
-                    avoidFailed = true;
-                    renderAvoidList();
-                    setStatus(`❌ Zemi ${names} se nepodařilo objet dostupnou alternativní trasou. Původní trasa zůstává zachována.`, 'error');
-                } else {
-                    selected = evaluated[0].route;
-                    selectedSegments = evaluated[0].segs;
-                    avoidSucceeded = selected !== candidates[0];
-                    if (avoidSucceeded) setStatus('✓ Alternativní trasa bez zadané země byla nalezena.', 'success');
-                }
+            const addresses=[startStr,...waypoints.filter(w=>w.address?.trim()).map(w=>w.address.trim()),cilStr];
+            // Geocoding is independent, so do it concurrently.
+            const coords=await Promise.all(addresses.map(getCoordinates));
+            const routeKey=cpRouteKey(coords,excludedCountries);
+            let data=CP_ROUTE_CACHE.get(routeKey);
+            if(!data){
+                const coordStrings=coords.map(c=>`${c[0]},${c[1]}`);
+                const url=`https://router.project-osrm.org/route/v1/driving/${coordStrings.join(';')}?overview=full&geometries=geojson&alternatives=true&steps=false`;
+                const res=await fetch(url);
+                if(!res.ok) throw new Error(`OSRM HTTP ${res.status}`);
+                data=await res.json();
+                if(!data.routes?.length) throw new Error('Trasa nebyla nalezena.');
+                CP_ROUTE_CACHE.set(routeKey,data);
             }
-
-            const distTotal = selected.distance / 1000;
-            drawMap(selected.geometry.coordinates);
-            globalBreakdown = selectedSegments;
-            const vMulti = waypoints.length > 0 ? 1 : ((document.getElementById('typTrasy').value === '2') ? 2 : 1);
-            const routeKmForCalc = distTotal * vMulti;
-            const kmEl = document.getElementById('vzdalenost');
-            if (kmEl) { kmEl.dataset.onewayKm = distTotal.toFixed(1); kmEl.value = routeKmForCalc.toFixed(1); }
-
-            // Přejezd = součet úseků, které končí v waypointu označeném jako Přejezd.
-            let prejezd = 0;
-            if (waypoints.length && Array.isArray(selected.legs)) {
-                for (let i=0; i<waypoints.length; i++) {
-                    if ((waypoints[i].type === 'prejezd' || waypoints[i].type === 'empty') && selected.legs[i]) prejezd += Number(selected.legs[i].distance || 0) / 1000;
-                }
+            if(requestId!==cpLastRouteRequestId)return;
+            const candidates=data.routes;
+            let selected=candidates[0];
+            let selectedSegments=await extractSegmentsFromCoords(selected.geometry.coordinates,selected.distance/1000);
+            const blocked=new Set(excludedCountries); let avoidFailed=false,avoidSucceeded=false;
+            if(blocked.size){
+                const evaluated=await Promise.all(candidates.map(async route=>{
+                    const segs=await extractSegmentsFromCoords(route.geometry.coordinates,route.distance/1000);
+                    return {route,segs,blockedKm:segs.filter(s=>blocked.has(s.code)).reduce((a,s)=>a+s.km,0)};
+                }));
+                evaluated.sort((a,b)=>(a.blockedKm-b.blockedKm)||(a.route.distance-b.route.distance));
+                if(evaluated[0].blockedKm>0.5){
+                    const names=[...blocked].map(c=>MYTO_STATY[c]?.name||c).join(', '); avoidFailed=true; renderAvoidList();
+                    setStatus(`❌ Zemi ${names} se nepodařilo objet dostupnou alternativní trasou. Původní trasa zůstává zachována.`,'error');
+                } else { selected=evaluated[0].route; selectedSegments=evaluated[0].segs; avoidSucceeded=selected!==candidates[0]; if(avoidSucceeded)setStatus('✓ Alternativní trasa bez zadané země byla nalezena.','success'); }
             }
-            totalPrejezdKm = Math.min(distTotal * vMulti, prejezd * vMulti);
-            document.getElementById('prejezdyShow').value = totalPrejezdKm.toFixed(1);
-
-            renderBreakdownSegments(globalBreakdown, vMulti);
-            lastRouteData = { start:startStr, cil:cilStr, wps:waypoints.map(w=>w.address), dist:distTotal.toFixed(1) };
-            recalcAETR();
-            autoSave();
-            if (!avoidFailed && !avoidSucceeded) setStatus(`Hotovo: ${routeKmForCalc.toFixed(1)} km`, 'success');
-        } catch (error) {
-            setStatus('CHYBA: ' + error.message, 'error');
-        } finally { btn.disabled = false; }
+            const distTotal=selected.distance/1000; drawMap(selected.geometry.coordinates); globalBreakdown=selectedSegments;
+            const vMulti=waypoints.length>0?1:(document.getElementById('typTrasy').value==='2'?2:1);
+            const routeKmForCalc=distTotal*vMulti; const kmEl=document.getElementById('vzdalenost');
+            if(kmEl){kmEl.dataset.onewayKm=distTotal.toFixed(1);kmEl.value=routeKmForCalc.toFixed(1);}
+            let prejezd=0;
+            if(waypoints.length&&Array.isArray(selected.legs)){for(let i=0;i<waypoints.length;i++){if((waypoints[i].type==='prejezd'||waypoints[i].type==='empty')&&selected.legs[i])prejezd+=Number(selected.legs[i].distance||0)/1000;}}
+            totalPrejezdKm=Math.min(distTotal*vMulti,prejezd*vMulti); document.getElementById('prejezdyShow').value=totalPrejezdKm.toFixed(1);
+            renderBreakdownSegments(globalBreakdown,vMulti); lastRouteData={start:startStr,cil:cilStr,wps:waypoints.map(w=>w.address),dist:distTotal.toFixed(1)}; recalcAETR();
+            if(!avoidFailed&&!avoidSucceeded)setStatus(`Hotovo: ${routeKmForCalc.toFixed(1)} km`,'success');
+        } catch(error){if(requestId===cpLastRouteRequestId)setStatus('CHYBA: '+error.message,'error');}
+        finally{if(requestId===cpLastRouteRequestId)btn.disabled=false;}
     }
 
     function renderBreakdownSegments(segments, multi) {
@@ -2106,8 +2189,17 @@
         });
     }
 
+    let cpCalcTimer=null;
     document.querySelectorAll('#view-calculator input, #view-calculator select').forEach(el => {
-        el.addEventListener('input', (event) => { calculate(); });
+        // Do not add a second calculate() to controls that already have an inline
+        // handler. This removes duplicate calculations while preserving controls
+        // that are generated dynamically or have no inline calculation handler.
+        const hasInlineCalc = /(?:^|[;\s])calculate\s*\(/.test(el.getAttribute('oninput') || '') ||
+                              /(?:^|[;\s])calculate\s*\(/.test(el.getAttribute('onchange') || '');
+        if (hasInlineCalc) return;
+        el.addEventListener('input', () => {
+            clearTimeout(cpCalcTimer); cpCalcTimer=setTimeout(() => calculate(), 40);
+        });
     });
 
     // =======================================================================
@@ -2190,14 +2282,15 @@
         plannerSaveState();
     }
 
+    let cpPlannerSaveTimer=null;
     function plannerSaveState() {
-        const clean = normalizePlannerState(plannerState);
-        plannerState = clean;
-        safeSetStorage('cpPlannerStateUltimate', clean);
-        // Záložní klíče kvůli aktualizacím aplikace / PWA cache.
-        safeSetStorage('cpPlannerState', clean);
-        safeSetStorage('cpDrivers', clean.drivers);
-        updateDriverSelects();
+        const clean=normalizePlannerState(plannerState); plannerState=clean; updateDriverSelects();
+        clearTimeout(cpPlannerSaveTimer);
+        cpPlannerSaveTimer=setTimeout(()=>{
+            safeSetStorage('cpPlannerStateUltimate',clean);
+            safeSetStorage('cpPlannerState',clean);
+            safeSetStorage('cpDrivers',clean.drivers);
+        },80);
     }
 
     function getDateFromISOWeek(year, week) {
@@ -2303,120 +2396,30 @@
 
     function renderPlanner() {
         syncPlannerSelectors();
-        document.getElementById('plannerWeekLabel').innerText = `Týden ${plannerState.currentWeek} · ${plannerState.currentYear}`;
-        const driverListEl = document.getElementById('plannerDriverList'); driverListEl.innerHTML = '';
-        plannerState.drivers.forEach(d => {
-            const restAnalysis = analyzeWeeklyRest(d.id, plannerState.currentWeek);
-            let badgeHtml='';
-            if (restAnalysis.status !== 'none') {
-                const badgeClass = restAnalysis.status==='ok'?'aetr-ok':(restAnalysis.status==='warn'?'aetr-warn':'aetr-err');
-                badgeHtml=`<span class="aetr-badge ${badgeClass}">${restAnalysis.text}</span>`;
-            }
-            driverListEl.innerHTML += `<div class="driver-item"><div class="driver-item-header"><span style="font-size:14px;">${d.name}</span><div style="display:flex;gap:5px;"><button class="btn-secondary" style="background:var(--cp-blue);border:none;padding:6px 10px;margin:0;" onclick="openPayroll(${d.id})">💶 Mzdy / Diety</button><button class="btn-remove-wp" style="padding:6px 10px;margin:0;" onclick="removePlannerDriver(${d.id})">✕</button></div></div>${badgeHtml}</div>`;
-        });
-        const tbody = document.getElementById('plannerBody'); tbody.innerHTML='';
-        plannerState.drivers.forEach(driver=>{
-            const tr=document.createElement('tr'); tr.innerHTML=`<td class="driver-name-col">${driver.name}</td>`;
+        document.getElementById('plannerWeekLabel').innerText=`Týden ${plannerState.currentWeek} · ${plannerState.currentYear}`;
+        const driverListEl=document.getElementById('plannerDriverList');
+        const driverHtml=[];
+        for(const d of plannerState.drivers){
+            const a=analyzeWeeklyRest(d.id,plannerState.currentWeek);
+            const badge=a.status==='none'?'':`<span class="aetr-badge ${a.status==='ok'?'aetr-ok':(a.status==='warn'?'aetr-warn':'aetr-err')}">${a.text}</span>`;
+            driverHtml.push(`<div class="driver-item"><div class="driver-item-header"><span style="font-size:14px;">${d.name}</span><div style="display:flex;gap:5px;"><button class="btn-secondary" style="background:var(--cp-blue);border:none;padding:6px 10px;margin:0;" onclick="openPayroll(${d.id})">💶 Mzdy / Diety</button><button class="btn-remove-wp" style="padding:6px 10px;margin:0;" onclick="removePlannerDriver(${d.id})">✕</button></div></div>${badge}</div>`);
+        }
+        driverListEl.innerHTML=driverHtml.join('');
+        const rows=[];
+        for(const driver of plannerState.drivers){
+            let cells=`<td class="driver-name-col">${driver.name}</td>`;
             for(let day=0;day<7;day++){
                 const shift=plannerState.shifts[`${driver.id}_${plannerState.currentWeek}_${day}`];
-                const td=document.createElement('td');
                 if(shift?.acts?.length){
-                    let dDur=0,sDur=0; shift.acts.forEach(a=>{sDur+=Number(a.d)||0;if(a.t==='drive')dDur+=shift.crew==='2'?a.d/2:a.d;});
+                    let dDur=0,sDur=0; for(const a of shift.acts){sDur+=Number(a.d)||0;if(a.t==='drive')dDur+=shift.crew==='2'?a.d/2:a.d;}
                     const endTime=parseTime(shift.start)+sDur;
-                    let html=`<div class="shift-content" onclick="openShiftModal(${driver.id},${day})"><div class="shift-head">${shift.start} - ${formatTime(endTime)}</div><div>🚛 ${dDur.toFixed(1)}h | ⚒️ ${(sDur-dDur).toFixed(1)}h</div><div style="font-size:9px;color:#666;overflow:hidden;">📝 ${shift.note||''}</div><div class="timeline-bar-wrap">`;
-                    shift.acts.forEach(a=>{const pct=sDur>0?(a.d/sDur*100):0;const cls=a.t==='drive'?'tl-drive':(a.t==='work'?'tl-work':'tl-rest');html+=`<div class="${cls}" style="width:${pct}%"></div>`;});
-                    td.innerHTML=html+'</div></div>'; td.style.background='#fff9e6';
-                } else td.innerHTML=`<div class="shift-content" style="justify-content:center;color:#ccc;" onclick="openShiftModal(${driver.id},${day})">Volno (Pauza)</div>`;
-                tr.appendChild(td);
+                    let bars=''; for(const a of shift.acts){const pct=sDur>0?(a.d/sDur*100):0;const cls=a.t==='drive'?'tl-drive':(a.t==='work'?'tl-work':'tl-rest');bars+=`<div class="${cls}" style="width:${pct}%"></div>`;}
+                    cells+=`<td style="background:#fff9e6"><div class="shift-content" onclick="openShiftModal(${driver.id},${day})"><div class="shift-head">${shift.start} - ${formatTime(endTime)}</div><div>🚛 ${dDur.toFixed(1)}h | ⚒️ ${(sDur-dDur).toFixed(1)}h</div><div style="font-size:9px;color:#666;overflow:hidden;">📝 ${shift.note||''}</div><div class="timeline-bar-wrap">${bars}</div></div></td>`;
+                } else cells+=`<td><div class="shift-content" style="justify-content:center;color:#ccc;" onclick="openShiftModal(${driver.id},${day})">Volno (Pauza)</div></td>`;
             }
-            tbody.appendChild(tr);
-        });
-    }
-
-    function addPlanWaypoint(target) {
-    // 1. Zjištění, kam se má zastávka přidat
-    let containerId = (target === 'before') ? 'planWpBeforeContainer' : 'planWpAfterContainer';
-    let container = document.getElementById(containerId);
-
-    if (!container) {
-        console.error("Kontejner pro přidání zastávky nebyl nalezen!");
-        return;
-    }
-
-    // 2. Vytvoření HTML kódu pro novou zastávku (včetně roletky pro Stát)
-    let html = `
-    <div class="waypoint-row" style="display:flex; gap:10px; margin-bottom:10px; flex-wrap: wrap; align-items: flex-end;">
-        <div class="input-group" style="margin:0; flex: 2; min-width: 150px;">
-            <label style="font-size:11px; color:#555;">Zastávka (${target === 'before' ? 'Před cílem' : 'Za cílem'})</label>
-            <input type="text" class="plan-wp-address" placeholder="Zadejte město/adresu...">
-        </div>
-        <div class="input-group" style="margin:0; flex: 1; min-width: 80px;">
-            <label style="font-size:11px; color:#555;">Stát</label>
-            <select class="plan-wp-stat">
-                <option value="">-- Auto --</option>
-                <option value="CZ">CZ</option>
-                <option value="DE">DE</option>
-                <option value="AT">AT</option>
-                <option value="PL">PL</option>
-                <option value="SK">SK</option>
-                <option value="IT">IT</option>
-            </select>
-        </div>
-        <!-- Tlačítko pro smazání zastávky, které rovnou znovu zkontroluje kolečko -->
-        <button class="btn-remove-wp" type="button" onclick="this.parentElement.remove(); checkPlanKolecko();" style="height:40px; margin-bottom:2px;">✕</button>
-    </div>`;
-    
-    // 3. Vložení HTML do správného kontejneru na konec
-    container.insertAdjacentHTML('beforeend', html);
-    
-    // 4. Kontrola a případná deaktivace zaškrtávátka "Kolečko"
-    if (typeof checkPlanKolecko === "function") {
-        checkPlanKolecko();
-    }
-}
-    function checkPlanKolecko() {
-    let beforeContainer = document.getElementById('planWpBeforeContainer');
-    let afterContainer = document.getElementById('planWpAfterContainer');
-    let koleckoToggle = document.getElementById('planKoleckoToggle');
-    
-    if (!koleckoToggle) return; // Pokud checkbox pro kolečko na stránce není, nic se neděje
-
-    let wpBeforeCount = beforeContainer ? beforeContainer.children.length : 0;
-    let wpAfterCount = afterContainer ? afterContainer.children.length : 0;
-    
-    if (wpBeforeCount > 0 || wpAfterCount > 0) {
-        koleckoToggle.checked = false;
-        koleckoToggle.disabled = true;
-        koleckoToggle.parentElement.style.opacity = "0.5"; // Vizuální zašednutí
-    } else {
-        koleckoToggle.disabled = false;
-        koleckoToggle.parentElement.style.opacity = "1"; // Vrácení do normálu
-    }
-}
-    
-    function renderPlanWaypoints() {
-        let bC = document.getElementById('planWpBeforeContainer'); bC.innerHTML = "";
-        planWaypointsBefore.forEach((w, i) => {
-            bC.innerHTML += `<div class="form-grid" style="margin-bottom:5px; background:white; padding:10px; border:1px solid #ccc;"><div class="input-group" style="margin:0;"><label>Zastávka</label><input type="text" placeholder="Adresa" oninput="planWaypointsBefore[${i}].address=this.value" value="${w.address}"></div><div class="input-group" style="margin:0;"><label>Zdržení (h)</label><input type="number" step="0.25" oninput="planWaypointsBefore[${i}].time=parseFloat(this.value)||0" value="${w.time}"></div><button class="btn-secondary" onclick="planWaypointsBefore.splice(${i},1); renderPlanWaypoints();" style="margin-top:auto; background:var(--cp-danger);">✕</button></div>`;
-        });
-        
-        let aC = document.getElementById('planWpAfterContainer'); aC.innerHTML = "";
-        planWaypointsAfter.forEach((w, i) => {
-            aC.innerHTML += `<div class="form-grid" style="margin-bottom:5px; background:white; padding:10px; border:1px solid #ccc;"><div class="input-group" style="margin:0;"><label>Zastávka</label><input type="text" placeholder="Adresa" oninput="planWaypointsAfter[${i}].address=this.value" value="${w.address}"></div><div class="input-group" style="margin:0;"><label>Zdržení (h)</label><input type="number" step="0.25" oninput="planWaypointsAfter[${i}].time=parseFloat(this.value)||0" value="${w.time}"></div><button class="btn-secondary" onclick="planWaypointsAfter.splice(${i},1); renderPlanWaypoints();" style="margin-top:auto; background:var(--cp-danger);">✕</button></div>`;
-        });
-    }
-
-    // Pomocná fce pro ověření plynulosti směny pro AutoPlanovač
-    function getAbsoluteLastEnd(dId, currentWeek, startDay) {
-        let dayToSearch = startDay - 1;
-        let weekToSearch = currentWeek;
-        if(dayToSearch < 0) { dayToSearch = 6; weekToSearch--; }
-        
-        let prevShift = plannerState.shifts[`${dId}_${weekToSearch}_${dayToSearch}`];
-        if(!prevShift) return null;
-        
-        let endPrev = parseTime(prevShift.start) + prevShift.acts.reduce((sum,a)=>sum+a.d,0);
-        return { w: weekToSearch, d: dayToSearch, end: endPrev };
+            rows.push(`<tr>${cells}</tr>`);
+        }
+        document.getElementById('plannerBody').innerHTML=rows.join('');
     }
 
     async function executeAutoPlan() {
@@ -2490,16 +2493,19 @@
             let taskQueue = []; 
             planWaypointsBefore.forEach(wp => taskQueue.push({action: 'work', time: wp.time, note: wp.address}));
 
-            // OSRM Jízdní segmenty
-            let coordStrings = [];
-            let c1 = await getCoordinates(sR); coordStrings.push(`${c1[0]},${c1[1]}`);
-            let c2 = await getCoordinates(eR); coordStrings.push(`${c2[0]},${c2[1]}`);
-            
-            let url = `https://router.project-osrm.org/route/v1/driving/${coordStrings.join(';')}?overview=full&geometries=geojson`;
-            let rRes = await fetch(url);
-            let rData = await rRes.json();
-            let distTotal = rData.routes[0].distance / 1000;
-            
+            // OSRM Jízdní segmenty – oba body paralelně + cache.
+            const [c1,c2] = await Promise.all([getCoordinates(sR), getCoordinates(eR)]);
+            const routeKey = cpRouteKey([c1,c2], []);
+            let rData = CP_ROUTE_CACHE.get(routeKey);
+            if (!rData) {
+                const url = `https://router.project-osrm.org/route/v1/driving/${c1[0]},${c1[1]};${c2[0]},${c2[1]}?overview=full&geometries=geojson`;
+                const rRes = await fetch(url);
+                if (!rRes.ok) throw new Error(`OSRM HTTP ${rRes.status}`);
+                rData = await rRes.json();
+                CP_ROUTE_CACHE.set(routeKey, rData);
+            }
+            if (!rData.routes?.length) throw new Error('Trasa nebyla nalezena.');
+            const distTotal = rData.routes[0].distance / 1000;
             let segments = await extractSegmentsFromCoords(rData.routes[0].geometry.coordinates, distTotal);
             segments.forEach(seg => { taskQueue.push({action: 'drive', cc: seg.code, time: seg.km / speed}); });
 
