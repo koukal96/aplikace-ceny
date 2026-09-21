@@ -1866,7 +1866,7 @@
         return out.filter(c=>Number.isFinite(c[0])&&Number.isFinite(c[1]));
     }
 
-    async function cpValhallaTruckRoute(coords) {
+    async function cpValhallaTruckRoute(coords, extraAvoidLocations = []) {
         const payload = {
             locations: cpCoordsToValhallaLocations(coords),
             costing: 'truck',
@@ -1878,17 +1878,15 @@
                     length: 16.5,
                     axle_load: 10.0,
                     ignore_access: false,
-                    ignore_restrictions: false
+                    ignore_restrictions: false,
+                    destination_only_penalty: 0
                 }
             },
+            avoid_locations: Array.isArray(extraAvoidLocations) ? extraAvoidLocations : [],
             units: 'kilometers',
             shape_format: 'geojson',
             directions_type: 'none'
         };
-        // Ve webové aplikaci nepoužíváme POST. Veřejný Valhalla server nemá
-        // spolehlivě povolený CORS preflight pro POST + vlastní hlavičky, takže
-        // Safari/iOS může požadavek zablokovat ještě před samotným routingem.
-        // Valhalla podporuje také GET /route?json=...; GET nevyžaduje preflight.
         const url = `${CP_VALHALLA_URL}?json=${encodeURIComponent(JSON.stringify(payload))}`;
         const res = await fetch(url, { method: 'GET', cache: 'no-store' });
         if (!res.ok) throw new Error(`Valhalla HTTP ${res.status}`);
@@ -1900,6 +1898,146 @@
         }
         const distanceKm = Number(data?.trip?.summary?.length);
         return {data, coords: shape, distanceKm: Number.isFinite(distanceKm) ? distanceKm : null};
+    }
+
+    function cpDistancePointToSegmentKm(p, a, b) {
+        const lat0 = ((a[1] + b[1] + p[1]) / 3) * Math.PI / 180;
+        const kx = 111.32 * Math.cos(lat0), ky = 110.57;
+        const px = p[0] * kx, py = p[1] * ky;
+        const ax = a[0] * kx, ay = a[1] * ky;
+        const bx = b[0] * kx, by = b[1] * ky;
+        const dx = bx-ax, dy = by-ay;
+        const len2 = dx*dx + dy*dy;
+        let t = len2 ? ((px-ax)*dx + (py-ay)*dy)/len2 : 0;
+        t = Math.max(0, Math.min(1, t));
+        const x=ax+t*dx, y=ay+t*dy;
+        return Math.hypot(px-x,py-y);
+    }
+
+    function cpDistancePointToRouteKm(p, route) {
+        let best=Infinity, bestIndex=-1;
+        for(let i=1;i<route.length;i++){
+            const d=cpDistancePointToSegmentKm(p, route[i-1], route[i]);
+            if(d<best){best=d;bestIndex=i;}
+        }
+        return {km:best,index:bestIndex};
+    }
+
+    function cpRoutePointAtIndex(route, idx){
+        if(!route?.length) return null;
+        return route[Math.max(0,Math.min(route.length-1,idx))];
+    }
+
+    function cpRouteDistanceFromStartKm(route, targetIndex){
+        let d=0;
+        for(let i=1;i<=targetIndex && i<route.length;i++) d+=haversine(route[i-1][0],route[i-1][1],route[i][0],route[i][1]);
+        return d;
+    }
+
+    function cpParseRestrictionWay(tags){
+        if(!tags) return null;
+        const num=v=>{ const n=parseFloat(String(v??'').replace(',','.')); return Number.isFinite(n)?n:null; };
+        const mw=num(tags.maxweight);
+        const mwr=num(tags.maxweightrating);
+        const mwrHgv=num(tags['maxweightrating:hgv']);
+        const mal=num(tags.maxaxleload);
+        const hgv=String(tags.hgv||'').toLowerCase();
+        const access=String(tags.access||'').toLowerCase();
+        const vehicle=String(tags.vehicle||'').toLowerCase();
+        const goods=String(tags.goods||'').toLowerCase();
+        const restricted =
+            hgv==='no' || hgv==='restricted' ||
+            access==='no' || access==='private' ||
+            vehicle==='no' || vehicle==='private' ||
+            goods==='no' || goods==='private' ||
+            (mw!==null && mw < CP_TRUCK_WEIGHT_T) ||
+            (mwr!==null && mwr < CP_TRUCK_WEIGHT_T) ||
+            (mwrHgv!==null && mwrHgv < CP_TRUCK_WEIGHT_T) ||
+            (mal!==null && mal < 10.0);
+        if(!restricted) return null;
+        // destination/delivery exceptions are deliberately NOT treated as a
+        // blanket permission here. They are handled only by the final delivery
+        // kilometre logic below.
+        return {
+            reason: hgv==='no'?'hgv=no':
+                (mw!==null && mw<CP_TRUCK_WEIGHT_T)?`maxweight=${mw}`:
+                (mwrHgv!==null && mwrHgv<CP_TRUCK_WEIGHT_T)?`maxweightrating:hgv=${mwrHgv}`:
+                (mwr!==null && mwr<CP_TRUCK_WEIGHT_T)?`maxweightrating=${mwr}`:
+                (mal!==null && mal<10)?`maxaxleload=${mal}`:
+                access==='no'?'access=no':vehicle==='no'?'vehicle=no':goods==='no'?'goods=no':'truck restriction',
+            destination: hgv==='destination' || hgv==='delivery' ||
+                String(tags['hgv:conditional']||'').toLowerCase().includes('destination') ||
+                String(tags['maxweightrating:hgv:conditional']||'').toLowerCase().includes('destination')
+        };
+    }
+
+    async function cpFindRestrictedRoutePoints(routeCoords, deliveryKm = 0) {
+        if(!routeCoords || routeCoords.length<2) return [];
+        // We inspect OSM ways around the calculated truck route. This catches
+        // cases where the routing engine's imported graph does not apply a
+        // weight/HGV restriction even though OSM contains it.
+        const lons=routeCoords.map(c=>c[0]), lats=routeCoords.map(c=>c[1]);
+        const pad=0.0025;
+        const bbox=`${Math.min(...lats)-pad},${Math.min(...lons)-pad},${Math.max(...lats)+pad},${Math.max(...lons)+pad}`;
+        const q=`[out:json][timeout:25];way[highway]["hgv"](${bbox});way[highway]["maxweight"](${bbox});way[highway]["maxweightrating"](${bbox});way[highway]["maxweightrating:hgv"](${bbox});way[highway]["maxaxleload"](${bbox});way[highway]["access"](${bbox});out tags geom;`;
+        const endpoints=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
+        let data=null, lastErr=null;
+        for(const ep of endpoints){
+            try{
+                const r=await fetch(`${ep}?data=${encodeURIComponent(q)}`,{cache:'no-store'});
+                if(!r.ok) throw new Error(`Overpass HTTP ${r.status}`);
+                data=await r.json(); break;
+            }catch(e){lastErr=e;}
+        }
+        if(!data?.elements?.length) return [];
+        const out=[]; const seen=new Set();
+        for(const el of data.elements){
+            const restriction=cpParseRestrictionWay(el.tags); if(!restriction) continue;
+            const geom=(el.geometry||[]).map(g=>[Number(g.lon),Number(g.lat)]).filter(c=>Number.isFinite(c[0])&&Number.isFinite(c[1]));
+            if(geom.length<2) continue;
+            let best=Infinity,bestRouteIndex=-1;
+            for(const gp of geom){
+                const hit=cpDistancePointToRouteKm(gp,routeCoords);
+                if(hit.km<best){best=hit.km;bestRouteIndex=hit.index;}
+            }
+            // Also test route points against the OSM way; this is important for
+            // long ways where a vertex may be more than 25 m from the route.
+            if(best>0.06){
+                for(let i=1;i<routeCoords.length;i++){
+                    for(let j=1;j<geom.length;j++){
+                        const d1=cpDistancePointToSegmentKm(routeCoords[i],geom[j-1],geom[j]);
+                        if(d1<best){best=d1;bestRouteIndex=i;}
+                    }
+                }
+            }
+            if(best>0.06 || bestRouteIndex<1) continue;
+            const fromStart=cpRouteDistanceFromStartKm(routeCoords,bestRouteIndex);
+            const total=routeCoords.reduce((a,c,i)=>i?a+haversine(routeCoords[i-1][0],routeCoords[i-1][1],c[0],c[1]):0,0);
+            if(deliveryKm>0 && total-fromStart<=Math.max(1.1,deliveryKm+0.1)) continue;
+            const key=String(el.id);
+            if(seen.has(key)) continue; seen.add(key);
+            const p=cpRoutePointAtIndex(routeCoords,bestRouteIndex);
+            out.push({id:el.id,point:p,reason:restriction.reason,destination:restriction.destination,distanceFromStartKm:fromStart});
+        }
+        out.sort((a,b)=>a.distanceFromStartKm-b.distanceFromStartKm);
+        return out.slice(0,12);
+    }
+
+    async function cpTruckRouteWithSafetyAudit(coords, deliveryKm = 0) {
+        let base=await cpValhallaTruckRoute(coords);
+        // Up to three rerouting passes. Each detected OSM restriction is added
+        // as a Valhalla avoid_location, which forces the next truck calculation
+        // onto a different road instead of merely warning about the problem.
+        let avoids=[];
+        for(let pass=0; pass<3; pass++){
+            const bad=await cpFindRestrictedRoutePoints(base.coords, deliveryKm);
+            if(!bad.length) return base;
+            const fresh=bad.map(x=>x.point).filter(p=>p && !avoids.some(a=>haversine(a.lon,a.lat,p[0],p[1])<0.15));
+            if(!fresh.length) break;
+            fresh.forEach(p=>avoids.push({lat:p[1],lon:p[0]}));
+            base=await cpValhallaTruckRoute(coords, avoids);
+        }
+        throw new Error('Truck trasa narazila na OSM omezení pro >12 t a nepodařilo se najít bezpečnou alternativu.');
     }
 
     function cpPointAlongRouteFromEnd(coords, kmFromEnd) {
@@ -1931,52 +2069,32 @@
     function cpJoinRouteCoords(a, b) {
         const out = Array.isArray(a) ? a.slice() : [];
         if (!Array.isArray(b) || !b.length) return out;
-        const start = out.length && haversine(out[out.length-1][0], out[out.length-1][1], b[0][0], b[0][1]) < 0.01 ? 1 : 0;
+        const start = out.length && haversine(out[out.length-1][0],out[out.length-1][1],b[0][0],b[0][1]) < 0.01 ? 1 : 0;
         for (let i = start; i < b.length; i++) out.push(b[i]);
         return out;
     }
 
     async function cpBuildTruckRoute(coords) {
         if (!cpHasHeavyTruckRouting()) return null;
-
-        // Nejprve získáme běžnou silniční geometrii jen kvůli poslednímu 1 km.
-        // Hlavní část ale následně vede přes truck routing.
         let deliveryBase;
-        try {
-            deliveryBase = await cpOsrmRoute(coords);
-        } catch (e) {
-            deliveryBase = null;
-        }
-
-        // Pokud je trasa kratší než poslední km nebo má jediný bod, necháme
-        // truck routing rozhodnout celou trasu – žádné umělé dělení.
+        try { deliveryBase = await cpOsrmRoute(coords); } catch (e) { deliveryBase = null; }
         if (!deliveryBase?.routes?.[0]?.geometry?.coordinates?.length || coords.length < 2) {
-            return await cpValhallaTruckRoute(coords);
+            return await cpTruckRouteWithSafetyAudit(coords,0);
         }
-
         const baseGeom = deliveryBase.routes[0].geometry.coordinates;
         const baseDist = Number(deliveryBase.routes[0].distance || 0) / 1000;
         if (!Number.isFinite(baseDist) || baseDist <= CP_DELIVERY_LAST_KM + 0.2) {
-            return await cpValhallaTruckRoute(coords);
+            return await cpTruckRouteWithSafetyAudit(coords,0);
         }
-
         const approach = cpPointAlongRouteFromEnd(baseGeom, CP_DELIVERY_LAST_KM);
-        if (!approach) return await cpValhallaTruckRoute(coords);
-
-        // Truck část: všechny původní body + bod 1 km před cílem.
-        // Od tohoto bodu do skutečného cíle se jede běžnou routou jako
-        // zásobování / příjezd do areálu.
+        if (!approach) return await cpTruckRouteWithSafetyAudit(coords,0);
         const truckPoints = coords.slice(0, -1).concat([approach]);
         let truckPart;
         try {
-            truckPart = await cpValhallaTruckRoute(truckPoints);
+            truckPart = await cpTruckRouteWithSafetyAudit(truckPoints,0);
         } catch (e) {
-            // U kamionu nesmíme při chybě truck routingu potichu použít
-            // osobní/standardní OSRM. To by mohlo vést přes zákaz >12 t.
-            // Výpočet se proto ukončí chybou a uživatel dostane jasnou informaci.
-            throw new Error('Truck routing nedostupný – trasu pro kamion >12 t nelze bezpečně spočítat.');
+            throw new Error(e.message || 'Truck routing nedostupný.');
         }
-
         const lastPart = await cpOsrmRoute([approach, coords[coords.length - 1]]);
         const lastRoute = lastPart.routes[0];
         const lastCoords = lastRoute.geometry.coordinates;
