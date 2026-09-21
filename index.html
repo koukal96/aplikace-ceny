@@ -1967,9 +1967,10 @@
         try {
             truckPart = await cpValhallaTruckRoute(truckPoints);
         } catch (e) {
-            // Fallback zachovává funkčnost aplikace, pokud je veřejný truck
-            // server dočasně nedostupný. Výsledek je označen v UI níže.
-            return {fallback: true, data: deliveryBase, coords: baseGeom, distanceKm: baseDist, error: e};
+            // U kamionu nesmíme při chybě truck routingu potichu použít
+            // osobní/standardní OSRM. To by mohlo vést přes zákaz >12 t.
+            // Výpočet se proto ukončí chybou a uživatel dostane jasnou informaci.
+            throw new Error('Truck routing nedostupný – trasu pro kamion >12 t nelze bezpečně spočítat.');
         }
 
         const lastPart = await cpOsrmRoute([approach, coords[coords.length - 1]]);
@@ -2067,8 +2068,7 @@
                 } else { selected=evaluated[0].route; selectedSegments=evaluated[0].segs; avoidSucceeded=selected!==candidates[0]; if(avoidSucceeded)setStatus('✓ Alternativní trasa bez zadané země byla nalezena.','success'); }
             }
             const distTotal=selected.distance/1000; drawMap(selected.geometry.coordinates); globalBreakdown=selectedSegments;
-            if (truckResult.fallback) setStatus('⚠️ Truck routing server je dočasně nedostupný – použita standardní trasa.', 'info');
-            else if (truckResult.deliveryKm) setStatus(`✓ Trasa pro kamion >12 t, posledních ${truckResult.deliveryKm.toFixed(1)} km jako dojezd k cíli / zásobování.`, 'success');
+            if (truckResult.deliveryKm) setStatus(`✓ Trasa pro kamion >12 t, posledních ${truckResult.deliveryKm.toFixed(1)} km jako dojezd k cíli / zásobování.`, 'success');
             const vMulti=waypoints.length>0?1:(document.getElementById('typTrasy').value==='2'?2:1);
             const routeKmForCalc=distTotal*vMulti; const kmEl=document.getElementById('vzdalenost');
             if(kmEl){kmEl.dataset.onewayKm=distTotal.toFixed(1);kmEl.value=routeKmForCalc.toFixed(1);}
