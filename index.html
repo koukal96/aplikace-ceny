@@ -1885,15 +1885,19 @@
             shape_format: 'geojson',
             directions_type: 'none'
         };
-        const res = await fetch(CP_VALHALLA_URL, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json', 'X-Client-Id': 'control-point'},
-            body: JSON.stringify(payload)
-        });
+        // Ve webové aplikaci nepoužíváme POST. Veřejný Valhalla server nemá
+        // spolehlivě povolený CORS preflight pro POST + vlastní hlavičky, takže
+        // Safari/iOS může požadavek zablokovat ještě před samotným routingem.
+        // Valhalla podporuje také GET /route?json=...; GET nevyžaduje preflight.
+        const url = `${CP_VALHALLA_URL}?json=${encodeURIComponent(JSON.stringify(payload))}`;
+        const res = await fetch(url, { method: 'GET', cache: 'no-store' });
         if (!res.ok) throw new Error(`Valhalla HTTP ${res.status}`);
         const data = await res.json();
-        const shape = data?.trip?.legs?.flatMap(l => l?.shape?.coordinates || []) || [];
-        if (shape.length < 2) throw new Error('Truck trasa nebyla nalezena.');
+        const shape = cpExtractValhallaCoords(data);
+        if (shape.length < 2) {
+            const msg = data?.error || data?.status_message || 'Truck trasa nebyla nalezena.';
+            throw new Error(msg);
+        }
         const distanceKm = Number(data?.trip?.summary?.length);
         return {data, coords: shape, distanceKm: Number.isFinite(distanceKm) ? distanceKm : null};
     }
