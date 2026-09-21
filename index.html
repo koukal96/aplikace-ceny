@@ -1400,55 +1400,10 @@
     // repeating the same network work when only price/margin/AETR inputs change.
     const CP_GEO_CACHE = new Map();
     const CP_COUNTRY_CACHE = new Map();
-    const CP_GEO_PENDING = new Map();
-    const CP_COUNTRY_PENDING = new Map();
     const CP_ROUTE_CACHE = new Map();
-    const CP_COUNTRY_CONCURRENCY = 8;
+    const CP_COUNTRY_CONCURRENCY = 6;
     let cpLastRouteRequestId = 0;
     let cpAutoSaveTimer = null;
-
-    // Persistent, asynchronous cache for geocoding/country lookups only.
-    // Route results intentionally stay session-only so a fresh route is always
-    // requested after an app reload; this avoids making route data stale.
-    let CP_IDB_PROMISE = null;
-    function cpOpenCacheDB() {
-        if (!('indexedDB' in window)) return Promise.resolve(null);
-        if (CP_IDB_PROMISE) return CP_IDB_PROMISE;
-        CP_IDB_PROMISE = new Promise(resolve => {
-            try {
-                const req = indexedDB.open('ControlPointCacheV2', 1);
-                req.onupgradeneeded = () => {
-                    const db = req.result;
-                    if (!db.objectStoreNames.contains('geo')) db.createObjectStore('geo');
-                    if (!db.objectStoreNames.contains('country')) db.createObjectStore('country');
-                };
-                req.onsuccess = () => resolve(req.result);
-                req.onerror = () => resolve(null);
-                req.onblocked = () => resolve(null);
-            } catch (_) { resolve(null); }
-        });
-        return CP_IDB_PROMISE;
-    }
-    async function cpIDBGet(store, key) {
-        const db = await cpOpenCacheDB();
-        if (!db) return undefined;
-        return new Promise(resolve => {
-            try {
-                const tx = db.transaction(store, 'readonly');
-                const req = tx.objectStore(store).get(key);
-                req.onsuccess = () => resolve(req.result);
-                req.onerror = () => resolve(undefined);
-            } catch (_) { resolve(undefined); }
-        });
-    }
-    async function cpIDBPut(store, key, value) {
-        const db = await cpOpenCacheDB();
-        if (!db) return;
-        try {
-            const tx = db.transaction(store, 'readwrite');
-            tx.objectStore(store).put(value, key);
-        } catch (_) {}
-    }
 
     function cpNormAddress(v) { return String(v || '').trim().toLowerCase().replace(/\s+/g,' '); }
     function cpCoordKey(lon, lat) { return `${Number(lon).toFixed(5)},${Number(lat).toFixed(5)}`; }
@@ -1808,64 +1763,33 @@
         if(gpsMatch) return [parseFloat(gpsMatch[2]), parseFloat(gpsMatch[1])];
         const key = cpNormAddress(address);
         if (CP_GEO_CACHE.has(key)) return CP_GEO_CACHE.get(key);
-        if (CP_GEO_PENDING.has(key)) return CP_GEO_PENDING.get(key);
-
-        const work = (async () => {
-            // Persistent cache is asynchronous and therefore does not block the UI.
-            const stored = await cpIDBGet('geo', key);
-            if (Array.isArray(stored) && stored.length === 2 && stored.every(Number.isFinite)) {
-                CP_GEO_CACHE.set(key, stored);
-                return stored;
-            }
-            const photon = `https://photon.komoot.io/api/?q=${encodeURIComponent(address)}&limit=1`;
-            const nominatim = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
-            try {
-                const res = await fetch(photon);
-                const data = await res.json();
-                if(data.features?.length) {
-                    const c=data.features[0].geometry.coordinates;
-                    CP_GEO_CACHE.set(key,c); cpIDBPut('geo', key, c);
-                    return c;
-                }
-            } catch(e) {}
-            try {
-                const res = await fetch(nominatim);
-                const data = await res.json();
-                if(data?.length) {
-                    const c=[parseFloat(data[0].lon),parseFloat(data[0].lat)];
-                    CP_GEO_CACHE.set(key,c); cpIDBPut('geo', key, c);
-                    return c;
-                }
-            } catch(e) {}
-            throw new Error(`${T('chybaAdresa')} (${address})`);
-        })();
-        CP_GEO_PENDING.set(key, work);
-        try { return await work; }
-        finally { CP_GEO_PENDING.delete(key); }
+        const photon = `https://photon.komoot.io/api/?q=${encodeURIComponent(address)}&limit=1`;
+        const nominatim = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+        // Start Photon immediately; Nominatim is only the fallback.
+        try {
+            const res = await fetch(photon);
+            const data = await res.json();
+            if(data.features?.length) { const c=data.features[0].geometry.coordinates; CP_GEO_CACHE.set(key,c); return c; }
+        } catch(e) {}
+        try {
+            const res = await fetch(nominatim);
+            const data = await res.json();
+            if(data?.length) { const c=[parseFloat(data[0].lon),parseFloat(data[0].lat)]; CP_GEO_CACHE.set(key,c); return c; }
+        } catch(e) {}
+        throw new Error(`${T('chybaAdresa')} (${address})`);
     }
 
     async function getCountryCodeFromCoordsFast(lon, lat) {
         const key=cpCoordKey(lon,lat);
         if(CP_COUNTRY_CACHE.has(key)) return CP_COUNTRY_CACHE.get(key);
-        if(CP_COUNTRY_PENDING.has(key)) return CP_COUNTRY_PENDING.get(key);
-        const work = (async () => {
-            const stored = await cpIDBGet('country', key);
-            if (typeof stored === 'string' || stored === null) {
-                CP_COUNTRY_CACHE.set(key, stored);
-                return stored;
-            }
-            try {
-                const res=await fetch(`https://photon.komoot.io/reverse?lon=${lon}&lat=${lat}`);
-                const data=await res.json();
-                const cc=data?.features?.[0]?.properties?.countrycode;
-                const out=cc ? cc.toUpperCase() : null;
-                CP_COUNTRY_CACHE.set(key,out); cpIDBPut('country', key, out);
-                return out;
-            } catch(e) { return null; }
-        })();
-        CP_COUNTRY_PENDING.set(key, work);
-        try { return await work; }
-        finally { CP_COUNTRY_PENDING.delete(key); }
+        try {
+            const res=await fetch(`https://photon.komoot.io/reverse?lon=${lon}&lat=${lat}`);
+            const data=await res.json();
+            const cc=data?.features?.[0]?.properties?.countrycode;
+            const out=cc ? cc.toUpperCase() : null;
+            CP_COUNTRY_CACHE.set(key,out);
+            return out;
+        } catch(e) { return null; }
     }
 
     async function getCountryCodeFromCoords(lon, lat) {
@@ -1883,6 +1807,183 @@
         const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
         const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
         return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+    }
+
+    // ================================================================
+    // TĚŽKÝ KAMION > 12 t – TRUCK ROUTING + POSLEDNÍ KM K ZÁKAZNÍKOVI
+    // Hlavní část trasy se počítá jako truck. Poslední 1 km může být
+    // dojezd k cíli / zásobování, kde je běžné destination/delivery omezení.
+    // Nezasahujeme do výpočtu mýta, AETR ani diet – mění se pouze geometrie trasy.
+    // ================================================================
+    const CP_TRUCK_WEIGHT_T = 12.1;
+    const CP_DELIVERY_LAST_KM = 1.0;
+    const CP_VALHALLA_URL = 'https://valhalla1.openstreetmap.de/route';
+
+    function cpHasHeavyTruckRouting() {
+        // Control Point je transportní kalkulačka. Pro trasování používáme
+        // režim těžkého nákladního vozidla automaticky, nikoliv osobní auto.
+        return true;
+    }
+
+    function cpCoordsToValhallaLocations(coords) {
+        return coords.map((c, i) => ({
+            lat: Number(c[1]),
+            lon: Number(c[0]),
+            type: (i === 0 || i === coords.length - 1) ? 'break' : 'through'
+        }));
+    }
+
+
+    function cpDecodePolyline6(str) {
+        const out=[]; let index=0, lat=0, lon=0;
+        while(index<str.length){
+            let b, shift=0, result=0;
+            do { b=str.charCodeAt(index++)-63; result|=(b&31)<<shift; shift+=5; } while(b>=32 && index<str.length);
+            lat += (result&1) ? ~(result>>1) : (result>>1);
+            shift=0; result=0;
+            do { b=str.charCodeAt(index++)-63; result|=(b&31)<<shift; shift+=5; } while(b>=32 && index<str.length);
+            lon += (result&1) ? ~(result>>1) : (result>>1);
+            out.push([lon/1e6,lat/1e6]);
+        }
+        return out;
+    }
+
+    function cpExtractValhallaCoords(data) {
+        const legs = data?.trip?.legs || [];
+        const out=[];
+        for(const leg of legs){
+            const sh=leg?.shape;
+            let coords=[];
+            if(Array.isArray(sh?.coordinates)) coords=sh.coordinates;
+            else if(Array.isArray(sh?.geometry?.coordinates)) coords=sh.geometry.coordinates;
+            else if(sh?.type==='Feature' && Array.isArray(sh.geometry?.coordinates)) coords=sh.geometry.coordinates;
+            else if(typeof sh==='string') coords=cpDecodePolyline6(sh);
+            if(coords.length){
+                const start=(out.length && haversine(out[out.length-1][0],out[out.length-1][1],coords[0][0],coords[0][1])<0.01)?1:0;
+                for(let i=start;i<coords.length;i++) out.push([Number(coords[i][0]),Number(coords[i][1])]);
+            }
+        }
+        return out.filter(c=>Number.isFinite(c[0])&&Number.isFinite(c[1]));
+    }
+
+    async function cpValhallaTruckRoute(coords) {
+        const payload = {
+            locations: cpCoordsToValhallaLocations(coords),
+            costing: 'truck',
+            costing_options: {
+                truck: {
+                    weight: CP_TRUCK_WEIGHT_T,
+                    height: 4.0,
+                    width: 2.55,
+                    length: 16.5,
+                    axle_load: 10.0,
+                    ignore_access: false,
+                    ignore_restrictions: false
+                }
+            },
+            units: 'kilometers',
+            shape_format: 'geojson',
+            directions_type: 'none'
+        };
+        const res = await fetch(CP_VALHALLA_URL, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-Client-Id': 'control-point'},
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error(`Valhalla HTTP ${res.status}`);
+        const data = await res.json();
+        const shape = data?.trip?.legs?.flatMap(l => l?.shape?.coordinates || []) || [];
+        if (shape.length < 2) throw new Error('Truck trasa nebyla nalezena.');
+        const distanceKm = Number(data?.trip?.summary?.length);
+        return {data, coords: shape, distanceKm: Number.isFinite(distanceKm) ? distanceKm : null};
+    }
+
+    function cpPointAlongRouteFromEnd(coords, kmFromEnd) {
+        if (!Array.isArray(coords) || coords.length < 2) return coords?.[0] || null;
+        let remaining = Math.max(0, kmFromEnd);
+        for (let i = coords.length - 1; i > 0; i--) {
+            const a = coords[i], b = coords[i - 1];
+            const d = haversine(a[0], a[1], b[0], b[1]);
+            if (d >= remaining) {
+                if (d === 0) return a;
+                const t = remaining / d;
+                return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+            }
+            remaining -= d;
+        }
+        return coords[0];
+    }
+
+    async function cpOsrmRoute(coords) {
+        const coordStrings = coords.map(c => `${c[0]},${c[1]}`);
+        const url = `https://router.project-osrm.org/route/v1/driving/${coordStrings.join(';')}?overview=full&geometries=geojson&alternatives=false&steps=false`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`OSRM HTTP ${res.status}`);
+        const data = await res.json();
+        if (!data.routes?.length) throw new Error('OSRM trasa nebyla nalezena.');
+        return data;
+    }
+
+    function cpJoinRouteCoords(a, b) {
+        const out = Array.isArray(a) ? a.slice() : [];
+        if (!Array.isArray(b) || !b.length) return out;
+        const start = out.length && haversine(out[out.length-1][0], out[out.length-1][1], b[0][0], b[0][1]) < 0.01 ? 1 : 0;
+        for (let i = start; i < b.length; i++) out.push(b[i]);
+        return out;
+    }
+
+    async function cpBuildTruckRoute(coords) {
+        if (!cpHasHeavyTruckRouting()) return null;
+
+        // Nejprve získáme běžnou silniční geometrii jen kvůli poslednímu 1 km.
+        // Hlavní část ale následně vede přes truck routing.
+        let deliveryBase;
+        try {
+            deliveryBase = await cpOsrmRoute(coords);
+        } catch (e) {
+            deliveryBase = null;
+        }
+
+        // Pokud je trasa kratší než poslední km nebo má jediný bod, necháme
+        // truck routing rozhodnout celou trasu – žádné umělé dělení.
+        if (!deliveryBase?.routes?.[0]?.geometry?.coordinates?.length || coords.length < 2) {
+            return await cpValhallaTruckRoute(coords);
+        }
+
+        const baseGeom = deliveryBase.routes[0].geometry.coordinates;
+        const baseDist = Number(deliveryBase.routes[0].distance || 0) / 1000;
+        if (!Number.isFinite(baseDist) || baseDist <= CP_DELIVERY_LAST_KM + 0.2) {
+            return await cpValhallaTruckRoute(coords);
+        }
+
+        const approach = cpPointAlongRouteFromEnd(baseGeom, CP_DELIVERY_LAST_KM);
+        if (!approach) return await cpValhallaTruckRoute(coords);
+
+        // Truck část: všechny původní body + bod 1 km před cílem.
+        // Od tohoto bodu do skutečného cíle se jede běžnou routou jako
+        // zásobování / příjezd do areálu.
+        const truckPoints = coords.slice(0, -1).concat([approach]);
+        let truckPart;
+        try {
+            truckPart = await cpValhallaTruckRoute(truckPoints);
+        } catch (e) {
+            // Fallback zachovává funkčnost aplikace, pokud je veřejný truck
+            // server dočasně nedostupný. Výsledek je označen v UI níže.
+            return {fallback: true, data: deliveryBase, coords: baseGeom, distanceKm: baseDist, error: e};
+        }
+
+        const lastPart = await cpOsrmRoute([approach, coords[coords.length - 1]]);
+        const lastRoute = lastPart.routes[0];
+        const lastCoords = lastRoute.geometry.coordinates;
+        const lastKm = Number(lastRoute.distance || 0) / 1000;
+        const totalKm = (Number(truckPart.distanceKm) || 0) + (Number.isFinite(lastKm) ? lastKm : CP_DELIVERY_LAST_KM);
+        return {
+            fallback: false,
+            data: {routes: [{distance: totalKm * 1000, geometry: {coordinates: cpJoinRouteCoords(truckPart.coords, lastCoords)}}]},
+            coords: cpJoinRouteCoords(truckPart.coords, lastCoords),
+            distanceKm: totalKm,
+            deliveryKm: lastKm
+        };
     }
 
     async function extractSegmentsFromCoords(coords, distTotal) {
@@ -1941,18 +2042,15 @@
             const addresses=[startStr,...waypoints.filter(w=>w.address?.trim()).map(w=>w.address.trim()),cilStr];
             // Geocoding is independent, so do it concurrently.
             const coords=await Promise.all(addresses.map(getCoordinates));
-            const routeKey=cpRouteKey(coords,excludedCountries);
-            let data=CP_ROUTE_CACHE.get(routeKey);
-            if(!data){
-                const coordStrings=coords.map(c=>`${c[0]},${c[1]}`);
-                const url=`https://router.project-osrm.org/route/v1/driving/${coordStrings.join(';')}?overview=full&geometries=geojson&alternatives=true&steps=false`;
-                const res=await fetch(url);
-                if(!res.ok) throw new Error(`OSRM HTTP ${res.status}`);
-                data=await res.json();
-                if(!data.routes?.length) throw new Error('Trasa nebyla nalezena.');
-                CP_ROUTE_CACHE.set(routeKey,data);
+            const routeKey=cpRouteKey(coords,excludedCountries) + '|TRUCK12T|DELIVERY1KM';
+            let truckResult=CP_ROUTE_CACHE.get(routeKey);
+            if(!truckResult){
+                truckResult=await cpBuildTruckRoute(coords);
+                CP_ROUTE_CACHE.set(routeKey,truckResult);
             }
             if(requestId!==cpLastRouteRequestId)return;
+            if(!truckResult?.data?.routes?.length) throw new Error('Trasa nebyla nalezena.');
+            let data=truckResult.data;
             const candidates=data.routes;
             let selected=candidates[0];
             let selectedSegments=await extractSegmentsFromCoords(selected.geometry.coordinates,selected.distance/1000);
@@ -1969,6 +2067,8 @@
                 } else { selected=evaluated[0].route; selectedSegments=evaluated[0].segs; avoidSucceeded=selected!==candidates[0]; if(avoidSucceeded)setStatus('✓ Alternativní trasa bez zadané země byla nalezena.','success'); }
             }
             const distTotal=selected.distance/1000; drawMap(selected.geometry.coordinates); globalBreakdown=selectedSegments;
+            if (truckResult.fallback) setStatus('⚠️ Truck routing server je dočasně nedostupný – použita standardní trasa.', 'info');
+            else if (truckResult.deliveryKm) setStatus(`✓ Trasa pro kamion >12 t, posledních ${truckResult.deliveryKm.toFixed(1)} km jako dojezd k cíli / zásobování.`, 'success');
             const vMulti=waypoints.length>0?1:(document.getElementById('typTrasy').value==='2'?2:1);
             const routeKmForCalc=distTotal*vMulti; const kmEl=document.getElementById('vzdalenost');
             if(kmEl){kmEl.dataset.onewayKm=distTotal.toFixed(1);kmEl.value=routeKmForCalc.toFixed(1);}
@@ -2191,14 +2291,10 @@
 
     let cpCalcTimer=null;
     document.querySelectorAll('#view-calculator input, #view-calculator select').forEach(el => {
-        // Do not add a second calculate() to controls that already have an inline
-        // handler. This removes duplicate calculations while preserving controls
-        // that are generated dynamically or have no inline calculation handler.
-        const hasInlineCalc = /(?:^|[;\s])calculate\s*\(/.test(el.getAttribute('oninput') || '') ||
-                              /(?:^|[;\s])calculate\s*\(/.test(el.getAttribute('onchange') || '');
-        if (hasInlineCalc) return;
+        // Inline handlers remain authoritative; this listener only catches controls
+        // without their own calculate() and coalesces rapid typing into one pass.
         el.addEventListener('input', () => {
-            clearTimeout(cpCalcTimer); cpCalcTimer=setTimeout(() => calculate(), 40);
+            clearTimeout(cpCalcTimer); cpCalcTimer=setTimeout(() => calculate(), 50);
         });
     });
 
@@ -2493,20 +2589,17 @@
             let taskQueue = []; 
             planWaypointsBefore.forEach(wp => taskQueue.push({action: 'work', time: wp.time, note: wp.address}));
 
-            // OSRM Jízdní segmenty – oba body paralelně + cache.
+            // Truck routing >12 t + poslední 1 km jako dojezd k zákazníkovi.
             const [c1,c2] = await Promise.all([getCoordinates(sR), getCoordinates(eR)]);
-            const routeKey = cpRouteKey([c1,c2], []);
-            let rData = CP_ROUTE_CACHE.get(routeKey);
-            if (!rData) {
-                const url = `https://router.project-osrm.org/route/v1/driving/${c1[0]},${c1[1]};${c2[0]},${c2[1]}?overview=full&geometries=geojson`;
-                const rRes = await fetch(url);
-                if (!rRes.ok) throw new Error(`OSRM HTTP ${rRes.status}`);
-                rData = await rRes.json();
-                CP_ROUTE_CACHE.set(routeKey, rData);
+            const routeKey = cpRouteKey([c1,c2], []) + '|TRUCK12T|DELIVERY1KM';
+            let truckResult = CP_ROUTE_CACHE.get(routeKey);
+            if (!truckResult) {
+                truckResult = await cpBuildTruckRoute([c1,c2]);
+                CP_ROUTE_CACHE.set(routeKey, truckResult);
             }
-            if (!rData.routes?.length) throw new Error('Trasa nebyla nalezena.');
-            const distTotal = rData.routes[0].distance / 1000;
-            let segments = await extractSegmentsFromCoords(rData.routes[0].geometry.coordinates, distTotal);
+            if (!truckResult?.data?.routes?.length) throw new Error('Trasa nebyla nalezena.');
+            const distTotal = truckResult.data.routes[0].distance / 1000;
+            let segments = await extractSegmentsFromCoords(truckResult.data.routes[0].geometry.coordinates, distTotal);
             segments.forEach(seg => { taskQueue.push({action: 'drive', cc: seg.code, time: seg.km / speed}); });
 
             let endDelay = parseFloat(document.getElementById('planEndDelay').value) || 1.5;
@@ -2640,7 +2733,7 @@
             }
 
             plannerSaveState(); renderPlanner(); 
-            stat.style.color = "var(--cp-success)"; stat.innerText = "Úspěšně naplánováno vč. tranzitních států a pauz!";
+            stat.style.color = "var(--cp-success)"; stat.innerText = truckResult?.deliveryKm ? `Úspěšně naplánováno – kamion >12 t + poslední ${truckResult.deliveryKm.toFixed(1)} km jako dojezd k cíli.` : "Úspěšně naplánováno vč. tranzitních států a pauz!";
         } catch(e) { stat.style.color = "var(--cp-danger)"; stat.innerText = "Chyba generátoru: " + e.message; }
     }
 
