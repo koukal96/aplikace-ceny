@@ -273,6 +273,39 @@
         #planDateSelect { box-sizing:border-box !important; display:block !important; width:100% !important; max-width:100% !important; min-width:0 !important; height:40px !important; min-height:40px !important; padding:6px 6px !important; font-size:12px !important; }
         @media (max-width:390px) { #shiftModal .shift-top-grid { grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important; gap:5px !important; } }
     </style>
+
+<style id="fx-layout-polish">
+/* Telefon: kurzová karta má využít celou šířku sloupce,
+   bez zbytečné mezery mezi měnou a informací o kurzu. */
+@media (max-width: 700px) {
+  .fx-rate-card,
+  #fxRateInfo,
+  .rate-info,
+  .currency-rate-info {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* Pokud je karta v pravém sloupci vedle měny, na telefonu ji roztáhnout
+     přes celý blok a dát jí vlastní řádek. */
+  .currency-row,
+  .currency-controls,
+  .currency-section,
+  .currency-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .currency-rate-info,
+  .rate-info,
+  #fxRateInfo {
+    grid-column: 1 / -1 !important;
+  }
+}
+</style>
+
 </head>
 <body>
 
