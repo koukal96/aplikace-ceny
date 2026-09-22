@@ -306,6 +306,27 @@
 }
 </style>
 
+
+<style id="fx-full-width-final">
+.form-grid > #fxStatus {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+    margin-top: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+.form-grid > .fx-panel {
+    min-width: 0 !important;
+}
+@media (max-width: 700px) {
+    .form-grid > #fxStatus {
+        grid-column: 1 / -1 !important;
+        width: 100% !important;
+    }
+}
+
 </head>
 <body>
 
@@ -413,10 +434,10 @@
                     <input type="hidden" id="kurzEuro" value="25">
                     <input type="hidden" id="kurzPLN" value="5.80">
                     <input type="hidden" id="kurzHUF" value="0.063">
-                    <div id="fxStatus" class="fx-status-card">
-                        <div class="fx-status-title">🔄 Načítám aktuální kurzy…</div>
-                        <div class="fx-status-note">Mýto se automaticky přepočítává podle aktuálního kurzu.</div>
-                    </div>
+                </div>
+                <div id="fxStatus" class="fx-status-card">
+                    <div class="fx-status-title">🔄 Načítám aktuální kurzy…</div>
+                    <div class="fx-status-note">Mýto se automaticky přepočítává podle aktuálního kurzu.</div>
                 </div>
             </div>
 
