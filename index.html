@@ -69,6 +69,16 @@
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; width: 100%; max-width: 100%; }
         .route-country-options { display:grid; grid-template-columns:repeat(2,minmax(0,220px)); justify-content:center; gap:8px; margin:8px auto 2px; max-width:460px; }
         .route-country-options .input-group { margin-bottom:0; }
+        .fx-panel { min-width: 0; }
+        .fx-status-card { margin-top:7px; padding:9px 10px; border:1px solid #d8e6f3; border-radius:6px; background:linear-gradient(180deg,#f7fbff,#eef6fc); color:#24435c; line-height:1.35; }
+        .fx-status-title { font-size:11px; font-weight:800; }
+        .fx-status-note { font-size:9px; margin-top:3px; color:#5d6d79; }
+        .field-hint { display:block; margin-top:4px; font-size:9px; line-height:1.35; color:#777; }
+        @media (max-width:520px) {
+            .fx-panel .fx-status-card { font-size:10px; }
+            .route-country-options { gap:7px; margin-top:10px; margin-bottom:3px; }
+            .route-country-options select { padding:10px 8px; }
+        }
         .route-country-options label { text-align:center; justify-content:center; }
         @media (max-width:520px){ .route-country-options { grid-template-columns:1fr 1fr; max-width:100%; } }
         .input-group { display: flex; flex-direction: column; position: relative; margin-bottom: 8px; width: 100%; max-width: 100%; box-sizing: border-box; }
@@ -304,7 +314,7 @@
     </div>
     <div class="header-controls">
         <button id="btnInstallApp" class="btn-secondary" style="display:none; background:#107c41; margin:0; padding:6px 12px; font-size:12px; width:auto;" onclick="installApp()">📱 Uložit na plochu</button>
-        <select id="langSelect" onchange="changeLanguage()">
+        <select id="langSelect" onchange="changeLanguage(); autoSave();">
             <option value="cs">CZ</option><option value="en">EN</option><option value="de">DE</option>
             <option value="pl">PL</option><option value="it">IT</option>
         </select>
@@ -361,33 +371,33 @@
                         <option value="BE">Belgie</option><option value="FR">Francie</option>
                     </select>
                 </div>
-                <div class="input-group">
-                    <label id="lblMenaKurz">Měna & kurz <span class="icon-help" onclick="showInfo(T('helpKurzy'))">i</span></label>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-                        <select id="menaSelect" onchange="syncCurrency(this.value);">
-                            <option value="CZK">CZK</option><option value="EUR">EUR</option>
-                        </select>
-                        <input type="number" id="kurzEuro" value="25" step="0.001" title="Aktuální kurz CZK za 1 EUR" aria-label="Aktuální kurz CZK za 1 EUR" readonly>
-                    </div>
+                <div class="input-group fx-panel">
+                    <label id="lblMenaKurz">Měna výsledku <span class="icon-help" onclick="showInfo(T('helpKurzy'))">i</span></label>
+                    <select id="menaSelect" onchange="syncCurrency(this.value);" aria-label="Měna výsledku">
+                        <option value="CZK">CZK – česká koruna</option>
+                        <option value="EUR">EUR – euro</option>
+                    </select>
+                    <input type="hidden" id="kurzEuro" value="25">
                     <input type="hidden" id="kurzPLN" value="5.80">
                     <input type="hidden" id="kurzHUF" value="0.063">
-                    <div id="fxStatus" style="font-size:9px;color:#777;margin-top:4px;line-height:1.35;">
-                        EUR/CZK: načítám aktuální kurz…<br>PLN a HUF se načítají automaticky.
+                    <div id="fxStatus" class="fx-status-card">
+                        <div class="fx-status-title">🔄 Načítám aktuální kurzy…</div>
+                        <div class="fx-status-note">Mýto se automaticky přepočítává podle aktuálního kurzu.</div>
                     </div>
                 </div>
             </div>
 
             <div class="route-country-options">
                 <div class="input-group">
-                    <label>Belgie – region</label>
+                    <label id="lblBelgieRegion">Belgie – region</label>
                     <select id="belgieRegion" title="Belgie – region" onchange="updateAllSegmentTolls(); autoSave();">
-                        <option value="Flanders">Vlámsko</option><option value="Wallonia">Valonsko</option><option value="Brussels">Brusel</option>
+                        <option value="Flanders" id="optFlanders">Vlámsko</option><option value="Wallonia" id="optWallonia">Valonsko</option><option value="Brussels" id="optBrussels">Brusel</option>
                     </select>
                 </div>
                 <div class="input-group">
-                    <label>Itálie – terén</label>
+                    <label id="lblItaliaTerrain">Itálie – terén</label>
                     <select id="italiaTerrain" title="Itálie – terén" onchange="updateAllSegmentTolls(); autoSave();">
-                        <option value="flat">Rovina</option><option value="hilly">Horský / náročný terén</option>
+                        <option value="flat" id="optItalyFlat">Rovina</option><option value="hilly" id="optItalyHilly">Horský / náročný terén</option>
                     </select>
                 </div>
             </div>
@@ -460,7 +470,8 @@
             <div class="form-grid" style="margin-top: 12px; border-top: 1px solid #eee; padding-top: 12px;">
                 <div class="input-group">
                     <label id="lblSpotreba">Spotřeba prázdné (20 l → cca 30 l při 24 t) <span class="icon-help" onclick="showInfo(T('Výchozí spotřeba prázdného vozidla'))">i</span></label>
-                    <input type="number" id="spotrebaPrazdne" value="20" step="0.1" oninput="calculate(); autoSave();">
+                    <input type="number" id="spotrebaPrazdne" value="20" step="0.1" min="0" inputmode="decimal" oninput="calculate(); autoSave();">
+                    <small id="spotrebaHint" class="field-hint">Výchozí: 20,0 l/100 km prázdná souprava. Při 24 t nákladu cca 30,0 l/100 km.</small>
                 </div>
                 <input type="hidden" id="startVaha" value="0">
                 <div class="input-group">
@@ -479,7 +490,7 @@
             <div class="form-grid">
                 <div class="input-group">
                     <label id="lblPosadka">Složení posádky <span class="icon-help" onclick="showInfo(T('Režim jízdy 1 nebo 2 řidiči'))">i</span></label>
-                    <select id="posadka" onchange="recalcAETR();">
+                    <select id="posadka" onchange="recalcAETR(); autoSave();">
                         <option value="1" id="opt1Ridic">1 Řidič</option>
                         <option value="2" id="opt2Ridici">Dvojosádka</option>
                     </select>
@@ -1273,7 +1284,7 @@
         "Úprava Směny":"Modifica turno","Začátek Směny":"Inizio turno","Režim":"Modalità","Poznámka k dni (Trasa)":"Nota del giorno (percorso)","Rozpis bloků (Jízda/Práce/Pauza)":"Blocchi (guida/lavoro/pausa)","+ Přidat blok (Jízda / Práce / Pauza)":"+ Aggiungi blocco (guida / lavoro / pausa)","Smazat Den":"Elimina giorno","Uložit Směnu":"Salva turno","Zrušit":"Annulla","Rychlé Nastavení Sazby a Diet":"Impostazioni rapide paga e diarie","Odpracovaný výkon:":"Tempo lavorato:","Z toho čistá jízda:":"Tempo di guida:","1. ZÁKLADNÍ MZDA PRO TENTO TÝDEN":"1. PAGA BASE DI QUESTA SETTIMANA","Typ Sazby":"Tipo tariffa","Sazba / Den (Kč)":"Tariffa / giorno (CZK)","Odjeto směn":"Turni effettuati","Typ mzdy":"Tipo di paga","Základ (Kč)":"Base (CZK)","Denní sazba":"Tariffa giornaliera","Měsíční mzda":"Stipendio mensile","Měsíc":"Mese","Dnů v měsíci":"Giorni nel mese","Poměrná denní sazba":"Equivalente giornaliero","2. ZAHRANIČNÍ DIETY V TÝDNU":"2. DIARIE ESTERE DELLA SETTIMANA","+ Přidat zemi k výpočtu diety":"+ Aggiungi paese per il calcolo delle diarie","Zahraniční diety celkem (Kč)":"Diarie estere totali (CZK)","Bonusy / Srážky (Kč)":"Bonus / Trattenute (CZK)","ODHADOVANÁ VÝPLATA ZA TENTO TÝDEN:":"STIMA PAGA DI QUESTA SETTIMANA:","Uložit Nastavení Mzdy":"Salva impostazioni paga","Export Data (Kniha / Mzdy)":"Esporta dati (Registro / Paghe)","Vyberte Řidiče":"Seleziona autista","Období Exportu":"Periodo export","Aktuální zobrazený týden":"Settimana visualizzata","Aktuální vybraný měsíc":"Mese selezionato","Celý vybraný rok":"Intero anno selezionato","Typ Exportu (Co se má vygenerovat)":"Tipo di export","Kompletní přehled (Kniha jízd + Mzdy)":"Riepilogo completo (Registro + Paghe)","Pouze Kniha jízd (Bez financí)":"Solo registro (senza finanze)","Pouze Mzdový výměr (Bez rozpisu tras)":"Solo paghe (senza percorsi)","📄 Náhled / Tisk / Uložit PDF":"📄 Anteprima / Stampa / Salva PDF","📊 Stáhnout data do Excelu (CSV)":"📊 Scarica dati Excel (CSV)","💬 Odeslat přehled na WhatsApp":"💬 Invia riepilogo su WhatsApp","Jízda":"Guida","Práce/Vykládka":"Lavoro/Scarico","Pauza":"Pausa","Čas":"Ora","Délka":"Durata","Délka v hodinách":"Durata in ore","Hodin":"Ore","Smazat blok":"Elimina blocco","Smazat řádek":"Elimina riga","Jízdní doba":"Tempo di guida","Kurz (Kč/EUR)":"Cambio (CZK/EUR)"}
     };
     Object.keys(EXTRA_TRANSLATIONS).forEach(lang => Object.assign(TRANSLATIONS[lang], EXTRA_TRANSLATIONS[lang]));
-    const EXTRA_TRANSLATIONS_2026 = {"en": {"Hmotnost nákladu (t)": "Cargo weight (t)", "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.": "Weight affects fuel consumption. (Each tonne adds 0.2 L/100 km)", "📤 Sdílet": "📤 Share", "Tisk / Uložit PDF": "Print / Save PDF", "Navigovat trasu směny v Mapách": "Navigate shift route in Maps"}, "de": {"Hmotnost nákladu (t)": "Ladungsgewicht (t)", "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.": "Das Gewicht beeinflusst den Verbrauch. (Je Tonne +0,2 l/100 km)", "📤 Sdílet": "📤 Teilen", "Tisk / Uložit PDF": "Drucken / PDF speichern", "Navigovat trasu směny v Mapách": "Schichtroute in Karten öffnen"}, "pl": {"Hmotnost nákladu (t)": "Masa ładunku (t)", "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.": "Masa wpływa na spalanie. (Każda tona +0,2 l/100 km)", "📤 Sdílet": "📤 Udostępnij", "Tisk / Uložit PDF": "Drukuj / Zapisz PDF", "Navigovat trasu směny v Mapách": "Nawiguj trasę zmiany w Mapach"}, "it": {"Hmotnost nákladu (t)": "Peso del carico (t)", "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.": "Il peso influisce sui consumi. (Ogni tonnellata +0,2 l/100 km)", "📤 Sdílet": "📤 Condividi", "Tisk / Uložit PDF": "Stampa / Salva PDF", "Navigovat trasu směny v Mapách": "Naviga il percorso del turno nelle Mappe"}};
+    const EXTRA_TRANSLATIONS_2026 = {"en": {"Hmotnost nákladu (t)": "Cargo weight (t)", "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.": "Weight affects fuel consumption. Approx. 20.0 L/100 km empty → 30.0 L/100 km at 24 t; linear calculation.", "📤 Sdílet": "📤 Share", "Tisk / Uložit PDF": "Print / Save PDF", "Navigovat trasu směny v Mapách": "Navigate shift route in Maps"}, "de": {"Hmotnost nákladu (t)": "Ladungsgewicht (t)", "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.": "Das Gewicht beeinflusst den Verbrauch. Ca. 20,0 l/100 km leer → 30,0 l/100 km bei 24 t; lineare Berechnung.", "📤 Sdílet": "📤 Teilen", "Tisk / Uložit PDF": "Drucken / PDF speichern", "Navigovat trasu směny v Mapách": "Schichtroute in Karten öffnen"}, "pl": {"Hmotnost nákladu (t)": "Masa ładunku (t)", "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.": "Masa wpływa na spalanie. Około 20,0 l/100 km na pusto → 30,0 l/100 km przy 24 t; wyliczenie liniowe.", "📤 Sdílet": "📤 Udostępnij", "Tisk / Uložit PDF": "Drukuj / Zapisz PDF", "Navigovat trasu směny v Mapách": "Nawiguj trasę zmiany w Mapach"}, "it": {"Hmotnost nákladu (t)": "Peso del carico (t)", "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.": "Il peso influisce sui consumi. Circa 20,0 L/100 km a vuoto → 30,0 L/100 km a 24 t; calcolo lineare.", "📤 Sdílet": "📤 Condividi", "Tisk / Uložit PDF": "Stampa / Salva PDF", "Navigovat trasu směny v Mapách": "Naviga il percorso del turno nelle Mappe"}};
     const EXTRA_TRANSLATIONS_SPOTREBA = {
       en: {
         "Spotřeba prázdné (20 l → cca 30 l při 24 t)": "Empty consumption (20 L → approx. 30 L at 24 t)",
@@ -1337,13 +1348,46 @@
     "Sazba / Den (Kč)":"Stawka / dzień (CZK)","Smazat Den":"Usuń dzień","Smazat blok":"Usuń blok","Smazat řádek":"Usuń wiersz",
     "Trasa se pojede v kolečku":"Trasa będzie powrotna","Typ Exportu (Co se má vygenerovat)":"Typ eksportu (co wygenerować)","Typ Sazby":"Typ stawki","Typ mzdy":"Rodzaj płacy",
     "Uložit Nastavení Mzdy":"Zapisz ustawienia płac","Uložit Směnu":"Zapisz zmianę","Vyberte Řidiče":"Wybierz kierowcę",
-    "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.":"Masa wpływa na spalanie. (Każda tona +0,2 l/100 km)",
+    "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.":"Masa wpływa na spalanie. Około 20,0 l/100 km na pusto → 30,0 l/100 km przy 24 t; wyliczenie liniowe.",
     "Váha vozidla/soupravy na začátku zakázky.":"Masa pojazdu/zestawu na początku zlecenia.","Výchozí spotřeba prázdného vozidla":"Bazowe spalanie pustego pojazdu",
     "Z toho čistá jízda:":"W tym czysta jazda:","Zahraniční diety celkem (Kč)":"Diety zagraniczne razem (CZK)","Začátek Směny":"Początek zmiany","Zrušit":"Anuluj","Základ (Kč)":"Podstawa (CZK)",
     "Úprava Směny":"Edytuj zmianę","Čas":"Czas","⚒️ Práce/Vykládka":"⚒️ Praca/Rozładunek","💬 Odeslat přehled na WhatsApp":"💬 Wyślij zestawienie do WhatsApp","📄 Náhled / Tisk / Uložit PDF":"📄 Podgląd / Drukuj / Zapisz PDF","📊 Stáhnout data do Excelu (CSV)":"📊 Pobierz dane do Excel (CSV)","🚛 Jízda":"🚛 Jazda","🛏️ Pauza":"🛏️ Przerwa",
     "helpEuro":"Klasa emisji Euro wpływa na obliczenie myta.","helpPayType":"Wybierz, czy stawka dzienna zawiera diety zagraniczne.","helpShiftStart":"Początek zmiany.","helpTypTrasy":"Typ trasy określa przejazd w jedną stronę lub w obie strony.","aetrWarn1":"Wymagane przedłużenie AETR: {e}.","aetrWarn2":"Wymagane przedłużenie AETR dla załogi: {e}."
   }
 };
+
+function applyPolishedTranslations(lang){
+    const tr = {
+      cs:{lblMenaKurz:'Měna výsledku',fxLoading:'🔄 Načítám aktuální kurzy…',fxNote:'Mýto se automaticky přepočítává podle aktuálního kurzu.',belgie:'Belgie – region',flanders:'Vlámsko',wallonia:'Valonsko',brussels:'Brusel',italy:'Itálie – terén',flat:'Rovina',hilly:'Horský / náročný terén',crew1:'1 Řidič',crew2:'Dvojosádka',consumption:'Výchozí: 20,0 l/100 km prázdná souprava. Při 24 t nákladu cca 30,0 l/100 km.',phDest:'Např. Turate nebo Milán'},
+      en:{lblMenaKurz:'Result currency',fxLoading:'🔄 Loading live exchange rates…',fxNote:'Tolls are automatically converted using the current exchange rate.',belgie:'Belgium – region',flanders:'Flanders',wallonia:'Wallonia',brussels:'Brussels',italy:'Italy – terrain',flat:'Flat',hilly:'Hilly / difficult terrain',crew1:'1 Driver',crew2:'2 Drivers',consumption:'Default: 20.0 L/100 km empty. At 24 t cargo: approx. 30.0 L/100 km.',phDest:'e.g. Turate or Milan'},
+      de:{lblMenaKurz:'Ergebniswährung',fxLoading:'🔄 Aktuelle Wechselkurse werden geladen…',fxNote:'Die Maut wird automatisch nach dem aktuellen Wechselkurs umgerechnet.',belgie:'Belgien – Region',flanders:'Flandern',wallonia:'Wallonien',brussels:'Brüssel',italy:'Italien – Gelände',flat:'Flachland',hilly:'Hügelig / anspruchsvoll',crew1:'1 Fahrer',crew2:'2 Fahrer',consumption:'Standard: 20,0 l/100 km leer. Bei 24 t Ladung: ca. 30,0 l/100 km.',phDest:'z. B. Turate oder Mailand'},
+      pl:{lblMenaKurz:'Waluta wyniku',fxLoading:'🔄 Ładowanie aktualnych kursów…',fxNote:'Myto jest automatycznie przeliczane według aktualnego kursu.',belgie:'Belgia – region',flanders:'Flandria',wallonia:'Walonia',brussels:'Bruksela',italy:'Włochy – teren',flat:'Teren płaski',hilly:'Teren górzysty / trudny',crew1:'1 kierowca',crew2:'2 kierowców',consumption:'Domyślnie: 20,0 l/100 km na pusto. Przy 24 t ładunku: ok. 30,0 l/100 km.',phDest:'np. Turate lub Mediolan'},
+      it:{lblMenaKurz:'Valuta del risultato',fxLoading:'🔄 Caricamento dei cambi attuali…',fxNote:'I pedaggi vengono convertiti automaticamente al cambio attuale.',belgie:'Belgio – regione',flanders:'Fiandre',wallonia:'Vallonia',brussels:'Bruxelles',italy:'Italia – terreno',flat:'Pianura',hilly:'Collinare / impegnativo',crew1:'1 autista',crew2:'2 autisti',consumption:'Predefinito: 20,0 L/100 km a vuoto. Con 24 t di carico: circa 30,0 L/100 km.',phDest:'es. Turate o Milano'}
+    };
+    const d=tr[lang]||tr.cs;
+    const set=(id,val)=>{const e=document.getElementById(id);if(e)e.textContent=val;};
+    set('lblMenaKurz',d.lblMenaKurz);set('lblBelgieRegion',d.belgie);set('optFlanders',d.flanders);set('optWallonia',d.wallonia);set('optBrussels',d.brussels);
+    set('lblItaliaTerrain',d.italy);set('optItalyFlat',d.flat);set('optItalyHilly',d.hilly);
+    set('opt1Ridic',d.crew1);set('opt2Ridici',d.crew2);set('spotrebaHint',d.consumption);
+    const ms=document.getElementById('menaSelect'); if(ms){ ms.options[0].textContent=lang==='cs'?'CZK – česká koruna':lang==='de'?'CZK – tschechische Krone':lang==='pl'?'CZK – korona czeska':lang==='it'?'CZK – corona ceca':'CZK – Czech koruna'; ms.options[1].textContent=lang==='cs'?'EUR – euro':lang==='de'?'EUR – Euro':lang==='pl'?'EUR – euro':lang==='it'?'EUR – euro':'EUR – euro'; }
+    const dest=document.getElementById('cilAdresa');if(dest)dest.placeholder=d.phDest;
+    const ph={
+      cs:{driver:'Nové jméno…',planStart:'Např. Praha',planEnd:'Např. Madrid',note:'Např. Trasa (Ostrava - Berlín)',wp:'Zadejte město/adresu…',addr:'Adresa'},
+      en:{driver:'New name…',planStart:'e.g. Prague',planEnd:'e.g. Madrid',note:'e.g. Route (Ostrava - Berlin)',wp:'Enter city/address…',addr:'Address'},
+      de:{driver:'Neuer Name…',planStart:'z. B. Prag',planEnd:'z. B. Madrid',note:'z. B. Route (Ostrava - Berlin)',wp:'Stadt/Adresse eingeben…',addr:'Adresse'},
+      pl:{driver:'Nowe imię…',planStart:'np. Praga',planEnd:'np. Madryt',note:'np. Trasa (Ostrawa - Berlin)',wp:'Wpisz miasto/adres…',addr:'Adres'},
+      it:{driver:'Nuovo nome…',planStart:'es. Praga',planEnd:'es. Madrid',note:'es. Percorso (Ostrava - Berlino)',wp:'Inserisci città/indirizzo…',addr:'Indirizzo'}
+    }[lang]||{};
+    const setph=(id,val)=>{const e=document.getElementById(id);if(e&&val)e.placeholder=val;};
+    setph('newDriverName',ph.driver);setph('planStartRoute',ph.planStart);setph('planEndRoute',ph.planEnd);setph('editNote',ph.note);
+    document.querySelectorAll('.plan-wp-address').forEach(e=>e.placeholder=ph.wp);
+    const fx=document.getElementById('fxStatus');
+    if(fx && !fx.querySelector('.fx-status-title')?.textContent.startsWith('✓')){
+        const title=fx.querySelector('.fx-status-title'),note=fx.querySelector('.fx-status-note');
+        if(title)title.textContent=d.fxLoading;if(note)note.textContent=d.fxNote;
+    }
+}
+
 function changeLanguage() {
         let lang = document.getElementById('langSelect').value;
         
@@ -1367,7 +1411,9 @@ function changeLanguage() {
             document.querySelectorAll('select option[value]').forEach(opt=>{ if(COUNTRY_LABELS.cs?.[opt.value]) opt.textContent=COUNTRY_LABELS.cs[opt.value]; });
             if(document.getElementById('btnTollTables')) document.getElementById('btnTollTables').textContent='ℹ️ Tabulky sazeb';
             if(document.getElementById('tollInfoTitle')) document.getElementById('tollInfoTitle').textContent='Tabulky mýtného';
+            applyPolishedTranslations('cs');
             renderBreakdownCurrency();
+            try{autoSave();}catch(e){}
             return;
         }
 
@@ -1411,6 +1457,7 @@ function changeLanguage() {
         });
         if(document.getElementById('btnTollTables')) document.getElementById('btnTollTables').textContent='ℹ️ '+(lang==='de'?'Mauttabellen':lang==='pl'?'Tabele myta':lang==='it'?'Tabelle pedaggi':lang==='en'?'Rate tables':'Tabulky sazeb');
         if(document.getElementById('tollInfoTitle')) document.getElementById('tollInfoTitle').textContent=lang==='de'?'Mauttabellen':lang==='pl'?'Tabele myta':lang==='it'?'Tabelle pedaggi':lang==='en'?'Toll rate tables':'Tabulky mýtného';
+        applyPolishedTranslations(lang);
         renderBreakdownCurrency();
 
         // Překlad placeholderů, title a aria-labelů uvnitř vstupních polí a tlačítek.
@@ -1432,6 +1479,7 @@ function changeLanguage() {
         }
         if (typeof validateAndRenderShift === 'function' && document.getElementById('shiftModal')?.style.display === 'flex') validateAndRenderShift();
         if (typeof renderDietRows === 'function' && document.getElementById('payrollModal')?.style.display === 'flex') renderDietRows();
+        try{autoSave();}catch(e){}
     }
 
 
@@ -1570,11 +1618,19 @@ function changeLanguage() {
         document.getElementById('kurzEuro').value=eurCzk.toFixed(3);
         document.getElementById('kurzPLN').value=plnCzk.toFixed(4);
         document.getElementById('kurzHUF').value=hufCzk.toFixed(5);
-        if(status) status.innerHTML=`Aktuální kurz: <b>1 EUR = ${eurCzk.toFixed(3)} CZK</b><br>PLN/HUF pro mýto se přepočítávají automaticky · zdroj ECB · ${rows[0]?.date||''}`;
+        const fxLang=document.getElementById('langSelect')?.value||'cs';
+        const fxOk={
+          cs:['✓ Aktuální kurzy načteny','Mýto se automaticky přepočítává podle aktuálního kurzu'],
+          en:['✓ Live rates loaded','Tolls are automatically converted using the current exchange rate'],
+          de:['✓ Aktuelle Kurse geladen','Die Maut wird automatisch nach dem aktuellen Wechselkurs umgerechnet'],
+          pl:['✓ Aktualne kursy załadowane','Myto jest automatycznie przeliczane według aktualnego kursu'],
+          it:['✓ Cambi aggiornati caricati','I pedaggi vengono convertiti automaticamente al cambio attuale']
+        }[fxLang]||['✓ Aktuální kurzy načteny','Mýto se automaticky přepočítává podle aktuálního kurzu'];
+        if(status) status.innerHTML=`<div class="fx-status-title">${fxOk[0]}</div><div><b>1 EUR = ${eurCzk.toFixed(3)} CZK</b> · 1 PLN = ${plnCzk.toFixed(4)} CZK · 1 HUF = ${hufCzk.toFixed(5)} CZK</div><div class="fx-status-note">${fxOk[1]} · ECB · ${rows[0]?.date||''}</div>`;
         autoSave(); calculate(); renderBreakdownCurrency();
       }catch(e){
         console.warn('Live FX unavailable',e);
-        if(status) status.innerHTML='Aktuální kurz se nepodařilo načíst – používá se poslední uložený kurz.';
+        const fxLang=document.getElementById('langSelect')?.value||'cs'; const fxErr={cs:['⚠ Kurz se nepodařilo načíst','Používá se poslední uložený kurz. Po obnovení stránky se aplikace pokusí kurz načíst znovu.'],en:['⚠ Could not load rates','The last saved rate is used. Refresh to try again.'],de:['⚠ Kurse konnten nicht geladen werden','Der zuletzt gespeicherte Kurs wird verwendet. Beim Aktualisieren wird erneut versucht zu laden.'],pl:['⚠ Nie udało się pobrać kursów','Używany jest ostatni zapisany kurs. Odśwież stronę, aby spróbować ponownie.'],it:['⚠ Impossibile caricare i cambi','Viene usato l’ultimo cambio salvato. Aggiorna la pagina per riprovare.']}[fxLang]||[]; if(status) status.innerHTML=`<div class="fx-status-title">${fxErr[0]}</div><div class="fx-status-note">${fxErr[1]}</div>`;
       }
     }
     function nativeToCZK(amount,currency){
@@ -1781,6 +1837,7 @@ function changeLanguage() {
 
     function autoSave() {
         const data = {
+            lang: document.getElementById('langSelect')?.value || 'cs',
             start: document.getElementById('startAdresa').value,
             cil: document.getElementById('cilAdresa').value,
             cilStat: document.getElementById('cilStat').value,
@@ -1819,6 +1876,7 @@ function changeLanguage() {
     function loadAutoSave() {
         const d = safeParseStorage('controlPointDraft', null);
         if (d) {
+            if (d.lang && document.getElementById('langSelect')) document.getElementById('langSelect').value = d.lang;
             document.getElementById('startAdresa').value = d.start ?? 'Věrovany 94';
             document.getElementById('cilAdresa').value = d.cil ?? '';
             document.getElementById('cilStat').value = d.cilStat ?? '';
@@ -1835,11 +1893,11 @@ function changeLanguage() {
             document.getElementById('euroNorma').value = euroCompat[savedEuro] || savedEuro;
             document.getElementById('napravyFyzicke').value = d.napravy || '5';
             document.getElementById('zvedleNapravy').value = d.zvedle || '0';
-            document.getElementById('spotrebaPrazdne').value = d.prazdna || '20';
+            document.getElementById('spotrebaPrazdne').value = (d.prazdna !== undefined && d.prazdna !== null && d.prazdna !== '') ? d.prazdna : '20';
             if (document.getElementById('startVaha')) document.getElementById('startVaha').value = d.startVaha ?? '0';
             document.getElementById('vahaNakladu').value = (d.vaha !== undefined && d.vaha !== null && d.vaha !== '') ? d.vaha : '0';
             document.getElementById('cenaNafty').value = d.nafta || '40';
-            document.getElementById('posadka').value = d.posadka || '1';
+            document.getElementById('posadka').value = (d.posadka !== undefined && d.posadka !== null && d.posadka !== '') ? d.posadka : '1';
             document.getElementById('typMzdy').value = d.mzdaTyp || 'denni';
             document.getElementById('mzdaHodnota').value = d.mzdaHodnota || '3000';
             document.getElementById('dny').value = d.dny || '1';
@@ -1893,7 +1951,9 @@ function changeLanguage() {
             if(loader) { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 600); }
         }, 1000); 
         loadAutoSave();
+        try{changeLanguage();}catch(e){}
         loadLiveExchangeRates();
+        autoSave();
         plannerLoadState();
         syncPlannerStartDate();
         renderPlanner();
@@ -2374,7 +2434,13 @@ function changeLanguage() {
         const procBox = document.getElementById('ziskProcento');
         if (actualInput > 0 && celkoveKm > 0) {
             const actualRevenuePerKmEUR = actualRevenuePerKmCZK / kurz;
-            realTrzbaEl.innerText = `${formatMoney(actualRevenuePerKmCZK, 'CZK')} / km  |  ${formatMoney(actualRevenuePerKmEUR, 'EUR')} / km  |  kurz 1 EUR = ${kurz.toFixed(2)} CZK`;
+            const actualRevenuePerKmEURText = new Intl.NumberFormat('cs-CZ', {
+                style: 'currency',
+                currency: 'EUR',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(actualRevenuePerKmEUR);
+            realTrzbaEl.innerText = `${formatMoney(actualRevenuePerKmCZK, 'CZK')} / km  |  ${actualRevenuePerKmEURText} / km  |  kurz 1 EUR = ${kurz.toFixed(2)} CZK`;
             const rozdilNet = actualTotalCZKNet - nakladyCelkem;
             const shownDiff = rozdilNet * dphMulti;
             if (rozdilNet >= 0) {
@@ -2387,7 +2453,13 @@ function changeLanguage() {
                 procBox.innerText = `Rozdíl vůči kalkulačním nákladům: ${formatMoney(rozdilNet)} (${nakladyCelkem>0?(rozdilNet/nakladyCelkem*100).toFixed(1):'0.0'} %)`;
             }
         } else {
-            realTrzbaEl.innerText=`${formatMoney(0,'CZK')} / km  |  ${formatMoney(0,'EUR')} / km  |  kurz 1 EUR = ${kurz.toFixed(2)} CZK`;
+            const zeroEURText = new Intl.NumberFormat('cs-CZ', {
+                style: 'currency',
+                currency: 'EUR',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(0);
+            realTrzbaEl.innerText=`${formatMoney(0,'CZK')} / km  |  ${zeroEURText} / km  |  kurz 1 EUR = ${kurz.toFixed(2)} CZK`;
             ziskBox.className='profit-status status-neutral'; ziskBox.innerText='Čekám na zadání ceny'; procBox.innerText='';
         }
         const dphLabel = document.getElementById('dphStatusLabel');
