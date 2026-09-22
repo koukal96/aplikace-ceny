@@ -67,6 +67,10 @@
         .analysis h2 { color: white; }
 
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; width: 100%; max-width: 100%; }
+        .route-country-options { display:grid; grid-template-columns:repeat(2,minmax(0,220px)); justify-content:center; gap:8px; margin:8px auto 2px; max-width:460px; }
+        .route-country-options .input-group { margin-bottom:0; }
+        .route-country-options label { text-align:center; justify-content:center; }
+        @media (max-width:520px){ .route-country-options { grid-template-columns:1fr 1fr; max-width:100%; } }
         .input-group { display: flex; flex-direction: column; position: relative; margin-bottom: 8px; width: 100%; max-width: 100%; box-sizing: border-box; }
         .input-group label { font-size: 11px; font-weight: 600; color: #555; margin-bottom: 4px; text-transform: uppercase; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
         .analysis .input-group label { color: #aaa; }
@@ -281,7 +285,7 @@
 <div id="tollInfoModal" class="modal-overlay" style="z-index:200001;">
   <div class="info-box" style="max-width:1000px;">
     <h2 style="margin-bottom:6px;"><span>🚛</span> <span id="tollInfoTitle">Tabulky mýtného</span></h2>
-    <div class="toll-note" id="tollInfoNote">Sazby níže vycházejí z dodané tabulky Mýto.txt. Kalkulačka počítá v původní měně státu a až potom převádí výsledek do CZK/EUR podle kurzů nahoře.</div>
+    <div class="toll-note" id="tollInfoNote">Sazby níže vycházejí z dodané tabulky Mýto.txt. Mýto se počítá v původní měně státu a do výsledku CZK/EUR se automaticky přepočítává podle aktuálního kurzu. PLN a HUF se načítají automaticky z veřejných dat ECB; kurz pro mýto není potřeba ručně zadávat.</div>
     <div class="toll-table-wrap">
       <table class="toll-table">
         <thead><tr><th>Stát</th><th>Měna / jednotka</th><th>Nápravy / konfigurace</th><th>Emise / podmínky</th></tr></thead>
@@ -358,24 +362,33 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label id="lblMenaKurz">Měna & kurzy <span class="icon-help" onclick="showInfo(T('helpKurzy'))">i</span></label>
-                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;">
+                    <label id="lblMenaKurz">Měna & kurz <span class="icon-help" onclick="showInfo(T('helpKurzy'))">i</span></label>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
                         <select id="menaSelect" onchange="syncCurrency(this.value);">
                             <option value="CZK">CZK</option><option value="EUR">EUR</option>
                         </select>
-                        <input type="number" id="kurzEuro" value="25" step="0.01" title="CZK za 1 EUR" aria-label="CZK za 1 EUR" oninput="calculate(); autoSave(); renderBreakdownCurrency();" placeholder="EUR/CZK">
-                        <input type="number" id="kurzPLN" value="5.80" step="0.01" title="CZK za 1 PLN" aria-label="CZK za 1 PLN" oninput="calculate(); autoSave(); renderBreakdownCurrency();" placeholder="PLN/CZK">
-                        <input type="number" id="kurzHUF" value="0.063" step="0.001" title="CZK za 1 HUF" aria-label="CZK za 1 HUF" oninput="calculate(); autoSave(); renderBreakdownCurrency();" placeholder="HUF/CZK">
+                        <input type="number" id="kurzEuro" value="25" step="0.001" title="Aktuální kurz CZK za 1 EUR" aria-label="Aktuální kurz CZK za 1 EUR" readonly>
                     </div>
-                    <div style="font-size:9px;color:#777;margin-top:3px;">EUR/CZK · PLN/CZK · HUF/CZK</div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:5px;">
-                        <select id="belgieRegion" title="Belgie – region" onchange="updateAllSegmentTolls(); autoSave();">
-                            <option value="Flanders">Belgie: Vlámsko</option><option value="Wallonia">Valonsko</option><option value="Brussels">Brusel</option>
-                        </select>
-                        <select id="italiaTerrain" title="Itálie – terén" onchange="updateAllSegmentTolls(); autoSave();">
-                            <option value="flat">Itálie: rovina</option><option value="hilly">Itálie: horský / náročný terén</option>
-                        </select>
+                    <input type="hidden" id="kurzPLN" value="5.80">
+                    <input type="hidden" id="kurzHUF" value="0.063">
+                    <div id="fxStatus" style="font-size:9px;color:#777;margin-top:4px;line-height:1.35;">
+                        EUR/CZK: načítám aktuální kurz…<br>PLN a HUF se načítají automaticky.
                     </div>
+                </div>
+            </div>
+
+            <div class="route-country-options">
+                <div class="input-group">
+                    <label>Belgie – region</label>
+                    <select id="belgieRegion" title="Belgie – region" onchange="updateAllSegmentTolls(); autoSave();">
+                        <option value="Flanders">Vlámsko</option><option value="Wallonia">Valonsko</option><option value="Brussels">Brusel</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Itálie – terén</label>
+                    <select id="italiaTerrain" title="Itálie – terén" onchange="updateAllSegmentTolls(); autoSave();">
+                        <option value="flat">Rovina</option><option value="hilly">Horský / náročný terén</option>
+                    </select>
                 </div>
             </div>
 
@@ -446,13 +459,13 @@
             </div>
             <div class="form-grid" style="margin-top: 12px; border-top: 1px solid #eee; padding-top: 12px;">
                 <div class="input-group">
-                    <label id="lblSpotreba">Spotřeba prázdné <span class="icon-help" onclick="showInfo(T('Výchozí spotřeba prázdného vozidla'))">i</span></label>
+                    <label id="lblSpotreba">Spotřeba prázdné (20 l → cca 30 l při 24 t) <span class="icon-help" onclick="showInfo(T('Výchozí spotřeba prázdného vozidla'))">i</span></label>
                     <input type="number" id="spotrebaPrazdne" value="20" step="0.1" oninput="calculate(); autoSave();">
                 </div>
-                <input type="hidden" id="startVaha" value="10">
+                <input type="hidden" id="startVaha" value="0">
                 <div class="input-group">
-                    <label id="lblNaklad">Hmotnost nákladu (t) <span class="icon-help" onclick="showInfo(T('Váha má vliv na spotřebu. (Každá tuna 0,2 l/100 km)'))">i</span></label>
-                    <input type="number" id="vahaNakladu" value="10" min="0" step="0.1" oninput="calculate(); autoSave();">
+                    <label id="lblNaklad">Hmotnost nákladu (t) <span class="icon-help" onclick="showInfo(T('Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.'))">i</span></label>
+                    <input type="number" id="vahaNakladu" value="0" min="0" step="0.1" oninput="calculate(); autoSave();">
                 </div>
                 <div class="input-group">
                     <label id="lblNaftaCena">Cena nafty / L</label>
@@ -989,7 +1002,7 @@
             "Jízda": "Driving", "Práce/Vykládka": "Work/Unloading", "Pauza": "Rest", "Čas": "Time", "Délka": "Duration", "Délka v hodinách": "Duration in hours",
             "Hodin": "Hours", "Smazat blok": "Delete block", "Smazat řádek": "Delete row", "Jízdní doba": "Driving time",
             "Váha vozidla/soupravy na začátku zakázky.": "Vehicle/combination weight at the start of the job.",
-            "Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)": "Weight affects consumption. (Each tonne adds 0.2 L/100 km)",
+            "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.": "Weight affects consumption. (Each tonne adds 0.2 L/100 km)",
             "Výchozí spotřeba prázdného vozidla": "Base consumption of empty vehicle",
             "Režim jízdy 1 nebo 2 řidiči": "Driving mode: 1 or 2 drivers",
             "Trasa se pojede v kolečku": "The route will be driven as a round trip",
@@ -1223,7 +1236,7 @@
     // Doplňkové překlady pro modální okna, nápovědy a dynamicky generované řádky.
     const EXTRA_TRANSLATIONS = {
       en: {
-      "Mýto":"Toll","helpKurzy":"Exchange rates: CZK per EUR, PLN and HUF. The toll is calculated in the original country currency and then converted to CZK/EUR.","helpAvoidCountry":"Try to avoid this country","Tabulky sazeb":"Rate tables","Stát":"Country","Měna":"Currency","Nápravy":"Axles","Podmínky":"Conditions","Francie":"France",
+      "Mýto":"Toll","helpKurzy":"Výstupní měna je CZK nebo EUR. Mýto se počítá v původní měně státu a automaticky se přepočítá podle aktuálního kurzu. PLN a HUF se načítají automaticky z dat ECB; nic pro mýto nemusíš ručně zadávat.","helpAvoidCountry":"Try to avoid this country","Tabulky sazeb":"Rate tables","Stát":"Country","Měna":"Currency","Nápravy":"Axles","Podmínky":"Conditions","Francie":"France",
         "Úprava Směny":"Edit Shift","Začátek Směny":"Shift Start","Režim":"Mode","Poznámka k dni (Trasa)":"Day note (Route)",
         "Rozpis bloků (Jízda/Práce/Pauza)":"Blocks (Driving/Work/Rest)","+ Přidat blok (Jízda / Práce / Pauza)":"+ Add block (Driving / Work / Rest)",
         "Smazat Den":"Delete Day","Uložit Směnu":"Save Shift","Zrušit":"Cancel","Rychlé Nastavení Sazby a Diet":"Quick Pay & Diet Settings",
@@ -1241,7 +1254,7 @@
         "💬 Odeslat přehled na WhatsApp":"💬 Send overview to WhatsApp","Jízda":"Driving","Práce/Vykládka":"Work/Unloading","Pauza":"Rest",
         "Čas":"Time","Délka":"Duration","Délka v hodinách":"Duration in hours","Hodin":"Hours","Smazat blok":"Delete block","Smazat řádek":"Delete row",
         "Jízdní doba":"Driving time","Váha vozidla/soupravy na začátku zakázky.":"Vehicle/combination weight at the start of the job.",
-        "Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)":"Weight affects consumption. (Each tonne adds 0.2 L/100 km)",
+        "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.":"Weight affects consumption. (Each tonne adds 0.2 L/100 km)",
         "Výchozí spotřeba prázdného vozidla":"Base consumption of empty vehicle","Režim jízdy 1 nebo 2 řidiči":"Driving mode: 1 or 2 drivers",
         "Trasa se pojede v kolečku":"The route will be driven as a round trip","Cílová destinace (Pokud se zadá jakákoliv mezizastávka nebude fungovat kolečko)":"Destination (adding any intermediate stop disables round trip)",
         "Kurz (Kč/EUR)":"Exchange rate (CZK/EUR)","helpTypTrasy":"Route type determines whether the distance is one-way or round trip.",
@@ -1260,7 +1273,30 @@
         "Úprava Směny":"Modifica turno","Začátek Směny":"Inizio turno","Režim":"Modalità","Poznámka k dni (Trasa)":"Nota del giorno (percorso)","Rozpis bloků (Jízda/Práce/Pauza)":"Blocchi (guida/lavoro/pausa)","+ Přidat blok (Jízda / Práce / Pauza)":"+ Aggiungi blocco (guida / lavoro / pausa)","Smazat Den":"Elimina giorno","Uložit Směnu":"Salva turno","Zrušit":"Annulla","Rychlé Nastavení Sazby a Diet":"Impostazioni rapide paga e diarie","Odpracovaný výkon:":"Tempo lavorato:","Z toho čistá jízda:":"Tempo di guida:","1. ZÁKLADNÍ MZDA PRO TENTO TÝDEN":"1. PAGA BASE DI QUESTA SETTIMANA","Typ Sazby":"Tipo tariffa","Sazba / Den (Kč)":"Tariffa / giorno (CZK)","Odjeto směn":"Turni effettuati","Typ mzdy":"Tipo di paga","Základ (Kč)":"Base (CZK)","Denní sazba":"Tariffa giornaliera","Měsíční mzda":"Stipendio mensile","Měsíc":"Mese","Dnů v měsíci":"Giorni nel mese","Poměrná denní sazba":"Equivalente giornaliero","2. ZAHRANIČNÍ DIETY V TÝDNU":"2. DIARIE ESTERE DELLA SETTIMANA","+ Přidat zemi k výpočtu diety":"+ Aggiungi paese per il calcolo delle diarie","Zahraniční diety celkem (Kč)":"Diarie estere totali (CZK)","Bonusy / Srážky (Kč)":"Bonus / Trattenute (CZK)","ODHADOVANÁ VÝPLATA ZA TENTO TÝDEN:":"STIMA PAGA DI QUESTA SETTIMANA:","Uložit Nastavení Mzdy":"Salva impostazioni paga","Export Data (Kniha / Mzdy)":"Esporta dati (Registro / Paghe)","Vyberte Řidiče":"Seleziona autista","Období Exportu":"Periodo export","Aktuální zobrazený týden":"Settimana visualizzata","Aktuální vybraný měsíc":"Mese selezionato","Celý vybraný rok":"Intero anno selezionato","Typ Exportu (Co se má vygenerovat)":"Tipo di export","Kompletní přehled (Kniha jízd + Mzdy)":"Riepilogo completo (Registro + Paghe)","Pouze Kniha jízd (Bez financí)":"Solo registro (senza finanze)","Pouze Mzdový výměr (Bez rozpisu tras)":"Solo paghe (senza percorsi)","📄 Náhled / Tisk / Uložit PDF":"📄 Anteprima / Stampa / Salva PDF","📊 Stáhnout data do Excelu (CSV)":"📊 Scarica dati Excel (CSV)","💬 Odeslat přehled na WhatsApp":"💬 Invia riepilogo su WhatsApp","Jízda":"Guida","Práce/Vykládka":"Lavoro/Scarico","Pauza":"Pausa","Čas":"Ora","Délka":"Durata","Délka v hodinách":"Durata in ore","Hodin":"Ore","Smazat blok":"Elimina blocco","Smazat řádek":"Elimina riga","Jízdní doba":"Tempo di guida","Kurz (Kč/EUR)":"Cambio (CZK/EUR)"}
     };
     Object.keys(EXTRA_TRANSLATIONS).forEach(lang => Object.assign(TRANSLATIONS[lang], EXTRA_TRANSLATIONS[lang]));
-    const EXTRA_TRANSLATIONS_2026 = {"en": {"Hmotnost nákladu (t)": "Cargo weight (t)", "Váha má vliv na spotřebu. (Každá tuna 0,2 l/100 km)": "Weight affects fuel consumption. (Each tonne adds 0.2 L/100 km)", "📤 Sdílet": "📤 Share", "Tisk / Uložit PDF": "Print / Save PDF", "Navigovat trasu směny v Mapách": "Navigate shift route in Maps"}, "de": {"Hmotnost nákladu (t)": "Ladungsgewicht (t)", "Váha má vliv na spotřebu. (Každá tuna 0,2 l/100 km)": "Das Gewicht beeinflusst den Verbrauch. (Je Tonne +0,2 l/100 km)", "📤 Sdílet": "📤 Teilen", "Tisk / Uložit PDF": "Drucken / PDF speichern", "Navigovat trasu směny v Mapách": "Schichtroute in Karten öffnen"}, "pl": {"Hmotnost nákladu (t)": "Masa ładunku (t)", "Váha má vliv na spotřebu. (Každá tuna 0,2 l/100 km)": "Masa wpływa na spalanie. (Każda tona +0,2 l/100 km)", "📤 Sdílet": "📤 Udostępnij", "Tisk / Uložit PDF": "Drukuj / Zapisz PDF", "Navigovat trasu směny v Mapách": "Nawiguj trasę zmiany w Mapach"}, "it": {"Hmotnost nákladu (t)": "Peso del carico (t)", "Váha má vliv na spotřebu. (Každá tuna 0,2 l/100 km)": "Il peso influisce sui consumi. (Ogni tonnellata +0,2 l/100 km)", "📤 Sdílet": "📤 Condividi", "Tisk / Uložit PDF": "Stampa / Salva PDF", "Navigovat trasu směny v Mapách": "Naviga il percorso del turno nelle Mappe"}};
+    const EXTRA_TRANSLATIONS_2026 = {"en": {"Hmotnost nákladu (t)": "Cargo weight (t)", "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.": "Weight affects fuel consumption. (Each tonne adds 0.2 L/100 km)", "📤 Sdílet": "📤 Share", "Tisk / Uložit PDF": "Print / Save PDF", "Navigovat trasu směny v Mapách": "Navigate shift route in Maps"}, "de": {"Hmotnost nákladu (t)": "Ladungsgewicht (t)", "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.": "Das Gewicht beeinflusst den Verbrauch. (Je Tonne +0,2 l/100 km)", "📤 Sdílet": "📤 Teilen", "Tisk / Uložit PDF": "Drucken / PDF speichern", "Navigovat trasu směny v Mapách": "Schichtroute in Karten öffnen"}, "pl": {"Hmotnost nákladu (t)": "Masa ładunku (t)", "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.": "Masa wpływa na spalanie. (Każda tona +0,2 l/100 km)", "📤 Sdílet": "📤 Udostępnij", "Tisk / Uložit PDF": "Drukuj / Zapisz PDF", "Navigovat trasu směny v Mapách": "Nawiguj trasę zmiany w Mapach"}, "it": {"Hmotnost nákladu (t)": "Peso del carico (t)", "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.": "Il peso influisce sui consumi. (Ogni tonnellata +0,2 l/100 km)", "📤 Sdílet": "📤 Condividi", "Tisk / Uložit PDF": "Stampa / Salva PDF", "Navigovat trasu směny v Mapách": "Naviga il percorso del turno nelle Mappe"}};
+    const EXTRA_TRANSLATIONS_SPOTREBA = {
+      en: {
+        "Spotřeba prázdné (20 l → cca 30 l při 24 t)": "Empty consumption (20 L → approx. 30 L at 24 t)",
+        "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.": "Weight affects fuel consumption. Approx.: 20 L/100 km empty → about 30 L/100 km at 24 t; linear calculation by load weight.",
+        "Výchozí spotřeba prázdného vozidla": "Base consumption of empty vehicle"
+      },
+      de: {
+        "Spotřeba prázdné (20 l → cca 30 l při 24 t)": "Verbrauch leer (20 l → ca. 30 l bei 24 t)",
+        "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.": "Das Gewicht beeinflusst den Verbrauch. Ca. 20 l/100 km leer → etwa 30 l/100 km bei 24 t; lineare Berechnung nach Ladungsgewicht.",
+        "Výchozí spotřeba prázdného vozidla": "Grundverbrauch des leeren Fahrzeugs"
+      },
+      pl: {
+        "Spotřeba prázdné (20 l → cca 30 l při 24 t)": "Spalanie na pusto (20 l → ok. 30 l przy 24 t)",
+        "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.": "Masa wpływa na spalanie. Orientacyjnie: 20 l/100 km na pusto → ok. 30 l/100 km przy 24 t; obliczenie liniowe według masy ładunku.",
+        "Výchozí spotřeba prázdného vozidla": "Bazowe spalanie pustego pojazdu"
+      },
+      it: {
+        "Spotřeba prázdné (20 l → cca 30 l při 24 t)": "Consumo a vuoto (20 L → circa 30 L a 24 t)",
+        "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.": "Il peso influisce sui consumi. Indicativamente: 20 L/100 km a vuoto → circa 30 L/100 km a 24 t; calcolo lineare in base al peso del carico.",
+        "Výchozí spotřeba prázdného vozidla": "Consumo base del veicolo vuoto"
+      }
+    };
+    Object.keys(EXTRA_TRANSLATIONS_SPOTREBA).forEach(lang => Object.assign(TRANSLATIONS[lang], EXTRA_TRANSLATIONS_SPOTREBA[lang]));
     Object.keys(EXTRA_TRANSLATIONS_2026).forEach(lang => Object.assign(TRANSLATIONS[lang], EXTRA_TRANSLATIONS_2026[lang]));
 
 
@@ -1280,7 +1316,7 @@
     "Sazba / Den (Kč)":"Satz / Tag (CZK)","Smazat Den":"Tag löschen","Smazat blok":"Block löschen","Smazat řádek":"Zeile löschen",
     "Trasa se pojede v kolečku":"Route als Rundfahrt","Typ Exportu (Co se má vygenerovat)":"Exporttyp (was erzeugen)","Typ Sazby":"Satztyp","Typ mzdy":"Lohnart",
     "Uložit Nastavení Mzdy":"Lohn-Einstellungen speichern","Uložit Směnu":"Schicht speichern","Vyberte Řidiče":"Fahrer auswählen",
-    "Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)":"Gewicht beeinflusst den Verbrauch. (Jede Tonne +0,2 l/100 km)",
+    "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.":"Gewicht beeinflusst den Verbrauch. (Jede Tonne +0,2 l/100 km)",
     "Váha vozidla/soupravy na začátku zakázky.":"Gewicht von Fahrzeug/Zug zu Auftragsbeginn.","Výchozí spotřeba prázdného vozidla":"Grundverbrauch des leeren Fahrzeugs",
     "Z toho čistá jízda:":"Davon reine Fahrzeit:","Zahraniční diety celkem (Kč)":"Auslandsspesen gesamt (CZK)","Začátek Směny":"Schichtbeginn","Zrušit":"Abbrechen","Základ (Kč)":"Basis (CZK)",
     "Úprava Směny":"Schicht bearbeiten","Čas":"Zeit","⚒️ Práce/Vykládka":"⚒️ Arbeit/Entladung","💬 Odeslat přehled na WhatsApp":"💬 Übersicht an WhatsApp senden","📄 Náhled / Tisk / Uložit PDF":"📄 Vorschau / Drucken / PDF speichern","📊 Stáhnout data do Excelu (CSV)":"📊 Daten als Excel (CSV) herunterladen","🚛 Jízda":"🚛 Fahren","🛏️ Pauza":"🛏️ Pause",
@@ -1301,7 +1337,7 @@
     "Sazba / Den (Kč)":"Stawka / dzień (CZK)","Smazat Den":"Usuń dzień","Smazat blok":"Usuń blok","Smazat řádek":"Usuń wiersz",
     "Trasa se pojede v kolečku":"Trasa będzie powrotna","Typ Exportu (Co se má vygenerovat)":"Typ eksportu (co wygenerować)","Typ Sazby":"Typ stawki","Typ mzdy":"Rodzaj płacy",
     "Uložit Nastavení Mzdy":"Zapisz ustawienia płac","Uložit Směnu":"Zapisz zmianę","Vyberte Řidiče":"Wybierz kierowcę",
-    "Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)":"Masa wpływa na spalanie. (Każda tona +0,2 l/100 km)",
+    "Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.":"Masa wpływa na spalanie. (Każda tona +0,2 l/100 km)",
     "Váha vozidla/soupravy na začátku zakázky.":"Masa pojazdu/zestawu na początku zlecenia.","Výchozí spotřeba prázdného vozidla":"Bazowe spalanie pustego pojazdu",
     "Z toho čistá jízda:":"W tym czysta jazda:","Zahraniční diety celkem (Kč)":"Diety zagraniczne razem (CZK)","Začátek Směny":"Początek zmiany","Zrušit":"Anuluj","Základ (Kč)":"Podstawa (CZK)",
     "Úprava Směny":"Edytuj zmianę","Čas":"Czas","⚒️ Práce/Vykládka":"⚒️ Praca/Rozładunek","💬 Odeslat přehled na WhatsApp":"💬 Wyślij zestawienie do WhatsApp","📄 Náhled / Tisk / Uložit PDF":"📄 Podgląd / Drukuj / Zapisz PDF","📊 Stáhnout data do Excelu (CSV)":"📊 Pobierz dane do Excel (CSV)","🚛 Jízda":"🚛 Jazda","🛏️ Pauza":"🛏️ Przerwa",
@@ -1449,7 +1485,9 @@ function changeLanguage() {
     }
 
     const OPOTREBENI_PNEU_KOLO_KM = 0.15;
-    const SPOTREBA_NA_TUNU = 0.20; 
+    // Orientační model podle reálného provozu: 20 l/100 km prázdná souprava, cca 30 l/100 km při 24 t nákladu.
+    // Lineární přírůstek: (30 - 20) / 24 = 0,4167 l/100 km na každou tunu.
+    const SPOTREBA_NA_TUNU = 10 / 24; 
     const DPH_SAZBA = 1.21;
     
     // === MÝTO: sazby podle dodané tabulky uživatele ===
@@ -1514,6 +1552,31 @@ function changeLanguage() {
     function getEuroRate(){ return Math.max(0.000001, parseFloat(document.getElementById('kurzEuro')?.value)||25); }
     function getPLNRate(){ return Math.max(0.000001, parseFloat(document.getElementById('kurzPLN')?.value)||5.80); }
     function getHUFRate(){ return Math.max(0.000001, parseFloat(document.getElementById('kurzHUF')?.value)||0.063); }
+
+    // Aktuální kurzy: ECB přes veřejné API Frankfurter (bez API klíče).
+    // API vrací EUR -> CZK/PLN/HUF; z toho dopočítáme CZK za 1 PLN a 1 HUF.
+    async function loadLiveExchangeRates(){
+      const status=document.getElementById('fxStatus');
+      try{
+        const r=await fetch('https://api.frankfurter.dev/v2/providers/ecb/rates?base=EUR&quotes=CZK,PLN,HUF',{cache:'no-store'});
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        const rows=await r.json();
+        const rates={};
+        (Array.isArray(rows)?rows:[]).forEach(x=>{ if(x && x.quote && Number.isFinite(Number(x.rate))) rates[x.quote]=Number(x.rate); });
+        if(!rates.CZK || !rates.PLN || !rates.HUF) throw new Error('Neúplná data kurzu');
+        const eurCzk=rates.CZK;
+        const plnCzk=eurCzk/rates.PLN;
+        const hufCzk=eurCzk/rates.HUF;
+        document.getElementById('kurzEuro').value=eurCzk.toFixed(3);
+        document.getElementById('kurzPLN').value=plnCzk.toFixed(4);
+        document.getElementById('kurzHUF').value=hufCzk.toFixed(5);
+        if(status) status.innerHTML=`Aktuální kurz: <b>1 EUR = ${eurCzk.toFixed(3)} CZK</b><br>PLN/HUF pro mýto se přepočítávají automaticky · zdroj ECB · ${rows[0]?.date||''}`;
+        autoSave(); calculate(); renderBreakdownCurrency();
+      }catch(e){
+        console.warn('Live FX unavailable',e);
+        if(status) status.innerHTML='Aktuální kurz se nepodařilo načíst – používá se poslední uložený kurz.';
+      }
+    }
     function nativeToCZK(amount,currency){
       if(currency==='CZK') return amount;
       if(currency==='EUR') return amount*getEuroRate();
@@ -1774,7 +1837,7 @@ function changeLanguage() {
             document.getElementById('zvedleNapravy').value = d.zvedle || '0';
             document.getElementById('spotrebaPrazdne').value = d.prazdna || '20';
             if (document.getElementById('startVaha')) document.getElementById('startVaha').value = d.startVaha ?? '0';
-            document.getElementById('vahaNakladu').value = d.vaha || '10';
+            document.getElementById('vahaNakladu').value = (d.vaha !== undefined && d.vaha !== null && d.vaha !== '') ? d.vaha : '0';
             document.getElementById('cenaNafty').value = d.nafta || '40';
             document.getElementById('posadka').value = d.posadka || '1';
             document.getElementById('typMzdy').value = d.mzdaTyp || 'denni';
@@ -1810,7 +1873,7 @@ function changeLanguage() {
         if (!anchor || !anchor.parentElement || !anchor.parentElement.parentElement) return;
         const group = document.createElement('div');
         group.className = 'input-group';
-        group.innerHTML = '<input type="hidden" id="startVaha" value="10">';
+        group.innerHTML = '<input type="hidden" id="startVaha" value="0">';
         anchor.parentElement.parentElement.insertBefore(group, anchor.parentElement);
         const el = document.getElementById('startVaha');
         if (el) el.addEventListener('input', () => { try { calculate(); autoSave(); } catch(e) { console.error(e); } });
@@ -1830,6 +1893,7 @@ function changeLanguage() {
             if(loader) { loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 600); }
         }, 1000); 
         loadAutoSave();
+        loadLiveExchangeRates();
         plannerLoadState();
         syncPlannerStartDate();
         renderPlanner();
@@ -2266,9 +2330,10 @@ function changeLanguage() {
 
         const zvedle = parseInt(document.getElementById('zvedleNapravy').value) || 0;
         const baseCons = parseFloat(document.getElementById('spotrebaPrazdne').value) || 20;
+        // Spotřeba: prázdná souprava = základ (standardně 20 l/100 km),
+        // při 24 t nákladu vychází orientačně cca 30 l/100 km; výpočet je lineární (+0,4167 l/t).
         const enteredCargoWeight = parseFloat(document.getElementById('vahaNakladu')?.value);
-        const enteredStartWeight = parseFloat(document.getElementById('startVaha')?.value);
-        const loadWeight = Number.isFinite(enteredCargoWeight) ? enteredCargoWeight : (Number.isFinite(enteredStartWeight) ? enteredStartWeight : 0);
+        const loadWeight = Number.isFinite(enteredCargoWeight) ? Math.max(0, enteredCargoWeight) : 0;
         const weightCons = loadWeight * SPOTREBA_NA_TUNU;
         const avgCons = Math.max(0, baseCons + weightCons);
         avgFuelConsumption = avgCons;
