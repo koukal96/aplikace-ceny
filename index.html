@@ -203,6 +203,13 @@
         #editActContainer .activity-time { font-size:12px; font-weight:900; color:var(--cp-blue); margin:2px 0 4px; }
         #editActContainer .activity-delete, #dietsListContainer .diet-delete { width:30px !important; height:30px !important; min-width:30px !important; padding:0 !important; margin:0 !important; border-radius:4px !important; font-size:15px !important; line-height:30px !important; }
         .report-preview-actions { display:flex; gap:10px; }
+        .toll-table-wrap { overflow-x:auto; max-height:65vh; border:1px solid #ddd; border-radius:6px; }
+        .toll-table { width:100%; border-collapse:collapse; min-width:620px; font-size:11px; }
+        .toll-table th { background:#1a1a1a; color:#fff; padding:8px; position:sticky; top:0; z-index:2; text-align:left; }
+        .toll-table td { padding:7px 8px; border-bottom:1px solid #eee; vertical-align:top; }
+        .toll-table tr:nth-child(even) td { background:#f8f9fa; }
+        .toll-note { font-size:11px; color:#666; line-height:1.4; margin:8px 0; }
+        .fx-hint { font-size:9px; color:#777; }
         /* === 2026 UI cleanup === */
         .shift-top-grid .input-group label,
         .planner-gen-grid .input-group label { min-height: 22px; line-height: 1.25; }
@@ -271,6 +278,21 @@
     </div>
 </div>
 
+<div id="tollInfoModal" class="modal-overlay" style="z-index:200001;">
+  <div class="info-box" style="max-width:1000px;">
+    <h2 style="margin-bottom:6px;"><span>🚛</span> <span id="tollInfoTitle">Tabulky mýtného</span></h2>
+    <div class="toll-note" id="tollInfoNote">Sazby níže vycházejí z dodané tabulky Mýto.txt. Kalkulačka počítá v původní měně státu a až potom převádí výsledek do CZK/EUR podle kurzů nahoře.</div>
+    <div class="toll-table-wrap">
+      <table class="toll-table">
+        <thead><tr><th>Stát</th><th>Měna / jednotka</th><th>Nápravy / konfigurace</th><th>Emise / podmínky</th></tr></thead>
+        <tbody id="tollInfoBody"></tbody>
+      </table>
+    </div>
+    <div class="toll-note">Pozn.: některé sazby v dodané tabulce jsou orientační nebo závislé na silnici/regionu/terénu. Proto je v rozpisu vidět měna a sazba použitá kalkulačkou.</div>
+    <button class="btn-modal-close" type="button" onclick="document.getElementById('tollInfoModal').style.display='none'">ZAVŘÍT</button>
+  </div>
+</div>
+
 <header>
     <div class="logo-container">
         <span style='font-size:18px; font-weight:800; color:white;'>CONTROL POINT</span>
@@ -332,16 +354,27 @@
                         <option value="PL">Polsko</option><option value="IT">Itálie</option>
                         <option value="HU">Maďarsko</option><option value="RO">Rumunsko</option>
                         <option value="ES">Španělsko</option><option value="NL">Nizozemí</option>
-                        <option value="BE">Belgie</option>
+                        <option value="BE">Belgie</option><option value="FR">Francie</option>
                     </select>
                 </div>
                 <div class="input-group">
-                    <label id="lblMenaKurz">Měna & Kurz <span class="icon-help" onclick="showInfo(T('Kurz (Kč/EUR)'))">i</span></label>
-                    <div style="display: flex; gap: 4px;">
-                        <select id="menaSelect" onchange="syncCurrency(this.value);" style="flex:1;">
+                    <label id="lblMenaKurz">Měna & kurzy <span class="icon-help" onclick="showInfo(T('helpKurzy'))">i</span></label>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;">
+                        <select id="menaSelect" onchange="syncCurrency(this.value);">
                             <option value="CZK">CZK</option><option value="EUR">EUR</option>
                         </select>
-                        <input type="number" id="kurzEuro" value="25" step="0.1" oninput="calculate(); autoSave();" style="flex:1;">
+                        <input type="number" id="kurzEuro" value="25" step="0.01" title="CZK za 1 EUR" aria-label="CZK za 1 EUR" oninput="calculate(); autoSave(); renderBreakdownCurrency();" placeholder="EUR/CZK">
+                        <input type="number" id="kurzPLN" value="5.80" step="0.01" title="CZK za 1 PLN" aria-label="CZK za 1 PLN" oninput="calculate(); autoSave(); renderBreakdownCurrency();" placeholder="PLN/CZK">
+                        <input type="number" id="kurzHUF" value="0.063" step="0.001" title="CZK za 1 HUF" aria-label="CZK za 1 HUF" oninput="calculate(); autoSave(); renderBreakdownCurrency();" placeholder="HUF/CZK">
+                    </div>
+                    <div style="font-size:9px;color:#777;margin-top:3px;">EUR/CZK · PLN/CZK · HUF/CZK</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:5px;">
+                        <select id="belgieRegion" title="Belgie – region" onchange="updateAllSegmentTolls(); autoSave();">
+                            <option value="Flanders">Belgie: Vlámsko</option><option value="Wallonia">Valonsko</option><option value="Brussels">Brusel</option>
+                        </select>
+                        <select id="italiaTerrain" title="Itálie – terén" onchange="updateAllSegmentTolls(); autoSave();">
+                            <option value="flat">Itálie: rovina</option><option value="hilly">Itálie: horský / náročný terén</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -374,7 +407,10 @@
             </div>
 
             <div id="breakdownContainer" class="breakdown-container">
-                <h3 id="lblRozpadMyta" style="font-size: 12px; margin-bottom: 8px; color: #0d47a1; text-transform: uppercase;">Rozpad mýta dle států</h3>
+                <h3 id="lblRozpadMyta" style="font-size: 12px; margin-bottom: 8px; color: #0d47a1; text-transform: uppercase; display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                            <span>Rozpad mýta dle států</span>
+                            <button type="button" class="btn-secondary" style="width:auto;padding:7px 10px;background:#1565c0;color:#fff;" onclick="showTollTables()" id="btnTollTables">ℹ️ Tabulky sazeb</button>
+                        </h3>
                 <div id="breakdownList"></div>
             </div>
         </div>
@@ -385,8 +421,13 @@
                 <div class="input-group">
                     <label id="lblEuro">Euro Norma <span class="icon-help" onclick="showInfo(T('helpEuro'))">i</span></label>
                     <select id="euroNorma" onchange="updateAllSegmentTolls(); autoSave();">
-                        <option value="1.0">Euro VI</option><option value="1.15">Euro V</option>
-                        <option value="1.3">Euro IV</option><option value="1.5">Euro III a horší</option>
+                        <option value="VI">Euro VI</option>
+                        <option value="V">Euro V / EEV</option>
+                        <option value="IV">Euro IV</option>
+                        <option value="III">Euro III</option>
+                        <option value="II">Euro II</option>
+                        <option value="I">Euro I</option>
+                        <option value="0">Euro 0</option>
                     </select>
                 </div>
                 <div class="input-group">
@@ -619,7 +660,7 @@
                     </div>
                     <div class="input-group" style="margin:0; flex: 1; min-width: 80px;">
                         <label>Stát</label>
-                        <select id="planStartStat"><option value="">-- Auto --</option><option value="CZ">CZ</option><option value="DE">DE</option><option value="AT">AT</option><option value="PL">PL</option><option value="SK">SK</option><option value="IT">IT</option></select>
+                        <select id="planStartStat"><option value="">-- Auto --</option><option value="CZ">CZ</option><option value="DE">DE</option><option value="AT">AT</option><option value="PL">PL</option><option value="SK">SK</option><option value="IT">IT</option><option value="HU">HU</option><option value="RO">RO</option><option value="ES">ES</option><option value="NL">NL</option><option value="BE">BE</option><option value="FR">FR</option></select>
                     </div>
                 </div>
 
@@ -633,7 +674,7 @@
                     </div>
                     <div class="input-group" style="margin:0; flex: 1; min-width: 80px;">
                         <label>Stát</label>
-                        <select id="planEndStat"><option value="">-- Auto --</option><option value="CZ">CZ</option><option value="DE">DE</option><option value="AT">AT</option><option value="PL">PL</option><option value="SK">SK</option><option value="IT">IT</option></select>
+                        <select id="planEndStat"><option value="">-- Auto --</option><option value="CZ">CZ</option><option value="DE">DE</option><option value="AT">AT</option><option value="PL">PL</option><option value="SK">SK</option><option value="IT">IT</option><option value="HU">HU</option><option value="RO">RO</option><option value="ES">ES</option><option value="NL">NL</option><option value="BE">BE</option><option value="FR">FR</option></select>
                     </div>
                     <div class="input-group" style="margin:0; flex: 1; min-width: 80px;">
                         <label>Zdržení v Cíli (h) <span class="icon-help" onclick="showInfo('Doba vykládky. Pokud je 0.75 a více, počítá se i jako pauza.')">i</span></label>
@@ -1182,6 +1223,7 @@
     // Doplňkové překlady pro modální okna, nápovědy a dynamicky generované řádky.
     const EXTRA_TRANSLATIONS = {
       en: {
+      "Mýto":"Toll","helpKurzy":"Exchange rates: CZK per EUR, PLN and HUF. The toll is calculated in the original country currency and then converted to CZK/EUR.","helpAvoidCountry":"Try to avoid this country","Tabulky sazeb":"Rate tables","Stát":"Country","Měna":"Currency","Nápravy":"Axles","Podmínky":"Conditions","Francie":"France",
         "Úprava Směny":"Edit Shift","Začátek Směny":"Shift Start","Režim":"Mode","Poznámka k dni (Trasa)":"Day note (Route)",
         "Rozpis bloků (Jízda/Práce/Pauza)":"Blocks (Driving/Work/Rest)","+ Přidat blok (Jízda / Práce / Pauza)":"+ Add block (Driving / Work / Rest)",
         "Smazat Den":"Delete Day","Uložit Směnu":"Save Shift","Zrušit":"Cancel","Rychlé Nastavení Sazby a Diet":"Quick Pay & Diet Settings",
@@ -1222,7 +1264,51 @@
     Object.keys(EXTRA_TRANSLATIONS_2026).forEach(lang => Object.assign(TRANSLATIONS[lang], EXTRA_TRANSLATIONS_2026[lang]));
 
 
-    function changeLanguage() {
+    const UI_FALLBACK_TRANSLATIONS = {
+  de:{
+    "+ Přidat blok (Jízda / Práce / Pauza)":"+ Block hinzufügen (Fahren / Arbeit / Pause)","+ Přidat zemi k výpočtu diety":"+ Land für Spesen hinzufügen",
+    "1. ZÁKLADNÍ MZDA PRO TENTO TÝDEN":"1. GRUNDLOHN FÜR DIESE WOCHE","2. ZAHRANIČNÍ DIETY V TÝDNU":"2. AUSLANDSSPESEN DIESE WOCHE",
+    "Aktuální vybraný měsíc":"Aktuell ausgewählter Monat","Aktuální zobrazený týden":"Aktuell angezeigte Woche","Bonusy / Srážky (Kč)":"Boni / Abzüge (CZK)",
+    "Celý vybraný rok":"Gesamtes ausgewähltes Jahr","Cílová destinace (Pokud se zadá jakákoliv mezizastávka nebude fungovat kolečko)":"Ziel (Zwischenstopp deaktiviert Rundfahrt)",
+    "Denní sazba":"Tagessatz","Dnů v měsíci":"Tage im Monat","Délka":"Dauer","Délka v hodinách":"Dauer in Stunden","Export Data (Kniha / Mzdy)":"Exportdaten (Fahrtenbuch / Lohn)",
+    "Hodin":"Stunden","Jízda":"Fahrt","Jízdní doba":"Fahrzeit","Kompletní přehled (Kniha jízd + Mzdy)":"Komplettübersicht (Fahrtenbuch + Lohn)",
+    "Kurz (Kč/EUR)":"Kurs (CZK/EUR)","Měsíc":"Monat","Měsíční mzda":"Monatslohn","ODHADOVANÁ VÝPLATA ZA TENTO TÝDEN:":"GESCHÄTZTER WOCHENLOHN:",
+    "Období Exportu":"Exportzeitraum","Odjeto směn":"Gefahrene Schichten","Odpracovaný výkon:":"Arbeitszeit:","Pauza":"Pause","Poměrná denní sazba":"Anteiliges Tagesentgelt",
+    "Pouze Kniha jízd (Bez financí)":"Nur Fahrtenbuch (ohne Finanzen)","Pouze Mzdový výměr (Bez rozpisu tras)":"Nur Lohnabrechnung (ohne Routen)",
+    "Poznámka k dni (Trasa)":"Tagesnotiz (Route)","Práce/Vykládka":"Arbeit/Entladung","Režim":"Modus","Režim jízdy 1 nebo 2 řidiči":"Fahrmodus: 1 oder 2 Fahrer",
+    "Rozpis bloků (Jízda/Práce/Pauza)":"Blöcke (Fahren/Arbeit/Pause)","Rychlé Nastavení Sazby a Diet":"Schnelle Lohn- und Speseneinstellung",
+    "Sazba / Den (Kč)":"Satz / Tag (CZK)","Smazat Den":"Tag löschen","Smazat blok":"Block löschen","Smazat řádek":"Zeile löschen",
+    "Trasa se pojede v kolečku":"Route als Rundfahrt","Typ Exportu (Co se má vygenerovat)":"Exporttyp (was erzeugen)","Typ Sazby":"Satztyp","Typ mzdy":"Lohnart",
+    "Uložit Nastavení Mzdy":"Lohn-Einstellungen speichern","Uložit Směnu":"Schicht speichern","Vyberte Řidiče":"Fahrer auswählen",
+    "Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)":"Gewicht beeinflusst den Verbrauch. (Jede Tonne +0,2 l/100 km)",
+    "Váha vozidla/soupravy na začátku zakázky.":"Gewicht von Fahrzeug/Zug zu Auftragsbeginn.","Výchozí spotřeba prázdného vozidla":"Grundverbrauch des leeren Fahrzeugs",
+    "Z toho čistá jízda:":"Davon reine Fahrzeit:","Zahraniční diety celkem (Kč)":"Auslandsspesen gesamt (CZK)","Začátek Směny":"Schichtbeginn","Zrušit":"Abbrechen","Základ (Kč)":"Basis (CZK)",
+    "Úprava Směny":"Schicht bearbeiten","Čas":"Zeit","⚒️ Práce/Vykládka":"⚒️ Arbeit/Entladung","💬 Odeslat přehled na WhatsApp":"💬 Übersicht an WhatsApp senden","📄 Náhled / Tisk / Uložit PDF":"📄 Vorschau / Drucken / PDF speichern","📊 Stáhnout data do Excelu (CSV)":"📊 Daten als Excel (CSV) herunterladen","🚛 Jízda":"🚛 Fahren","🛏️ Pauza":"🛏️ Pause",
+    "helpEuro":"Die Euro-Emissionsklasse beeinflusst die Mautberechnung.","helpPayType":"Wählen Sie, ob der Tagessatz Auslandsspesen bereits enthält.","helpShiftStart":"Beginn der Schicht.","helpTypTrasy":"Der Routentyp bestimmt Einweg- oder Rundfahrtdistanz.","aetrWarn1":"AETR-Verlängerung erforderlich: {e}.","aetrWarn2":"AETR-Verlängerung für die Besatzung erforderlich: {e}."
+  },
+  pl:{
+    "+ Přidat blok (Jízda / Práce / Pauza)":"+ Dodaj blok (Jazda / Praca / Przerwa)","+ Přidat zemi k výpočtu diety":"+ Dodaj kraj do obliczenia diety",
+    "1. ZÁKLADNÍ MZDA PRO TENTO TÝDEN":"1. PODSTAWOWA PŁACA NA TEN TYDZIEŃ","2. ZAHRANIČNÍ DIETY V TÝDNU":"2. DIETY ZAGRANICZNE W TYM TYGODNIU",
+    "Aktuální vybraný měsíc":"Aktualnie wybrany miesiąc","Aktuální zobrazený týden":"Aktualnie wyświetlany tydzień","Bonusy / Srážky (Kč)":"Bonusy / Potrącenia (CZK)",
+    "Celý vybraný rok":"Cały wybrany rok","Cílová destinace (Pokud se zadá jakákoliv mezizastávka nebude fungovat kolečko)":"Cel (dodanie przystanku wyłącza trasę powrotną)",
+    "Denní sazba":"Stawka dzienna","Dnů v měsíci":"Dni w miesiącu","Délka":"Czas trwania","Délka v hodinách":"Czas w godzinach","Export Data (Kniha / Mzdy)":"Eksport danych (dziennik / płace)",
+    "Hodin":"Godziny","Jízda":"Jazda","Jízdní doba":"Czas jazdy","Kompletní přehled (Kniha jízd + Mzdy)":"Pełne zestawienie (dziennik + płace)",
+    "Kurz (Kč/EUR)":"Kurs (CZK/EUR)","Měsíc":"Miesiąc","Měsíční mzda":"Pensja miesięczna","ODHADOVANÁ VÝPLATA ZA TENTO TÝDEN:":"SZACOWANA WYPŁATA ZA TEN TYDZIEŃ:",
+    "Období Exportu":"Okres eksportu","Odjeto směn":"Przepracowane zmiany","Odpracovaný výkon:":"Czas pracy:","Pauza":"Przerwa","Poměrná denní sazba":"Proporcjonalna stawka dzienna",
+    "Pouze Kniha jízd (Bez financí)":"Tylko dziennik (bez finansów)","Pouze Mzdový výměr (Bez rozpisu tras)":"Tylko lista płac (bez tras)",
+    "Poznámka k dni (Trasa)":"Notatka dnia (trasa)","Práce/Vykládka":"Praca/Rozładunek","Režim":"Tryb","Režim jízdy 1 nebo 2 řidiči":"Tryb jazdy: 1 lub 2 kierowców",
+    "Rozpis bloků (Jízda/Práce/Pauza)":"Bloki (Jazda/Praca/Przerwa)","Rychlé Nastavení Sazby a Diet":"Szybkie ustawienia stawki i diet",
+    "Sazba / Den (Kč)":"Stawka / dzień (CZK)","Smazat Den":"Usuń dzień","Smazat blok":"Usuń blok","Smazat řádek":"Usuń wiersz",
+    "Trasa se pojede v kolečku":"Trasa będzie powrotna","Typ Exportu (Co se má vygenerovat)":"Typ eksportu (co wygenerować)","Typ Sazby":"Typ stawki","Typ mzdy":"Rodzaj płacy",
+    "Uložit Nastavení Mzdy":"Zapisz ustawienia płac","Uložit Směnu":"Zapisz zmianę","Vyberte Řidiče":"Wybierz kierowcę",
+    "Váha má vliv na spotřebu. (Každá tuna 0,2l/100km)":"Masa wpływa na spalanie. (Każda tona +0,2 l/100 km)",
+    "Váha vozidla/soupravy na začátku zakázky.":"Masa pojazdu/zestawu na początku zlecenia.","Výchozí spotřeba prázdného vozidla":"Bazowe spalanie pustego pojazdu",
+    "Z toho čistá jízda:":"W tym czysta jazda:","Zahraniční diety celkem (Kč)":"Diety zagraniczne razem (CZK)","Začátek Směny":"Początek zmiany","Zrušit":"Anuluj","Základ (Kč)":"Podstawa (CZK)",
+    "Úprava Směny":"Edytuj zmianę","Čas":"Czas","⚒️ Práce/Vykládka":"⚒️ Praca/Rozładunek","💬 Odeslat přehled na WhatsApp":"💬 Wyślij zestawienie do WhatsApp","📄 Náhled / Tisk / Uložit PDF":"📄 Podgląd / Drukuj / Zapisz PDF","📊 Stáhnout data do Excelu (CSV)":"📊 Pobierz dane do Excel (CSV)","🚛 Jízda":"🚛 Jazda","🛏️ Pauza":"🛏️ Przerwa",
+    "helpEuro":"Klasa emisji Euro wpływa na obliczenie myta.","helpPayType":"Wybierz, czy stawka dzienna zawiera diety zagraniczne.","helpShiftStart":"Początek zmiany.","helpTypTrasy":"Typ trasy określa przejazd w jedną stronę lub w obie strony.","aetrWarn1":"Wymagane przedłużenie AETR: {e}.","aetrWarn2":"Wymagane przedłużenie AETR dla załogi: {e}."
+  }
+};
+function changeLanguage() {
         let lang = document.getElementById('langSelect').value;
         
         // Zpět do češtiny (vrácení originálů z paměti)
@@ -1242,6 +1328,10 @@
             if(document.getElementById('lblHeaderAnalytik')) document.getElementById('lblHeaderAnalytik').innerText = "ANALÝZA";
             if (typeof validateAndRenderShift === 'function' && document.getElementById('shiftModal')?.style.display === 'flex') validateAndRenderShift();
             if (typeof renderDietRows === 'function' && document.getElementById('payrollModal')?.style.display === 'flex') renderDietRows();
+            document.querySelectorAll('select option[value]').forEach(opt=>{ if(COUNTRY_LABELS.cs?.[opt.value]) opt.textContent=COUNTRY_LABELS.cs[opt.value]; });
+            if(document.getElementById('btnTollTables')) document.getElementById('btnTollTables').textContent='ℹ️ Tabulky sazeb';
+            if(document.getElementById('tollInfoTitle')) document.getElementById('tollInfoTitle').textContent='Tabulky mýtného';
+            renderBreakdownCurrency();
             return;
         }
 
@@ -1264,10 +1354,11 @@
                 
                 let originalText = originalTexts.has(el) ? originalTexts.get(el) : currentText;
                 
-                if (dict[originalText]) {
+                const translated = dict[originalText] || (UI_FALLBACK_TRANSLATIONS[lang] && UI_FALLBACK_TRANSLATIONS[lang][originalText]);
+                if (translated) {
                     // Zachováme mezeru za slovem, pokud tam v originále byla, aby se nelepila na ikonku nápovědy
                     let trailingSpace = textNode.nodeValue.match(/\s$/) ? " " : "";
-                    textNode.nodeValue = dict[originalText] + trailingSpace;
+                    textNode.nodeValue = translated + trailingSpace;
                 }
             }
         });
@@ -1276,6 +1367,15 @@
         if (editStartLabel && dict['Začátek Směny']) editStartLabel.childNodes[0].nodeValue = dict['Začátek Směny'] + ' ';
         const editCrewLabel = document.getElementById('lblEditCrew');
         if (editCrewLabel && dict['Režim']) editCrewLabel.childNodes[0].nodeValue = dict['Režim'] + ' ';
+
+        // Překlad názvů zemí ve všech roletkách podle kódu státu.
+        document.querySelectorAll('select option[value]').forEach(opt=>{
+            const code=opt.value;
+            if(COUNTRY_LABELS[lang]?.[code]) opt.textContent=COUNTRY_LABELS[lang][code];
+        });
+        if(document.getElementById('btnTollTables')) document.getElementById('btnTollTables').textContent='ℹ️ '+(lang==='de'?'Mauttabellen':lang==='pl'?'Tabele myta':lang==='it'?'Tabelle pedaggi':lang==='en'?'Rate tables':'Tabulky sazeb');
+        if(document.getElementById('tollInfoTitle')) document.getElementById('tollInfoTitle').textContent=lang==='de'?'Mauttabellen':lang==='pl'?'Tabele myta':lang==='it'?'Tabelle pedaggi':lang==='en'?'Toll rate tables':'Tabulky mýtného';
+        renderBreakdownCurrency();
 
         // Překlad placeholderů, title a aria-labelů uvnitř vstupních polí a tlačítek.
         document.querySelectorAll('[placeholder],[title],[aria-label]').forEach(el => {
@@ -1305,7 +1405,15 @@
         function T(key) {
         const lang = document.getElementById('langSelect')?.value || 'cs';
         if (lang === 'cs') return key;
-        return (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) ? TRANSLATIONS[lang][key] : key;
+        const common = {
+          en:{'Mýto':'Toll','helpKurzy':'Exchange rates: CZK per EUR, PLN and HUF.','helpAvoidCountry':'Try to avoid this country','Tabulky sazeb':'Rate tables','Stát':'Country','Měna':'Currency','Nápravy':'Axles','Podmínky':'Conditions'},
+          de:{'Mýto':'Maut','helpKurzy':'Wechselkurse: CZK je EUR, PLN und HUF.','helpAvoidCountry':'Versuchen, dieses Land zu vermeiden','Tabulky sazeb':'Tariftabellen','Stát':'Land','Měna':'Währung','Nápravy':'Achsen','Podmínky':'Bedingungen'},
+          pl:{'Mýto':'Myto','helpKurzy':'Kursy: CZK za EUR, PLN i HUF.','helpAvoidCountry':'Spróbuj ominąć ten kraj','Tabulky sazeb':'Tabele stawek','Stát':'Kraj','Měna':'Waluta','Nápravy':'Osie','Podmínky':'Warunki'},
+          it:{'Mýto':'Pedaggio','helpKurzy':'Cambi: CZK per EUR, PLN e HUF.','helpAvoidCountry':'Prova a evitare questo paese','Tabulky sazeb':'Tabelle delle tariffe','Stát':'Paese','Měna':'Valuta','Nápravy':'Assi','Podmínky':'Condizioni'}
+        };
+        return (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) ? TRANSLATIONS[lang][key] :
+               (typeof EXTRA_TRANSLATIONS!=='undefined' && EXTRA_TRANSLATIONS[lang] && EXTRA_TRANSLATIONS[lang][key]) ? EXTRA_TRANSLATIONS[lang][key] :
+               (common[lang] && common[lang][key]) ? common[lang][key] : key;
     }
     let map, routeLayer, markerGroup;
     // Stav kalkulačky – musí být inicializován před každou funkcí, která jej používá.
@@ -1344,32 +1452,222 @@
     const SPOTREBA_NA_TUNU = 0.20; 
     const DPH_SAZBA = 1.21;
     
+    // === MÝTO: sazby podle dodané tabulky uživatele ===
+    // Všechny výpočty se nejdříve vedou v původní měně daného státu
+    // a teprve potom se převádějí na CZK. Tím se nemíchá EUR/PLN/HUF.
     const MYTO_STATY = {
-        'CZ': { name: 'Česko', rate: 4.5 }, 'SK': { name: 'Slovensko', rate: 5.0 }, 'DE': { name: 'Německo', rate: 8.5 }, 
-        'AT': { name: 'Rakousko', rate: 11.5 }, 'IT': { name: 'Itálie', rate: 6.0 }, 'PL': { name: 'Polsko', rate: 3.5 },
-        'HU': { name: 'Maďarsko', rate: 8.0 }, 'RO': { name: 'Rumunsko', rate: 2.0 }, 'ES': { name: 'Španělsko', rate: 4.0 },
-        'NL': { name: 'Nizozemí', rate: 1.0 }, 'BE': { name: 'Belgie', rate: 4.5 }, 'CH': { name: 'Švýcarsko', rate: 12.0 },
-        'FR': { name: 'Francie', rate: 6.5 }
+        CZ:{name:'Česko',currency:'CZK'}, DE:{name:'Německo',currency:'EUR'},
+        AT:{name:'Rakousko',currency:'EUR'}, SK:{name:'Slovensko',currency:'EUR'},
+        PL:{name:'Polsko',currency:'PLN'}, IT:{name:'Itálie',currency:'EUR'},
+        HU:{name:'Maďarsko',currency:'HUF'}, RO:{name:'Rumunsko',currency:'EUR'},
+        ES:{name:'Španělsko',currency:'EUR'}, NL:{name:'Nizozemí',currency:'EUR'},
+        BE:{name:'Belgie',currency:'EUR'}, FR:{name:'Francie',currency:'EUR'},
+        CH:{name:'Švýcarsko',currency:'CHF'}
     };
-    const MYTO_NAPRAVY_KOEF = { '2': 0.7, '3': 0.8, '4': 1.0, '5': 1.0, '6': 1.1 };
 
-    function getEuroRate() { return parseFloat(document.getElementById('kurzEuro')?.value) || 25; }
+    const MYTO_TARIFFS = {
+      AT:{type:'axleEuro', axles:{
+        2:{VI:.2774,V:.2924,IV:.3114,III:.3274,II:.3274,I:.3274,'0':.3274},
+        3:{VI:.3856,V:.4086,IV:.4296,III:.4536,II:.4536,I:.4536,'0':.4536},
+        4:{VI:.5724,V:.6024,IV:.6324,III:.6654,II:.6654,I:.6654,'0':.6654}}},
+      DE:{type:'axleEuro', axles:{
+        3:{VI:.303,V:.353,IV:.371,III:.429,II:.459,I:.484,'0':.484},
+        4:{VI:.324,V:.363,IV:.388,III:.454,II:.487,I:.512,'0':.512},
+        5:{VI:.348,V:.389,IV:.414,III:.478,II:.511,I:.516,'0':.516}}},
+      CZ:{type:'axleEuro', axles:{
+        2:{VI:2.8007,V:3.0364,IV:3.5013,III:3.5013,II:3.5013,I:3.5013,'0':3.5013},
+        3:{VI:3.6985,V:4.0458,IV:4.5898,III:4.5898,II:4.5898,I:4.5898,'0':4.5898},
+        4:{VI:4.8717,V:5.3367,IV:5.8088,III:5.8088,II:5.8088,I:5.8088,'0':5.8088},
+        5:{VI:5.8954,V:6.3846,IV:6.8249,III:6.8249,II:6.8249,I:6.8249,'0':6.8249}}},
+      SK:{type:'axleEuro', axles:{
+        2:{VI:.1919,V:.2113,IV:.2328,III:.2520,II:.2850,I:.2934,'0':.3598},
+        3:{VI:.2700,V:.2914,IV:.3149,III:.3341,II:.3721,I:.3805,'0':.4499},
+        4:{VI:.3002,V:.3250,IV:.3519,III:.3711,II:.4142,I:.4226,'0':.4940},
+        5:{VI:.2951,V:.2951,IV:.3246,III:.3438,II:.3898,I:.3982,'0':.4696}}},
+      HU:{type:'axleEuro', axles:{
+        2:{VI:78.5,V:88.2,IV:96.1,III:104.8,II:104.8,I:104.8,'0':104.8},
+        3:{VI:121.5,V:136.4,IV:148.8,III:162.2,II:162.2,I:162.2,'0':162.2},
+        4:{VI:182.1,V:203.5,IV:221.4,III:240.8,II:240.8,I:240.8,'0':240.8},
+        5:{VI:193.6,V:214.0,IV:232.8,III:253.1,II:253.1,I:253.1,'0':253.1}}},
+      PL:{type:'euroRoad', rates:{VI:.56,V:.56,IV:.75,III:.93,II:1.07,I:1.07,'0':1.07}, road:'A/S'},
+      IT:{type:'axleTerrain', rates:{3:{flat:.104,hilly:.121},4:{flat:.157,hilly:.185},5:{flat:.186,hilly:.218}}},
+      ES:{type:'category', rates:{'2-3':.13,'4+':.18}},
+      BE:{type:'regionAxle', regions:{
+        Flanders:{'<=3':{VI:.18,V:.20,IV:.20,III:.20,II:.20,I:.21,'0':.21},4:{VI:.23,V:.25,IV:.26,III:.26,II:.26,I:.26,'0':.26},5:{VI:.28,V:.30,IV:.31,III:.31,II:.31,I:.31,'0':.32}},
+        Wallonia:{'<=3':{VI:.15,V:.17,IV:.17,III:.17,II:.17,I:.18,'0':.18},4:{VI:.20,V:.22,IV:.23,III:.23,II:.23,I:.23,'0':.23},5:{VI:.25,V:.26,IV:.27,III:.27,II:.27,I:.27,'0':.28}},
+        Brussels:{'<=3':{VI:.16,V:.18,IV:.18,III:.18,II:.18,I:.19,'0':.19},4:{VI:.21,V:.23,IV:.24,III:.24,II:.24,I:.24,'0':.24},5:{VI:.26,V:.28,IV:.29,III:.29,II:.29,I:.29,'0':.30}}
+      }},
+      NL:{type:'euroOnly', rates:{VI:.156,V:.183,IV:.231,III:.271,II:.305,I:.318,'0':.379}},
+      FR:{type:'france', rates:{2:{VI:.222,V:.235,IV:.251,III:.265,II:.281,I:.281,'0':.316},5:{VI:.314,V:.334,IV:.352,III:.373,II:.391,I:.391,'0':.444}}},
+      RO:{type:'vignette', rates:{1:{'1':9,'7':36,'30':72,'365':720},5:{'1':11,'7':55,'30':121,'365':1210}}}
+    };
 
-    function formatMoney(amountInCZK, currencyOverride) {
-        const mena = currencyOverride || document.getElementById('menaSelect')?.value || 'CZK';
-        const kurz = getEuroRate();
-        const finalVal = mena === 'EUR' ? (amountInCZK / kurz) : amountInCZK;
-        return new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: mena, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(finalVal);
+    const MYTO_NAPRAVY_KOEF = {'2':1,'3':1,'4':1,'5':1,'6':1};
+    const COUNTRY_LABELS = {
+      cs:{CZ:'Česko',DE:'Německo',AT:'Rakousko',SK:'Slovensko',PL:'Polsko',IT:'Itálie',HU:'Maďarsko',RO:'Rumunsko',ES:'Španělsko',NL:'Nizozemí',BE:'Belgie',FR:'Francie',CH:'Švýcarsko'},
+      en:{CZ:'Czechia',DE:'Germany',AT:'Austria',SK:'Slovakia',PL:'Poland',IT:'Italy',HU:'Hungary',RO:'Romania',ES:'Spain',NL:'Netherlands',BE:'Belgium',FR:'France',CH:'Switzerland'},
+      de:{CZ:'Tschechien',DE:'Deutschland',AT:'Österreich',SK:'Slowakei',PL:'Polen',IT:'Italien',HU:'Ungarn',RO:'Rumänien',ES:'Spanien',NL:'Niederlande',BE:'Belgien',FR:'Frankreich',CH:'Schweiz'},
+      pl:{CZ:'Czechy',DE:'Niemcy',AT:'Austria',SK:'Słowacja',PL:'Polska',IT:'Włochy',HU:'Węgry',RO:'Rumunia',ES:'Hiszpania',NL:'Niderlandy',BE:'Belgia',FR:'Francja',CH:'Szwajcaria'},
+      it:{CZ:'Cechia',DE:'Germania',AT:'Austria',SK:'Slovacchia',PL:'Polonia',IT:'Italia',HU:'Ungheria',RO:'Romania',ES:'Spagna',NL:'Paesi Bassi',BE:'Belgio',FR:'Francia',CH:'Svizzera'}
+    };
+
+    function getEuroRate(){ return Math.max(0.000001, parseFloat(document.getElementById('kurzEuro')?.value)||25); }
+    function getPLNRate(){ return Math.max(0.000001, parseFloat(document.getElementById('kurzPLN')?.value)||5.80); }
+    function getHUFRate(){ return Math.max(0.000001, parseFloat(document.getElementById('kurzHUF')?.value)||0.063); }
+    function nativeToCZK(amount,currency){
+      if(currency==='CZK') return amount;
+      if(currency==='EUR') return amount*getEuroRate();
+      if(currency==='PLN') return amount*getPLNRate();
+      if(currency==='HUF') return amount*getHUFRate();
+      return amount; // CHF is not present in the supplied tariff table.
+    }
+    function formatMoney(amountInCZK,currencyOverride){
+      const mena=currencyOverride||document.getElementById('menaSelect')?.value||'CZK';
+      const finalVal=mena==='EUR'?amountInCZK/getEuroRate():amountInCZK;
+      return new Intl.NumberFormat('cs-CZ',{style:'currency',currency:mena,minimumFractionDigits:0,maximumFractionDigits:2}).format(finalVal);
+    }
+    function syncCurrency(value){
+      const main=document.getElementById('menaSelect'),top=document.getElementById('menaTopSelect');
+      if(main) main.value=value; if(top) top.value=value;
+      calculate(); autoSave(); renderBreakdownCurrency();
+    }
+    function normalizeEuroClass(v){
+      const map={'1.0':'VI','1.15':'V','1.3':'IV','1.5':'III','V/EEV':'V'};
+      return map[String(v)]||String(v||'VI');
+    }
+    function axleKey(code,n){
+      const a=Math.max(2,parseInt(n,10)||5);
+      if(code==='DE') return a<=3?3:(a===4?4:5);
+      if(code==='AT') return a<=2?2:(a===3?3:4);
+      if(code==='SK') return a<=2?2:(a===3?3:(a===4?4:5));
+      if(code==='HU'||code==='CZ') return a<=2?2:(a===3?3:(a===4?4:5));
+      return a>=5?5:a;
+    }
+    function getTollRateNative(code,euroClass,axles){
+      const e=normalizeEuroClass(euroClass), t=MYTO_TARIFFS[code];
+      if(!t) return null;
+      if(t.type==='axleEuro') return t.axles[axleKey(code,axles)]?.[e] ?? null;
+      if(t.type==='euroRoad') return t.rates[e] ?? null;
+      if(t.type==='euroOnly') return t.rates[e] ?? null;
+      if(t.type==='france') return t.rates[axles>=3?5:2]?.[e] ?? null;
+      if(t.type==='category') return t.rates[axles>=4?'4+':'2-3'] ?? null;
+      if(t.type==='regionAxle'){
+        const region=document.getElementById('belgieRegion')?.value||'Flanders';
+        const k=axles>=5?5:(axles===4?4:'<=3');
+        return t.regions[region]?.[k]?.[e] ?? null;
+      }
+      if(t.type==='axleTerrain'){
+        const terrain=document.getElementById('italiaTerrain')?.value||'flat';
+        const k=axles>=5?5:(axles===4?4:3);
+        return t.rates[k]?.[terrain] ?? null;
+      }
+      return null;
+    }
+    function getRomaniaVignetteEUR(){
+      const days=Math.max(1,Math.ceil(parseFloat(document.getElementById('dny')?.value)||1));
+      const key=days<=1?'1':(days<=7?'7':(days<=30?'30':'365'));
+      return MYTO_TARIFFS.RO.rates[axlesForRomania()]?.[key] ?? (days<=1?(axlesForRomania()===5?11:9):(days<=7?(axlesForRomania()===5?55:36):(days<=30?(axlesForRomania()===5?121:72):(axlesForRomania()===5?1210:720))));
+    }
+    function axlesForRomania(){ return (parseInt(document.getElementById('napravyFyzicke')?.value)||5)>=4?5:1; }
+    function calculateSegmentTollCZK(km,code){
+      const n=Number(km)||0, e=normalizeEuroClass(document.getElementById('euroNorma')?.value);
+      if(!code) return 0;
+      if(code==='RO') return nativeToCZK(getRomaniaVignetteEUR(),'EUR');
+      const rate=getTollRateNative(code,e,parseInt(document.getElementById('napravyFyzicke')?.value)||5);
+      return rate==null?0:nativeToCZK(n*rate,MYTO_STATY[code].currency);
+    }
+    function getTollDisplayCurrency(code){
+      return MYTO_STATY[code]?.currency||'EUR';
     }
 
-    function syncCurrency(value) {
-        const main = document.getElementById('menaSelect');
-        const top = document.getElementById('menaTopSelect');
-        if (main) main.value = value;
-        if (top) top.value = value;
-        calculate();
-        autoSave();
-        renderBreakdownCurrency();
+    function renderTollInfoRows(){
+      const body=document.getElementById('tollInfoBody'); if(!body) return;
+      const money=(v,c)=>`${v} ${c}/km`;
+      const rows=[];
+      const push=(country,unit,html)=>rows.push(`<tr><td colspan="4"><div style="font-weight:800;font-size:13px;margin-bottom:5px;">${country}</div>${html}</td></tr>`);
+      push('Rakousko','EUR/km',`<table class="toll-table"><tr><th>Nápravy</th><th>Euro VI</th><th>Euro V/EEV</th><th>Euro IV</th><th>Euro 0–III</th></tr>
+        <tr><td>2</td><td>0,2774 €</td><td>0,2924 €</td><td>0,3114 €</td><td>0,3274 €</td></tr>
+        <tr><td>3</td><td>0,3856 €</td><td>0,4086 €</td><td>0,4296 €</td><td>0,4536 €</td></tr>
+        <tr><td>4+</td><td>0,5724 €</td><td>0,6024 €</td><td>0,6324 €</td><td>0,6654 €</td></tr></table>`);
+      push('Německo','EUR/km',`<table class="toll-table"><tr><th>Nápravy</th><th>Euro VI</th><th>Euro V/EEV</th><th>Euro IV</th><th>Euro III</th><th>Euro II</th><th>Euro I/0</th></tr>
+        <tr><td>3</td><td>0,303 €</td><td>0,353 €</td><td>0,371 €</td><td>0,429 €</td><td>0,459 €</td><td>0,484 €</td></tr>
+        <tr><td>4</td><td>0,324 €</td><td>0,363 €</td><td>0,388 €</td><td>0,454 €</td><td>0,487 €</td><td>0,512 €</td></tr>
+        <tr><td>5+</td><td>0,348 €</td><td>0,389 €</td><td>0,414 €</td><td>0,478 €</td><td>0,511 €</td><td>0,516 €</td></tr></table>`);
+      push('Česko','CZK/km',`<table class="toll-table"><tr><th>Nápravy</th><th>Euro VI</th><th>Euro V/EEV</th><th>Euro 0–IV</th></tr>
+        <tr><td>2</td><td>2,8007 Kč</td><td>3,0364 Kč</td><td>3,5013 Kč</td></tr><tr><td>3</td><td>3,6985 Kč</td><td>4,0458 Kč</td><td>4,5898 Kč</td></tr>
+        <tr><td>4</td><td>4,8717 Kč</td><td>5,3367 Kč</td><td>5,8088 Kč</td></tr><tr><td>5+</td><td>5,8954 Kč</td><td>6,3846 Kč</td><td>6,8249 Kč</td></tr></table>`);
+      push('Slovensko','EUR/km',`<table class="toll-table"><tr><th>Nápravy</th><th>Euro 0</th><th>I</th><th>II</th><th>III</th><th>IV</th><th>V/EEV</th><th>VI</th></tr>
+        <tr><td>2</td><td>0,3598</td><td>0,2934</td><td>0,2850</td><td>0,2520</td><td>0,2328</td><td>0,2113</td><td>0,1919</td></tr>
+        <tr><td>3</td><td>0,4499</td><td>0,3805</td><td>0,3721</td><td>0,3341</td><td>0,3149</td><td>0,2914</td><td>0,2700</td></tr>
+        <tr><td>4</td><td>0,4940</td><td>0,4226</td><td>0,4142</td><td>0,3711</td><td>0,3519</td><td>0,3250</td><td>0,3002</td></tr>
+        <tr><td>5</td><td>0,4696</td><td>0,3982</td><td>0,3898</td><td>0,3438</td><td>0,3246</td><td>0,2951</td><td>0,2951*</td></tr></table>`);
+      push('Maďarsko','HUF/km',`<table class="toll-table"><tr><th>Nápravy</th><th>Euro VI</th><th>Euro V/EEV</th><th>Euro IV</th><th>Euro 0–III</th></tr>
+        <tr><td>2</td><td>78,5</td><td>88,2</td><td>96,1</td><td>104,8</td></tr><tr><td>3</td><td>121,5</td><td>136,4</td><td>148,8</td><td>162,2</td></tr>
+        <tr><td>4</td><td>182,1</td><td>203,5</td><td>221,4</td><td>240,8</td></tr><tr><td>5+</td><td>193,6</td><td>214,0</td><td>232,8</td><td>253,1</td></tr></table>`);
+      push('Rumunsko','EUR / dny',`<table class="toll-table"><tr><th>Kategorie</th><th>1 den</th><th>7 dní</th><th>30 dní</th><th>12 měsíců</th></tr>
+        <tr><td>Kat. E: &gt;12 t, max. 3 nápravy</td><td>9 €</td><td>36 €</td><td>72 €</td><td>720 €</td></tr>
+        <tr><td>Kat. F: &gt;12 t, 4+ náprav</td><td>11 €</td><td>55 €</td><td>121 €</td><td>1 210 €</td></tr></table>`);
+      push('Itálie','EUR/km',`<table class="toll-table"><tr><th>Nápravy</th><th>Rovina</th><th>Horský / náročný terén</th></tr>
+        <tr><td>3</td><td>~0,104 €</td><td>~0,121 €</td></tr><tr><td>4</td><td>~0,157 €</td><td>~0,185 €</td></tr><tr><td>5+</td><td>~0,186 €</td><td>~0,218 €</td></tr></table>`);
+      push('Polsko','PLN/km',`<table class="toll-table"><tr><th>Euro</th><th>A/S PLN/km</th><th>GP/G PLN/km</th></tr>
+        <tr><td>V–VI</td><td>0,56</td><td>0,42</td></tr><tr><td>IV</td><td>0,75</td><td>0,60</td></tr><tr><td>III</td><td>0,93</td><td>0,75</td></tr><tr><td>0–II</td><td>1,07</td><td>0,83</td></tr></table>`);
+      push('Španělsko','EUR/km',`<table class="toll-table"><tr><th>Kategorie</th><th>Orientační sazba</th></tr><tr><td>Pesados I (2–3 nápravy)</td><td>~0,10–0,16 €</td></tr><tr><td>Pesados II (4+)</td><td>~0,14–0,22 €</td></tr></table>`);
+      push('Belgie','EUR/km',`<table class="toll-table"><tr><th>Nápravy</th><th>Euro</th><th>Vlámsko</th><th>Valonsko</th><th>Brusel</th></tr>
+        <tr><td>≤3</td><td>VI</td><td>0,18</td><td>0,15</td><td>0,16</td></tr><tr><td>4</td><td>VI</td><td>0,23</td><td>0,20</td><td>0,21</td></tr><tr><td>5+</td><td>VI</td><td>0,28</td><td>0,25</td><td>0,26</td></tr>
+        <tr><td colspan="5">Další emisní sazby: Euro V 0,20/0,17/0,18 (≤3), 0,25/0,22/0,23 (4), 0,30/0,26/0,28 (5+); Euro 0–IV dle dodané tabulky.</td></tr></table>`);
+      push('Nizozemí','EUR/km',`<table class="toll-table"><tr><th>Euro</th><th>Standard</th><th>1.9.–31.12.2026</th></tr>
+        <tr><td>6</td><td>0,201 €</td><td>0,156 €</td></tr><tr><td>5</td><td>0,236 €</td><td>0,183 €</td></tr><tr><td>4</td><td>0,298 €</td><td>0,231 €</td></tr><tr><td>3</td><td>0,349 €</td><td>0,271 €</td></tr><tr><td>2</td><td>0,392 €</td><td>0,305 €</td></tr><tr><td>1</td><td>0,409 €</td><td>0,318 €</td></tr><tr><td>0</td><td>0,487 €</td><td>0,379 €</td></tr></table>`);
+      push('Francie','EUR/km',`<table class="toll-table"><tr><th>Euro</th><th>2 nápravy</th><th>3+ nápravy</th></tr>
+        <tr><td>VI</td><td>0,222 €</td><td>0,314 €</td></tr><tr><td>V</td><td>0,235 €</td><td>0,334 €</td></tr><tr><td>IV</td><td>0,251 €</td><td>0,352 €</td></tr><tr><td>III</td><td>0,265 €</td><td>0,373 €</td></tr><tr><td>I–II</td><td>0,281 €</td><td>0,391 €</td></tr><tr><td>0</td><td>0,316 €</td><td>0,444 €</td></tr></table>`);      push('Švýcarsko','—',`<div class="toll-note">Sazba pro Švýcarsko není v dodaném souboru Mýto.txt uvedena, proto ji kalkulačka záměrně nepředstírá.</div>`);
+      body.innerHTML=rows.join('');
+    }
+    function showTollTables(){
+      const m=document.getElementById('tollInfoModal'); if(!m) return;
+      renderTollInfoRows(); m.style.display='flex';
+    }
+
+    function renderBreakdownCurrency(){
+      document.querySelectorAll('.seg-toll').forEach(inp=>{
+        const czk=parseFloat(inp.dataset.czk); if(!Number.isFinite(czk)) return;
+        const code=inp.dataset.code||'EUR';
+        const cur=MYTO_STATY[code]?.currency||'EUR';
+        let display=cur==='EUR'?czk/getEuroRate():cur==='PLN'?czk/getPLNRate():cur==='HUF'?czk/getHUFRate():czk;
+        inp.value=display.toFixed(2);
+      });
+      document.querySelectorAll('#breakdownList .breakdown-toll-label').forEach(label=>{
+        const code=label.dataset.code; label.textContent=`${T('Mýto')} (${getTollDisplayCurrency(code)})`;
+      });
+      document.querySelectorAll('#breakdownList .breakdown-country-label').forEach(el=>{
+        const code=el.dataset.code; const lang=document.getElementById('langSelect')?.value||'cs';
+        el.textContent=COUNTRY_LABELS[lang]?.[code]||MYTO_STATY[code]?.name||code;
+      });
+    }
+    function updateSegmentToll(index,value){
+      const inp=document.querySelector(`.seg-toll[data-index="${index}"]`); if(!inp) return;
+      const numeric=parseFloat(value)||0, code=inp.dataset.code||'EUR', cur=MYTO_STATY[code]?.currency||'EUR';
+      const czk=cur==='EUR'?numeric*getEuroRate():cur==='PLN'?numeric*getPLNRate():cur==='HUF'?numeric*getHUFRate():numeric;
+      inp.dataset.czk=String(czk); calculate();
+    }
+    async function avoidCountryFromSegment(index){
+      const sel=document.querySelector(`.seg-stat[data-index="${index}"]`); if(!sel) return;
+      const code=sel.value; if(!excludedCountries.includes(code)) excludedCountries.push(code);
+      renderAvoidList(); autoSave(); await spocitatTrasu();
+    }
+    function updateSegment(index){
+      const statSel=document.querySelector(`.seg-stat[data-index="${index}"]`);
+      const kmInp=document.querySelector(`.seg-km[data-index="${index}"]`);
+      const tollInp=document.querySelector(`.seg-toll[data-index="${index}"]`);
+      if(!statSel||!kmInp||!tollInp) return;
+      const km=parseFloat(kmInp.value)||0, code=statSel.value;
+      const czk=calculateSegmentTollCZK(km,code);
+      tollInp.dataset.czk=String(czk); tollInp.dataset.code=code;
+      const cur=MYTO_STATY[code]?.currency||'EUR';
+      tollInp.value=(cur==='EUR'?czk/getEuroRate():cur==='PLN'?czk/getPLNRate():cur==='HUF'?czk/getHUFRate():czk).toFixed(2);
+      calculate();
+    }
+    function updateAllSegmentTolls(){
+      document.querySelectorAll('.seg-stat').forEach(sel=>updateSegment(sel.dataset.index));
+      renderBreakdownCurrency();
     }
 
     const STORAGE_PREFIX = 'controlPoint_';
@@ -1425,6 +1723,10 @@
             cilStat: document.getElementById('cilStat').value,
             mena: document.getElementById('menaSelect').value,
             kurz: document.getElementById('kurzEuro').value,
+            kurzPLN: document.getElementById('kurzPLN')?.value || '5.80',
+            kurzHUF: document.getElementById('kurzHUF')?.value || '0.063',
+            belgieRegion: document.getElementById('belgieRegion')?.value || 'Flanders',
+            italiaTerrain: document.getElementById('italiaTerrain')?.value || 'flat',
             typTrasy: document.getElementById('typTrasy').value,
             dokladky: document.getElementById('dokladky').value,
             euro: document.getElementById('euroNorma').value,
@@ -1459,9 +1761,15 @@
             document.getElementById('cilStat').value = d.cilStat ?? '';
             document.getElementById('menaSelect').value = d.mena || 'CZK';
             document.getElementById('kurzEuro').value = d.kurz || '25';
+            if (document.getElementById('kurzPLN')) document.getElementById('kurzPLN').value = d.kurzPLN || '5.80';
+            if (document.getElementById('kurzHUF')) document.getElementById('kurzHUF').value = d.kurzHUF || '0.063';
+            if (document.getElementById('belgieRegion')) document.getElementById('belgieRegion').value = d.belgieRegion || 'Flanders';
+            if (document.getElementById('italiaTerrain')) document.getElementById('italiaTerrain').value = d.italiaTerrain || 'flat';
             document.getElementById('typTrasy').value = d.typTrasy || '1';
             document.getElementById('dokladky').value = d.dokladky || '0';
-            document.getElementById('euroNorma').value = d.euro || '1.0';
+            const savedEuro = String(d.euro ?? 'VI');
+            const euroCompat = {'1.0':'VI','1.15':'V','1.3':'IV','1.5':'III'};
+            document.getElementById('euroNorma').value = euroCompat[savedEuro] || savedEuro;
             document.getElementById('napravyFyzicke').value = d.napravy || '5';
             document.getElementById('zvedleNapravy').value = d.zvedle || '0';
             document.getElementById('spotrebaPrazdne').value = d.prazdna || '20';
@@ -1898,91 +2206,30 @@
         } finally { btn.disabled = false; }
     }
 
-    function renderBreakdownSegments(segments, multi) {
-        const list = document.getElementById('breakdownList');
-        list.innerHTML = '';
-        if (!segments?.length) { document.getElementById('breakdownContainer').style.display='none'; return; }
-        document.getElementById('breakdownContainer').style.display = 'block';
-        const euroKoef = parseFloat(document.getElementById('euroNorma').value) || 1;
-        const fyzickeNapravy = parseInt(document.getElementById('napravyFyzicke').value) || 5;
-        const napravyKoef = MYTO_NAPRAVY_KOEF[fyzickeNapravy > 6 ? '6' : String(fyzickeNapravy)] || 1;
-        const mena = document.getElementById('menaSelect').value;
-        const kurz = getEuroRate();
-        segments.forEach((seg,index)=>{
-            const actKm = seg.km * multi;
-            const rate = MYTO_STATY[seg.code]?.rate || 8.5;
-            const tollCZK = calculateSegmentTollCZK(actKm, rate);
-            const displayToll = mena === 'EUR' ? tollCZK/kurz : tollCZK;
-            let options = '';
-            Object.keys(MYTO_STATY).forEach(k=>options += `<option value="${k}" ${k===seg.code?'selected':''}>${MYTO_STATY[k].name}</option>`);
-            list.insertAdjacentHTML('beforeend', `
-                <div class="breakdown-row">
-                    <div class="breakdown-input-group"><label>Stát</label><select class="seg-stat" data-index="${index}" onchange="updateSegment(${index})">${options}</select></div>
-                    <div class="breakdown-input-group"><label>Km</label><input type="number" class="seg-km" data-index="${index}" value="${actKm.toFixed(1)}" oninput="updateSegment(${index})"></div>
-                    <div class="breakdown-input-group"><label>Mýto (${mena})</label><input type="number" class="seg-toll" data-index="${index}" data-czk="${tollCZK}" value="${displayToll.toFixed(2)}" oninput="updateSegmentToll(${index}, this.value)"></div>
-                    <button class="btn-avoid-country" onclick="avoidCountryFromSegment(${index})" title="Zkusit objet tuto zemi">✕</button>
-                </div>`);
-        });
-        calculate();
-    }
-
-    function renderBreakdownCurrency() {
-        document.querySelectorAll('.seg-toll').forEach(inp=>{
-            const czk = parseFloat(inp.dataset.czk);
-            if (!Number.isFinite(czk)) return;
-            inp.value = (document.getElementById('menaSelect').value === 'EUR' ? czk/getEuroRate() : czk).toFixed(2);
-        });
-        document.querySelectorAll('#breakdownList .breakdown-input-group label').forEach(label=>{
-            if (label.textContent.startsWith('Mýto')) label.textContent = `Mýto (${document.getElementById('menaSelect').value})`;
-        });
-    }
-
-    function updateSegmentToll(index, value) {
-        const inp = document.querySelector(`.seg-toll[data-index="${index}"]`);
-        const numeric = parseFloat(value) || 0;
-        const czk = document.getElementById('menaSelect').value === 'EUR' ? numeric * getEuroRate() : numeric;
-        if (inp) inp.dataset.czk = String(czk);
-        calculate();
-    }
-
-    async function avoidCountryFromSegment(index) {
-        const sel = document.querySelector(`.seg-stat[data-index="${index}"]`);
-        if (!sel) return;
-        const code = sel.value;
-        if (!excludedCountries.includes(code)) excludedCountries.push(code);
-        renderAvoidList();
-        autoSave();
-        await spocitatTrasu();
-    }
-
-    function getTollAxleFactor() {
-        const n = parseInt(document.getElementById('napravyFyzicke')?.value, 10) || 5;
-        return MYTO_NAPRAVY_KOEF[n > 6 ? '6' : String(n)] || 1;
-    }
-    function calculateSegmentTollCZK(km) {
-        const rate = arguments.length > 1 ? arguments[1] : 8.5;
-        const euro = parseFloat(document.getElementById('euroNorma')?.value) || 1;
-        return (Number(km)||0) * 0.85 * rate * euro * getTollAxleFactor();
-    }
-
-    function updateSegment(index) {
-        const statSel = document.querySelector(`.seg-stat[data-index="${index}"]`);
-        const kmInp = document.querySelector(`.seg-km[data-index="${index}"]`);
-        const tollInp = document.querySelector(`.seg-toll[data-index="${index}"]`);
-        if (!statSel || !kmInp || !tollInp) return;
-        const km = parseFloat(kmInp.value) || 0;
-        const rate = MYTO_STATY[statSel.value]?.rate || 8.5;
-        const euro = parseFloat(document.getElementById('euroNorma').value) || 1;
-        const napr = MYTO_NAPRAVY_KOEF[document.getElementById('napravyFyzicke').value > 6 ? '6' : document.getElementById('napravyFyzicke').value] || 1;
-        const czk = calculateSegmentTollCZK(km, rate);
-        tollInp.dataset.czk = String(czk);
-        tollInp.value = (document.getElementById('menaSelect').value === 'EUR' ? czk/getEuroRate() : czk).toFixed(2);
-        calculate();
-    }
-
-    function updateAllSegmentTolls() {
-        document.querySelectorAll('.seg-stat').forEach(sel => updateSegment(sel.dataset.index));
-        renderBreakdownCurrency();
+    function renderBreakdownSegments(segments,multi){
+      const list=document.getElementById('breakdownList'); list.innerHTML='';
+      if(!segments?.length){document.getElementById('breakdownContainer').style.display='none';return;}
+      document.getElementById('breakdownContainer').style.display='block';
+      const lang=document.getElementById('langSelect')?.value||'cs';
+      let roAlready=false;
+      segments.forEach((seg,index)=>{
+        const actKm=seg.km*multi, code=MYTO_STATY[seg.code]?seg.code:'CZ';
+        const tollCZK=calculateSegmentTollCZK(actKm,code);
+        const cur=MYTO_STATY[code]?.currency||'EUR';
+        const display=cur==='EUR'?tollCZK/getEuroRate():cur==='PLN'?tollCZK/getPLNRate():cur==='HUF'?tollCZK/getHUFRate():tollCZK;
+        const isFirstRO = code==='RO' && !roAlready;
+        const shownToll=isFirstRO?display:(code==='RO'?0:display); if(code==='RO') roAlready=true;
+        let options='';
+        Object.keys(MYTO_STATY).filter(k=>k!=='CH').forEach(k=>options+=`<option value="${k}" ${k===code?'selected':''}>${COUNTRY_LABELS[lang]?.[k]||MYTO_STATY[k].name}</option>`);
+        list.insertAdjacentHTML('beforeend',`
+          <div class="breakdown-row">
+            <div class="breakdown-input-group"><label>Stát</label><select class="seg-stat" data-index="${index}" onchange="updateSegment(${index})">${options}</select></div>
+            <div class="breakdown-input-group"><label>Km</label><input type="number" class="seg-km" data-index="${index}" value="${actKm.toFixed(1)}" oninput="updateSegment(${index})"></div>
+            <div class="breakdown-input-group"><label class="breakdown-toll-label" data-code="${code}">Mýto (${cur})</label><input type="number" class="seg-toll" data-index="${index}" data-code="${code}" data-czk="${isFirstRO?tollCZK:0}" value="${shownToll.toFixed(2)}" oninput="updateSegmentToll(${index},this.value)"></div>
+            <button class="btn-avoid-country" onclick="avoidCountryFromSegment(${index})" title="${T('helpAvoidCountry')||'Zkusit objet tuto zemi'}">✕</button>
+          </div>`);
+      });
+      calculate();
     }
 
     function calculate() {
@@ -1992,14 +2239,18 @@
         const mena = document.getElementById('menaSelect').value;
         const kurz = getEuroRate();
         let totalMytoCZK = 0;
+        const chargedVignette = new Set();
         document.querySelectorAll('.seg-toll').forEach(inp => {
-            let czk = parseFloat(inp.dataset.czk);
-            if (!Number.isFinite(czk)) {
-                const v = parseFloat(inp.value) || 0;
-                czk = mena === 'EUR' ? v * kurz : v;
-                inp.dataset.czk = String(czk);
+            const code = inp.dataset.code || 'EUR';
+            const km = parseFloat(inp.closest('.breakdown-row')?.querySelector('.seg-km')?.value) || 0;
+            if (code === 'RO') {
+                if (chargedVignette.has(code)) return;
+                chargedVignette.add(code);
+                inp.dataset.czk = String(calculateSegmentTollCZK(km, code));
+            } else {
+                inp.dataset.czk = String(calculateSegmentTollCZK(km, code));
             }
-            totalMytoCZK += czk;
+            totalMytoCZK += parseFloat(inp.dataset.czk) || 0;
         });
 
         const typTrasyMulti = waypoints.length > 0 ? 1 : (document.getElementById('typTrasy').value === '2' ? 2 : 1);
@@ -2058,7 +2309,7 @@
         const procBox = document.getElementById('ziskProcento');
         if (actualInput > 0 && celkoveKm > 0) {
             const actualRevenuePerKmEUR = actualRevenuePerKmCZK / kurz;
-            realTrzbaEl.innerText = `${formatMoney(actualRevenuePerKmCZK, 'CZK')} / km  |  ${formatMoney(actualRevenuePerKmEUR, 'EUR')} / km`;
+            realTrzbaEl.innerText = `${formatMoney(actualRevenuePerKmCZK, 'CZK')} / km  |  ${formatMoney(actualRevenuePerKmEUR, 'EUR')} / km  |  kurz 1 EUR = ${kurz.toFixed(2)} CZK`;
             const rozdilNet = actualTotalCZKNet - nakladyCelkem;
             const shownDiff = rozdilNet * dphMulti;
             if (rozdilNet >= 0) {
@@ -2071,7 +2322,7 @@
                 procBox.innerText = `Rozdíl vůči kalkulačním nákladům: ${formatMoney(rozdilNet)} (${nakladyCelkem>0?(rozdilNet/nakladyCelkem*100).toFixed(1):'0.0'} %)`;
             }
         } else {
-            realTrzbaEl.innerText=`${formatMoney(0)} / km`;
+            realTrzbaEl.innerText=`${formatMoney(0,'CZK')} / km  |  ${formatMoney(0,'EUR')} / km  |  kurz 1 EUR = ${kurz.toFixed(2)} CZK`;
             ziskBox.className='profit-status status-neutral'; ziskBox.innerText='Čekám na zadání ceny'; procBox.innerText='';
         }
         const dphLabel = document.getElementById('dphStatusLabel');
@@ -2360,6 +2611,12 @@
                 <option value="PL">PL</option>
                 <option value="SK">SK</option>
                 <option value="IT">IT</option>
+                <option value="HU">HU</option>
+                <option value="RO">RO</option>
+                <option value="ES">ES</option>
+                <option value="NL">NL</option>
+                <option value="BE">BE</option>
+                <option value="FR">FR</option>
             </select>
         </div>
         <!-- Tlačítko pro smazání zastávky, které rovnou znovu zkontroluje kolečko -->
