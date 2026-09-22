@@ -274,58 +274,29 @@
         @media (max-width:390px) { #shiftModal .shift-top-grid { grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important; gap:5px !important; } }
     </style>
 
-<style id="fx-layout-polish">
-/* Telefon: kurzová karta má využít celou šířku sloupce,
-   bez zbytečné mezery mezi měnou a informací o kurzu. */
-@media (max-width: 700px) {
-  .fx-rate-card,
-  #fxRateInfo,
-  .rate-info,
-  .currency-rate-info {
+<style id="fx-status-full-width">
+.fx-status-full {
+    display: block !important;
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
-
-  /* Pokud je karta v pravém sloupci vedle měny, na telefonu ji roztáhnout
-     přes celý blok a dát jí vlastní řádek. */
-  .currency-row,
-  .currency-controls,
-  .currency-section,
-  .currency-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .currency-rate-info,
-  .rate-info,
-  #fxRateInfo {
-    grid-column: 1 / -1 !important;
-  }
+    margin: 8px 0 10px !important;
 }
-</style>
-
-
-<style id="fx-full-width-final">
-.form-grid > #fxStatus {
-    grid-column: 1 / -1 !important;
-    width: 100% !important;
-    max-width: none !important;
-    box-sizing: border-box !important;
-    margin-top: 0 !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+.fx-status-full .fx-status-title {
+    font-size: 12px !important;
+    font-weight: 800 !important;
 }
-.form-grid > .fx-panel {
-    min-width: 0 !important;
+.fx-status-full .fx-status-note {
+    font-size: 10px !important;
 }
 @media (max-width: 700px) {
-    .form-grid > #fxStatus {
-        grid-column: 1 / -1 !important;
+    .fx-status-full {
         width: 100% !important;
+        margin-top: 6px !important;
+        margin-bottom: 10px !important;
     }
 }
+</style>
 
 </head>
 <body>
@@ -435,10 +406,10 @@
                     <input type="hidden" id="kurzPLN" value="5.80">
                     <input type="hidden" id="kurzHUF" value="0.063">
                 </div>
-                <div id="fxStatus" class="fx-status-card">
-                    <div class="fx-status-title">🔄 Načítám aktuální kurzy…</div>
-                    <div class="fx-status-note">Mýto se automaticky přepočítává podle aktuálního kurzu.</div>
-                </div>
+            </div>
+            <div id="fxStatus" class="fx-status-card fx-status-full">
+                <div class="fx-status-title">🔄 Načítám aktuální kurzy…</div>
+                <div class="fx-status-note">Mýto se automaticky přepočítává podle aktuálního kurzu.</div>
             </div>
 
             <div class="route-country-options">
