@@ -245,6 +245,11 @@
             body.print-report-mode #printReportHost table { width:100%; border-collapse:collapse; }
             body.print-report-mode #printReportHost th, body.print-report-mode #printReportHost td { border:1px solid #ccc; padding:6px; }
         }
+        #cargoBackGroup { transition: opacity .2s ease; }
+        #cargoBackGroup input { border-color:#e3000f; }
+        #cargoBackGroup label { color:#b3000b; font-weight:800; }
+        .cargo-mode-note { font-size:10px; color:#666; margin-top:-4px; margin-bottom:8px; }
+
         @media (max-width: 600px) {
             .shift-top-grid { grid-template-columns:1fr 1fr; gap:8px; }
             .breakdown-row { grid-template-columns:1fr 1fr; }
@@ -443,7 +448,7 @@
                 </div>
                 <div class="input-group">
                     <label id="lblTypTrasy">Typ trasy <span class="icon-help" onclick="showInfo(T('helpTypTrasy'))">i</span></label>
-                    <select id="typTrasy" onchange="applyRoundTripDistance(); spocitatTrasu(); autoSave();">
+                    <select id="typTrasy" onchange="applyRoundTripDistance(); syncCargoWeights(); spocitatTrasu(); autoSave();">
                         <option value="1" id="optNaprimo">Napřímo</option>
                         <option value="2" id="optKolecko">Kolečko</option>
                     </select>
@@ -499,10 +504,15 @@
                     <small id="spotrebaHint" class="field-hint">Výchozí: 20,0 l/100 km prázdná souprava. Při 24 t nákladu cca 30,0 l/100 km.</small>
                 </div>
                 <input type="hidden" id="startVaha" value="0">
-                <div class="input-group">
-                    <label id="lblNaklad">Hmotnost nákladu (t) <span class="icon-help" onclick="showInfo(T('Váha má vliv na spotřebu. Orientačně: 20 l/100 km prázdná souprava → cca 30 l/100 km při 24 t; výpočet je lineární podle hmotnosti.'))">i</span></label>
-                    <input type="number" id="vahaNakladu" value="0" min="0" step="0.1" oninput="calculate(); autoSave();">
+                <div class="input-group" id="cargoOutGroup">
+                    <label id="lblNakladTam">Náklad TAM (t) <span class="icon-help" onclick="showInfo(T('Hmotnost nákladu pro cestu tam. Při Kolečku lze zadat jinou hmotnost pro cestu zpět.'))">i</span></label>
+                    <input type="number" id="vahaTam" value="24" min="0" step="0.1" inputmode="decimal" oninput="syncCargoWeights(); calculate(); autoSave();">
                 </div>
+                <div class="input-group" id="cargoBackGroup" style="display:none;">
+                    <label id="lblNakladZpet">Náklad ZPĚT (t) <span class="icon-help" onclick="showInfo(T('Hmotnost nákladu pro cestu zpět. Prázdná cesta = 0 t.'))">i</span></label>
+                    <input type="number" id="vahaZpet" value="0" min="0" step="0.1" inputmode="decimal" oninput="syncCargoWeights(); calculate(); autoSave();">
+                </div>
+                <input type="hidden" id="vahaNakladu" value="24">
                 <div class="input-group">
                     <label id="lblNaftaCena">Cena nafty / L</label>
                     <input type="number" id="cenaNafty" value="40" step="0.10" oninput="calculate(); autoSave();">
@@ -523,12 +533,12 @@
                 <div class="input-group">
                     <label id="lblTypMzdy">Odměňování řidiče</label>
                     <select id="typMzdy" onchange="calculate(); autoSave();">
-                        <option value="denni" id="optZamestnanec">Denní mzda (vč. diet)</option>
-                        <option value="fixni" id="optBrigadnik">Paušál (za točku)</option>
+                        <option value="denni" id="optZamestnanec">Sazba za den</option>
+                        <option value="fixni" id="optBrigadnik">Celkem za trasu</option>
                     </select>
                 </div>
                 <div class="input-group">
-                    <label id="lblOdmena">Odměna CELKEM</label>
+                    <label id="lblOdmena">Sazba řidiče / den</label>
                     <input type="number" id="mzdaHodnota" value="3000" oninput="calculate(); autoSave();">
                 </div>
                 <div class="input-group" id="dnyContainer">
@@ -1622,41 +1632,102 @@ function changeLanguage() {
       it:{CZ:'Cechia',DE:'Germania',AT:'Austria',SK:'Slovacchia',PL:'Polonia',IT:'Italia',HU:'Ungheria',RO:'Romania',ES:'Spagna',NL:'Paesi Bassi',BE:'Belgio',FR:'Francia',CH:'Svizzera'}
     };
 
-    function getEuroRate(){ return Math.max(0.000001, parseFloat(document.getElementById('kurzEuro')?.value)||25); }
+    function getEuroRate(){ return Math.max(0.000001, parseFloat(document.getElementById('kurzEuro')?.value)||24.25); }
     function getPLNRate(){ return Math.max(0.000001, parseFloat(document.getElementById('kurzPLN')?.value)||5.80); }
     function getHUFRate(){ return Math.max(0.000001, parseFloat(document.getElementById('kurzHUF')?.value)||0.063); }
 
-    // Aktuální kurzy: ECB přes veřejné API Frankfurter (bez API klíče).
-    // API vrací EUR -> CZK/PLN/HUF; z toho dopočítáme CZK za 1 PLN a 1 HUF.
-    async function loadLiveExchangeRates(){
-      const status=document.getElementById('fxStatus');
+    // =======================================================================
+    // DENNÍ FX CACHE
+    // - nový kalendářní den => vždy se pokusí načíst kurz z API
+    // - tentýž den => používá již úspěšně načtený kurz, zbytečně API nevolá
+    // - při výpadku API => použije poslední úspěšný kurz, nikdy nevrací starý
+    //   natvrdo uložený kurz 23 Kč/EUR
+    // =======================================================================
+    const FX_DAILY_KEY = 'controlPointDailyFx_v1';
+
+    function getLocalDateKey(){
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    function readDailyFx(){
       try{
-        const r=await fetch('https://api.frankfurter.dev/v2/providers/ecb/rates?base=EUR&quotes=CZK,PLN,HUF',{cache:'no-store'});
-        if(!r.ok) throw new Error('HTTP '+r.status);
-        const rows=await r.json();
-        const rates={};
-        (Array.isArray(rows)?rows:[]).forEach(x=>{ if(x && x.quote && Number.isFinite(Number(x.rate))) rates[x.quote]=Number(x.rate); });
-        if(!rates.CZK || !rates.PLN || !rates.HUF) throw new Error('Neúplná data kurzu');
-        const eurCzk=rates.CZK;
-        const plnCzk=eurCzk/rates.PLN;
-        const hufCzk=eurCzk/rates.HUF;
-        document.getElementById('kurzEuro').value=eurCzk.toFixed(3);
-        document.getElementById('kurzPLN').value=plnCzk.toFixed(4);
-        document.getElementById('kurzHUF').value=hufCzk.toFixed(5);
+        const raw = localStorage.getItem(FX_DAILY_KEY);
+        if(!raw) return null;
+        const d = JSON.parse(raw);
+        if(!d || !d.date || !Number.isFinite(Number(d.eurCzk)) || Number(d.eurCzk)<=0) return null;
+        return d;
+      }catch(e){ return null; }
+    }
+    function writeDailyFx(data){
+      try{ localStorage.setItem(FX_DAILY_KEY, JSON.stringify(data)); }catch(e){}
+    }
+    function applyFxRates(fx){
+      if(!fx) return false;
+      const eur=Number(fx.eurCzk), pln=Number(fx.plnCzk), huf=Number(fx.hufCzk);
+      if(!Number.isFinite(eur)||eur<=0) return false;
+      document.getElementById('kurzEuro').value=eur.toFixed(3);
+      if(Number.isFinite(pln)&&pln>0) document.getElementById('kurzPLN').value=pln.toFixed(4);
+      if(Number.isFinite(huf)&&huf>0) document.getElementById('kurzHUF').value=huf.toFixed(5);
+      return true;
+    }
+
+    async function loadLiveExchangeRates(options={}){
+      const force=!!options.force;
+      const status=document.getElementById('fxStatus');
+      const today=getLocalDateKey();
+      const cached=readDailyFx();
+
+      // Kurz už byl dnes úspěšně načtený -> použít ho bez dalšího API volání.
+      if(!force && cached && cached.date===today && applyFxRates(cached)){
         const fxLang=document.getElementById('langSelect')?.value||'cs';
-        const fxOk={
-          cs:['✓ Aktuální kurzy načteny','Mýto se automaticky přepočítává podle aktuálního kurzu'],
-          en:['✓ Live rates loaded','Tolls are automatically converted using the current exchange rate'],
-          de:['✓ Aktuelle Kurse geladen','Die Maut wird automatisch nach dem aktuellen Wechselkurs umgerechnet'],
-          pl:['✓ Aktualne kursy załadowane','Myto jest automatycznie przeliczane według aktualnego kursu'],
-          it:['✓ Cambi aggiornati caricati','I pedaggi vengono convertiti automaticamente al cambio attuale']
-        }[fxLang]||['✓ Aktuální kurzy načteny','Mýto se automaticky přepočítává podle aktuálního kurzu'];
-        if(status) status.innerHTML=`<div class="fx-status-title">${fxOk[0]}</div><div><b>1 EUR = ${eurCzk.toFixed(3)} CZK</b> · 1 PLN = ${plnCzk.toFixed(4)} CZK · 1 HUF = ${hufCzk.toFixed(5)} CZK</div><div class="fx-status-note">${fxOk[1]} · ECB · ${rows[0]?.date||''}</div>`;
-        autoSave(); calculate(); renderBreakdownCurrency();
-      }catch(e){
-        console.warn('Live FX unavailable',e);
-        const fxLang=document.getElementById('langSelect')?.value||'cs'; const fxErr={cs:['⚠ Kurz se nepodařilo načíst','Používá se poslední uložený kurz. Po obnovení stránky se aplikace pokusí kurz načíst znovu.'],en:['⚠ Could not load rates','The last saved rate is used. Refresh to try again.'],de:['⚠ Kurse konnten nicht geladen werden','Der zuletzt gespeicherte Kurs wird verwendet. Beim Aktualisieren wird erneut versucht zu laden.'],pl:['⚠ Nie udało się pobrać kursów','Używany jest ostatni zapisany kurs. Odśwież stronę, aby spróbować ponownie.'],it:['⚠ Impossibile caricare i cambi','Viene usato l’ultimo cambio salvato. Aggiorna la pagina per riprovare.']}[fxLang]||[]; if(status) status.innerHTML=`<div class="fx-status-title">${fxErr[0]}</div><div class="fx-status-note">${fxErr[1]}</div>`;
+        const fxOk={cs:['✓ Dnešní kurz načten z cache','Kurz byl dnes již ověřen přes API'],en:['✓ Today’s rate loaded','The rate was already verified via API today'],de:['✓ Heutiger Kurs geladen','Der Kurs wurde heute bereits per API geprüft'],pl:['✓ Dzisiejszy kurs załadowany','Kurs został dziś już sprawdzony przez API'],it:['✓ Cambio odierno caricato','Il cambio è stato già verificato oggi tramite API']}[fxLang]||['✓ Dnešní kurz načten z cache','Kurz byl dnes již ověřen přes API'];
+        if(status) status.innerHTML=`<div class="fx-status-title">${fxOk[0]}</div><div><b>1 EUR = ${Number(cached.eurCzk).toFixed(3)} CZK</b> · 1 PLN = ${Number(cached.plnCzk).toFixed(4)} CZK · 1 HUF = ${Number(cached.hufCzk).toFixed(5)} CZK</div><div class="fx-status-note">${fxOk[1]} · ECB · ${cached.sourceDate||''}</div>`;
+        calculate(); renderBreakdownCurrency();
+        return;
       }
+
+      const sources=[
+        'https://api.frankfurter.app/latest?from=EUR&to=CZK,PLN,HUF',
+        'https://api.frankfurter.dev/v2/rates?base=EUR&quotes=CZK,PLN,HUF'
+      ];
+      let lastError=null;
+      for(const url of sources){
+        try{
+          const r=await fetch(url,{cache:'no-store'});
+          if(!r.ok) throw new Error('HTTP '+r.status);
+          const raw=await r.json();
+          let rates={}; let date='';
+          if(raw && raw.rates && typeof raw.rates==='object'){ rates=raw.rates; date=raw.date||''; }
+          else if(Array.isArray(raw)){ raw.forEach(x=>{if(x?.quote && Number.isFinite(Number(x.rate))) rates[x.quote]=Number(x.rate);}); date=raw[0]?.date||''; }
+          if(!rates.CZK || !rates.PLN || !rates.HUF) throw new Error('Neúplná data kurzu');
+          const eurCzk=Number(rates.CZK);
+          const plnCzk=eurCzk/Number(rates.PLN);
+          const hufCzk=eurCzk/Number(rates.HUF);
+          if(!Number.isFinite(eurCzk)||eurCzk<=0||!Number.isFinite(plnCzk)||!Number.isFinite(hufCzk)) throw new Error('Neplatná data kurzu');
+
+          const fx={date:today,eurCzk,plnCzk,hufCzk,sourceDate:date,fetchedAt:new Date().toISOString(),source:'Frankfurter / ECB'};
+          writeDailyFx(fx);
+          applyFxRates(fx);
+          const fxLang=document.getElementById('langSelect')?.value||'cs';
+          const fxOk={cs:['✓ Dnešní kurz načten z API','Kurz byl uložen pro dnešek'],en:['✓ Today’s rate loaded from API','The rate was saved for today'],de:['✓ Heutiger Kurs aus API geladen','Der Kurs wurde für heute gespeichert'],pl:['✓ Dzisiejszy kurs pobrany z API','Kurs został zapisany na dziś'],it:['✓ Cambio odierno caricato dall’API','Il cambio è stato salvato per oggi']}[fxLang]||['✓ Dnešní kurz načten z API','Kurz byl uložen pro dnešek'];
+          if(status) status.innerHTML=`<div class="fx-status-title">${fxOk[0]}</div><div><b>1 EUR = ${eurCzk.toFixed(3)} CZK</b> · 1 PLN = ${plnCzk.toFixed(4)} CZK · 1 HUF = ${hufCzk.toFixed(5)} CZK</div><div class="fx-status-note">${fxOk[1]} · ECB · ${date}</div>`;
+          autoSave(); calculate(); renderBreakdownCurrency();
+          return;
+        }catch(e){ lastError=e; }
+      }
+
+      // API dnes selhalo. Použij poslední úspěšně uložený kurz, pokud existuje.
+      if(cached && applyFxRates(cached)){
+        if(status) status.innerHTML=`<div class="fx-status-title">⚠ Dnešní API kurz není dostupný</div><div><b>Použit poslední úspěšný kurz 1 EUR = ${Number(cached.eurCzk).toFixed(3)} CZK</b></div><div class="fx-status-note">Poslední úspěšné načtení: ${cached.date}${cached.sourceDate?' · ECB '+cached.sourceDate:''}. Nový den se API zkusí znovu.</div>`;
+      }else{
+        // Nouzový fallback pouze pokud aplikace ještě nikdy žádný kurz neměla.
+        const eurCzk=24.25;
+        const fx={date:today,eurCzk,plnCzk:5.80,hufCzk:0.063,sourceDate:'',fetchedAt:'',source:'emergency-fallback'};
+        applyFxRates(fx);
+        if(status) status.innerHTML=`<div class="fx-status-title">⚠ Kurz API není dostupný</div><div><b>Nouzový kurz 1 EUR = ${eurCzk.toFixed(3)} CZK</b></div><div class="fx-status-note">Jakmile bude API dostupné, při dalším spuštění se kurz ověří.</div>`;
+      }
+      calculate(); renderBreakdownCurrency();
+      console.warn('Live FX unavailable',lastError);
     }
     function nativeToCZK(amount,currency){
       if(currency==='CZK') return amount;
@@ -1860,6 +1931,43 @@ function changeLanguage() {
         return backups;
     }
 
+    function getCurrentCalculatorState(){
+        return {
+            lang: document.getElementById('langSelect')?.value || 'cs',
+            start: document.getElementById('startAdresa')?.value || '', cil: document.getElementById('cilAdresa')?.value || '', cilStat: document.getElementById('cilStat')?.value || '',
+            mena: document.getElementById('menaSelect')?.value || 'CZK', kurz: document.getElementById('kurzEuro')?.value || '24.25',
+            kurzPLN: document.getElementById('kurzPLN')?.value || '5.80', kurzHUF: document.getElementById('kurzHUF')?.value || '0.063',
+            belgieRegion: document.getElementById('belgieRegion')?.value || 'Flanders', italiaTerrain: document.getElementById('italiaTerrain')?.value || 'flat',
+            typTrasy: document.getElementById('typTrasy')?.value || '1', dokladky: document.getElementById('dokladky')?.value || '0',
+            euro: document.getElementById('euroNorma')?.value || 'VI', napravy: document.getElementById('napravyFyzicke')?.value || '5', zvedle: document.getElementById('zvedleNapravy')?.value || '0',
+            prazdna: document.getElementById('spotrebaPrazdne')?.value || '20', startVaha: document.getElementById('startVaha')?.value || '0',
+            vaha: document.getElementById('vahaNakladu')?.value || '24', vahaTam: document.getElementById('vahaTam')?.value || '24', vahaZpet: document.getElementById('vahaZpet')?.value || '0',
+            nafta: document.getElementById('cenaNafty')?.value || '40', posadka: document.getElementById('posadka')?.value || '1',
+            mzdaTyp: document.getElementById('typMzdy')?.value || 'denni', mzdaHodnota: document.getElementById('mzdaHodnota')?.value || '3000', dny: document.getElementById('dny')?.value || '1',
+            fix: document.getElementById('nakladyAutoDen')?.value || '2500', dph: !!document.getElementById('dphToggle')?.checked, mytoToggle: document.getElementById('mytoToggle')?.checked ?? true,
+            marze: document.getElementById('marze')?.value || '15', skutecna: document.getElementById('skutecnaCena')?.value || '0',
+            realCenaTyp: document.getElementById('realCenaTyp')?.value || 'celkem', realCenaMena: document.getElementById('realCenaMena')?.value || 'CZK',
+            waypoints: JSON.parse(JSON.stringify(waypoints||[])), excludedCountries: JSON.parse(JSON.stringify(excludedCountries||[]))
+        };
+    }
+
+    function syncCargoWeights(){
+        const tam=document.getElementById('vahaTam'); const zpet=document.getElementById('vahaZpet'); const legacy=document.getElementById('vahaNakladu');
+        if(tam && legacy) legacy.value=tam.value;
+        const round=document.getElementById('typTrasy')?.value==='2' && (waypoints||[]).length===0;
+        const back=document.getElementById('cargoBackGroup'); if(back) back.style.display=round?'block':'none';
+    }
+
+    function resetUnsavedRoute(){
+        const start=document.getElementById('startAdresa'), cil=document.getElementById('cilAdresa'), stat=document.getElementById('cilStat'), km=document.getElementById('vzdalenost'), pre=document.getElementById('prejezdyShow');
+        if(start) start.value='Věrovany 94'; if(cil) cil.value=''; if(stat) stat.value='';
+        waypoints=[]; wpCounter=0; excludedCountries=[]; totalPrejezdKm=0; globalBreakdown=[];
+        if(km){km.value='0'; delete km.dataset.onewayKm;} if(pre) pre.value='0';
+        const list=document.getElementById('breakdownList'); if(list) list.innerHTML='';
+        const bc=document.getElementById('breakdownContainer'); if(bc) bc.style.display='none';
+        renderWaypoints(); renderAvoidList(); checkKoleckoStatus();
+    }
+
     function autoSave() {
         const data = {
             lang: document.getElementById('langSelect')?.value || 'cs',
@@ -1880,6 +1988,8 @@ function changeLanguage() {
             prazdna: document.getElementById('spotrebaPrazdne').value,
             startVaha: document.getElementById('startVaha')?.value || '0',
             vaha: document.getElementById('vahaNakladu').value,
+            vahaTam: document.getElementById('vahaTam')?.value || document.getElementById('vahaNakladu').value,
+            vahaZpet: document.getElementById('vahaZpet')?.value || '0',
             nafta: document.getElementById('cenaNafty').value,
             posadka: document.getElementById('posadka').value,
             mzdaTyp: document.getElementById('typMzdy').value,
@@ -1898,21 +2008,25 @@ function changeLanguage() {
         safeSetStorage('controlPointDraft', data);
     }
 
-    function loadAutoSave() {
+    function loadAutoSave(fromFavorite=false) {
         const d = safeParseStorage('controlPointDraft', null);
         if (d) {
             if (d.lang && document.getElementById('langSelect')) document.getElementById('langSelect').value = d.lang;
-            document.getElementById('startAdresa').value = d.start ?? 'Věrovany 94';
-            document.getElementById('cilAdresa').value = d.cil ?? '';
-            document.getElementById('cilStat').value = d.cilStat ?? '';
+            if (fromFavorite) {
+                document.getElementById('startAdresa').value = d.start ?? 'Věrovany 94';
+                document.getElementById('cilAdresa').value = d.cil ?? '';
+                document.getElementById('cilStat').value = d.cilStat ?? '';
+            } else {
+                resetUnsavedRoute();
+            }
             document.getElementById('menaSelect').value = d.mena || 'CZK';
             document.getElementById('kurzEuro').value = d.kurz || '25';
             if (document.getElementById('kurzPLN')) document.getElementById('kurzPLN').value = d.kurzPLN || '5.80';
             if (document.getElementById('kurzHUF')) document.getElementById('kurzHUF').value = d.kurzHUF || '0.063';
             if (document.getElementById('belgieRegion')) document.getElementById('belgieRegion').value = d.belgieRegion || 'Flanders';
             if (document.getElementById('italiaTerrain')) document.getElementById('italiaTerrain').value = d.italiaTerrain || 'flat';
-            document.getElementById('typTrasy').value = d.typTrasy || '1';
-            document.getElementById('dokladky').value = d.dokladky || '0';
+            document.getElementById('typTrasy').value = fromFavorite ? (d.typTrasy || '1') : '1';
+            document.getElementById('dokladky').value = fromFavorite ? (d.dokladky || '0') : '0';
             const savedEuro = String(d.euro ?? 'VI');
             const euroCompat = {'1.0':'VI','1.15':'V','1.3':'IV','1.5':'III'};
             document.getElementById('euroNorma').value = euroCompat[savedEuro] || savedEuro;
@@ -1920,7 +2034,9 @@ function changeLanguage() {
             document.getElementById('zvedleNapravy').value = d.zvedle || '0';
             document.getElementById('spotrebaPrazdne').value = (d.prazdna !== undefined && d.prazdna !== null && d.prazdna !== '') ? d.prazdna : '20';
             if (document.getElementById('startVaha')) document.getElementById('startVaha').value = d.startVaha ?? '0';
-            document.getElementById('vahaNakladu').value = (d.vaha !== undefined && d.vaha !== null && d.vaha !== '') ? d.vaha : '0';
+            document.getElementById('vahaNakladu').value = (d.vaha !== undefined && d.vaha !== null && d.vaha !== '') ? d.vaha : '24';
+            if (document.getElementById('vahaTam')) document.getElementById('vahaTam').value = (d.vahaTam !== undefined && d.vahaTam !== null && d.vahaTam !== '') ? d.vahaTam : (d.vaha || '24');
+            if (document.getElementById('vahaZpet')) document.getElementById('vahaZpet').value = d.vahaZpet ?? '0';
             document.getElementById('cenaNafty').value = d.nafta || '40';
             document.getElementById('posadka').value = (d.posadka !== undefined && d.posadka !== null && d.posadka !== '') ? d.posadka : '1';
             document.getElementById('typMzdy').value = d.mzdaTyp || 'denni';
@@ -1933,9 +2049,11 @@ function changeLanguage() {
             document.getElementById('skutecnaCena').value = d.skutecna || '0';
             if (document.getElementById('realCenaTyp')) document.getElementById('realCenaTyp').value = d.realCenaTyp || 'celkem';
             if (document.getElementById('realCenaMena')) document.getElementById('realCenaMena').value = d.realCenaMena || 'CZK';
-            if (Array.isArray(d.waypoints)) { waypoints = d.waypoints; wpCounter = Math.max(0, ...waypoints.map(w => Number(w.id) || 0)); }
-            else { waypoints = []; wpCounter = 0; }
-            excludedCountries = Array.isArray(d.excludedCountries) ? d.excludedCountries : [];
+            if (fromFavorite) {
+                if (Array.isArray(d.waypoints)) { waypoints = d.waypoints; wpCounter = Math.max(0, ...waypoints.map(w => Number(w.id) || 0)); }
+                else { waypoints = []; wpCounter = 0; }
+                excludedCountries = Array.isArray(d.excludedCountries) ? d.excludedCountries : [];
+            }
         }
         // Vždy inicializovat, i když není uložený draft.
         if (!Array.isArray(waypoints)) waypoints = [];
@@ -1945,6 +2063,7 @@ function changeLanguage() {
         renderWaypoints();
         renderAvoidList();
         checkKoleckoStatus();
+        syncCargoWeights();
         updateFavoritesDropdown();
     }
 
@@ -2028,9 +2147,13 @@ function changeLanguage() {
         if(distTotal > 0) {
             let celkoveKm = distTotal + (parseFloat(document.getElementById('dokladky').value) || 0);
             let posadka = parseInt(document.getElementById('posadka').value) || 1;
-            let hoursDrive = celkoveKm / 70; 
-
+            let hoursDrive = celkoveKm / 70;
+            // Počítáme i povinné denní odpočinky: delší trasa nesmí zůstat jako 1 den jen proto, že jde o jednu trasu.
             let aetrData = calcOptimalShifts(hoursDrive, posadka);
+            let calendarHours = hoursDrive;
+            if (posadka === 1 && hoursDrive > 9) calendarHours += Math.ceil(hoursDrive / 9 - 1) * 11;
+            if (posadka === 2 && hoursDrive > 18) calendarHours += Math.ceil(hoursDrive / 18 - 1) * 9;
+            aetrData.shifts = Math.max(aetrData.shifts, Math.ceil(calendarHours / 24));
             document.getElementById('dny').value = aetrData.shifts;
             
             let aetrBox = document.getElementById('aetrInfo');
@@ -2071,8 +2194,8 @@ function changeLanguage() {
         if (!name || !name.trim()) return;
         const key = name.trim();
         const favs = safeParseStorage('cpFavorites', {}) || safeParseStorage('favorites', {}) || safeParseStorage('routeTemplates', {}) || {};
-        const draft = safeParseStorage('controlPointDraft', null);
-        if (!draft) { alert('Nejdříve vyplňte trasu a údaje.'); return; }
+        const draft = getCurrentCalculatorState();
+        if (!draft.start || !draft.cil) { alert('Nejdříve vyplňte Start i Cíl.'); return; }
         favs[key] = JSON.parse(JSON.stringify(draft));
         safeSetStorage('cpFavorites', favs);
         safeSetStorage('favorites', favs);
@@ -2088,7 +2211,7 @@ function changeLanguage() {
         const favs = safeParseStorage('cpFavorites', {}) || safeParseStorage('favorites', {}) || safeParseStorage('routeTemplates', {}) || {};
         if (!favs[name]) return;
         safeSetStorage('controlPointDraft', favs[name]);
-        loadAutoSave();
+        loadAutoSave(true);
         calculate();
         if (document.getElementById('startAdresa').value && document.getElementById('cilAdresa').value) spocitatTrasu();
     }
@@ -2382,6 +2505,10 @@ function changeLanguage() {
     }
 
     function calculate() {
+        const mzdaTypEl=document.getElementById('typMzdy');
+        const mzdaLabel=document.getElementById('lblOdmena');
+        if(mzdaLabel && mzdaTypEl) mzdaLabel.textContent = mzdaTypEl.value === 'fixni' ? 'Odměna řidiče CELKEM za trasu' : 'Sazba řidiče / den';
+        syncCargoWeights();
         const includesDph = document.getElementById('dphToggle').checked;
         const dphMulti = includesDph ? DPH_SAZBA : 1;
         const includesMytoSale = document.getElementById('mytoToggle')?.checked ?? true;
@@ -2417,10 +2544,15 @@ function changeLanguage() {
         const baseCons = parseFloat(document.getElementById('spotrebaPrazdne').value) || 20;
         // Spotřeba: prázdná souprava = základ (standardně 20 l/100 km),
         // při 24 t nákladu vychází orientačně cca 30 l/100 km; výpočet je lineární (+0,4167 l/t).
-        const enteredCargoWeight = parseFloat(document.getElementById('vahaNakladu')?.value);
-        const loadWeight = Number.isFinite(enteredCargoWeight) ? Math.max(0, enteredCargoWeight) : 0;
-        const weightCons = loadWeight * SPOTREBA_NA_TUNU;
-        const avgCons = Math.max(0, baseCons + weightCons);
+        const roundTrip = document.getElementById('typTrasy')?.value === '2' && (waypoints||[]).length === 0;
+        const tam = Math.max(0, parseFloat(document.getElementById('vahaTam')?.value) || 0);
+        const zpet = Math.max(0, parseFloat(document.getElementById('vahaZpet')?.value) || 0);
+        if(document.getElementById('vahaNakladu')) document.getElementById('vahaNakladu').value = String(tam);
+        const oneWayKm = Number.isFinite(storedOneWay) ? storedOneWay : (roundTrip ? displayedKm/2 : displayedKm);
+        const outCons = Math.max(0, baseCons + tam * SPOTREBA_NA_TUNU);
+        const backCons = Math.max(0, baseCons + zpet * SPOTREBA_NA_TUNU);
+        const weightedFuelLiters = roundTrip ? ((oneWayKm/100)*outCons + (oneWayKm/100)*backCons + (dokladky/100)*outCons) : ((celkoveKm/100)*outCons);
+        const avgCons = celkoveKm > 0 ? (weightedFuelLiters/(celkoveKm/100)) : outCons;
         avgFuelConsumption = avgCons;
         document.getElementById('resSpotrebaDynamicka').innerText = `${avgCons.toFixed(1)} L / 100 km`;
 
@@ -2432,7 +2564,7 @@ function changeLanguage() {
         // Zvednutá náprava snižuje opotřebení pneumatik; základ je 10 jednotek na km.
         const opotrebeniKoef = Math.max(0, 1 - (zvedle * 0.15));
         const nakladPneu = celkoveKm * (10 * OPOTREBENI_PNEU_KOLO_KM) * opotrebeniKoef;
-        const nakladNafta = (celkoveKm / 100) * avgCons * (parseFloat(document.getElementById('cenaNafty').value) || 0);
+        const nakladNafta = (roundTrip ? weightedFuelLiters : (celkoveKm / 100) * avgCons) * (parseFloat(document.getElementById('cenaNafty').value) || 0);
         const nakladyBezMyta = nakladNafta + nakladMzda + nakladFixAuto + nakladPneu;
         const nakladyCelkem = nakladyBezMyta + (includesMytoSale ? totalMytoCZK : 0);
 
